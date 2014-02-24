@@ -8,7 +8,7 @@
 	<packaging>war</packaging>
 	<name>irods-dataone</name>
 	<description>REST API for iRODS DataONE Member Node Implementation based on Jargon</description>
-	<url>https://code.renci.org/gf/project/irods-rest/</url>
+	<url>https://code.renci.org/gf/project/irods-dataone/</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jargon.version>3.3.2-SNAPSHOT</jargon.version>

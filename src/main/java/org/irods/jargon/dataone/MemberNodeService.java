@@ -55,8 +55,6 @@ import java.util.List;
 @Named
 @Path("/mn/v1")
 public class MemberNodeService {
-
-//	MNCoreImpl mnCoreImpl;
 	
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -70,18 +68,20 @@ public class MemberNodeService {
     @Path("/monitor/ping")
     @Produces(MediaType.APPLICATION_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
-    public Response handlePing(@HeaderParam("Authorization") final String authorization)
+//    public Response handlePing(@HeaderParam("Authorization") final String authorization)
+    public Response handlePing()
     		throws NotImplemented, ServiceFailure, InsufficientResources, JargonException {
     	
-    	if (authorization == null || authorization.isEmpty()) {
-			throw new IllegalArgumentException("null or empty authorization");
-		}
+//    	if (authorization == null || authorization.isEmpty()) {
+//			throw new IllegalArgumentException("null or empty authorization");
+//		}
 
 		if (irodsAccessObjectFactory == null) {
 			throw new IllegalArgumentException("null irodsAccessObjectFactory");
 		}
 
-    	MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration, authorization);
+//    	MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration, authorization);
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
     	Date irodsDate = mnCoreImpl.ping();
 		
 		SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
@@ -96,12 +96,12 @@ public class MemberNodeService {
     @Path("/node")
     @Produces(MediaType.APPLICATION_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
-    public MNNode handleGetCapabilities(@HeaderParam("Authorization") final String authorization)
+    public MNNode handleGetCapabilities()
     		throws NotImplemented, ServiceFailure {
     	
     	MNNode nodeCapabilities = null;
     	    	
-    	MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration, authorization);  	
+    	MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
     	Node node = mnCoreImpl.getCapabilities();
     	
     	nodeCapabilities = new MNNode();
@@ -190,8 +190,11 @@ public class MemberNodeService {
 		log.info("/log request: event={} pidFilter={}", event, pidFilter);
 		log.info("/log request: start={} count={}", start, count);
 		
-		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration, authorization);  	
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
+		//TODO: need to permissions of user here?
+		// If no session info provided - defaults to public user
     	Session session = new Session();
+
 //    	Date fromDate = new Date();
 //    	Date toDate = new Date();
 //    	Event event = Event.CREATE;

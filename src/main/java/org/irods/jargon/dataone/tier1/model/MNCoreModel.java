@@ -61,21 +61,21 @@ public class MNCoreModel {
 		// TODO: need to fill in the real stuff here
     	// get most from a config file I think
     	NodeReference identifier = new NodeReference();
-    	identifier.setValue("mynode");
+    	identifier.setValue("urn:node:DFC");
     	
-    	String name = "test name";
+    	String name = "DFC : iRODS Member Node";
     	
-    	String description = "test dscription";
+    	String description = "DFC DataONE Memeber Node";
     	
-    	String baseURL = "http://test.me.org";
+    	String baseURL = "https://dfcweb.datafed.org/irods-dataone/rest/mn/v1";
 
     	Service s1 = new Service();
-    	s1.setName("servicename1");
-    	s1.setVersion("version1");
+    	s1.setName("MNCore");
+    	s1.setVersion("v1");
     	s1.setAvailable(true);
     	Service s2 = new Service();
-    	s2.setName("servicename2");
-    	s2.setVersion("version2");
+    	s2.setName("MNRead");
+    	s2.setVersion("v1");
     	s2.setAvailable(false);
     	Services services = new Services();
     	services.addService(s1);

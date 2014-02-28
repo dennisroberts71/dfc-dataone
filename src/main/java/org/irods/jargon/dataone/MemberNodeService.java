@@ -4,6 +4,7 @@ import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
 import org.dataone.service.exceptions.InvalidToken;
 import org.dataone.service.exceptions.NotAuthorized;
+import org.dataone.service.exceptions.NotFound;
 import org.dataone.service.exceptions.NotImplemented;
 import org.dataone.service.exceptions.ServiceFailure;
 import org.dataone.service.types.v1.Event;
@@ -18,6 +19,7 @@ import org.dataone.service.types.v1.Synchronization;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
+import org.irods.jargon.dataone.tier1.MNReadImpl;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNLog;
 import org.irods.jargon.dataone.domain.MNSchedule;
@@ -34,11 +36,14 @@ import com.ibm.icu.text.SimpleDateFormat;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -57,7 +62,7 @@ import java.util.List;
 public class MemberNodeService {
 	
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-
+	
 	@Inject
 	IRODSAccessObjectFactory irodsAccessObjectFactory;
 
@@ -66,10 +71,11 @@ public class MemberNodeService {
 
     @GET
     @Path("/monitor/ping")
-    @Produces(MediaType.APPLICATION_XML)
+    @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
 //    public Response handlePing(@HeaderParam("Authorization") final String authorization)
     public Response handlePing()
+    //public void handlePing(@Context final HttpServletResponse response)
     		throws NotImplemented, ServiceFailure, InsufficientResources, JargonException {
     	
 //    	if (authorization == null || authorization.isEmpty()) {
@@ -89,12 +95,15 @@ public class MemberNodeService {
 		
 		Response.ResponseBuilder builder = Response.ok();
         builder.header("Date", dateStr);
+        builder.type("text/xml");
+        builder.header("Content-Length", "0");
+        
         return builder.build();
     }
     
     @GET
     @Path("/node")
-    @Produces(MediaType.APPLICATION_XML)
+    @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public MNNode handleGetCapabilities()
     		throws NotImplemented, ServiceFailure {
@@ -194,13 +203,6 @@ public class MemberNodeService {
 		//TODO: need to permissions of user here?
 		// If no session info provided - defaults to public user
     	Session session = new Session();
-
-//    	Date fromDate = new Date();
-//    	Date toDate = new Date();
-//    	Event event = Event.CREATE;
-//    	String pidFilter = "filter";
-//    	int start = 0;
-//    	int count = 10;
     	
 		Log log = mnCoreImpl.getLogRecords(
 									session,
@@ -216,12 +218,30 @@ public class MemberNodeService {
     	
 		return mnLog;
 	}
-    // add other tier1 services here
-    
-    // "/log?[fromDate={fromDate}][&toDate={toDate}][&event={event}][&pidFilter={pidFilter}][&start={start}][&count={count}]"
-    
-    // "/" or "/node" (for getCapabilities)
-    
-    // 
+
+	@GET
+	@Path("/object/{id}")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public void handleRead(@PathParam("id") final String pid,
+								  @Context final HttpServletResponse response) 
+										  throws InvalidToken,
+										  ServiceFailure,
+										  NotAuthorized,
+										  NotFound,
+										  NotImplemented,
+										  InsufficientResources {
+
+
+		if (pid == null || pid.isEmpty()) {
+			throw new NotFound("invalid", "identifier is invalid");
+		}
+		
+		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
+		
+		// Had to write new method in mnReadImpl since I
+		// couldn't figure out how to override the get method
+		mnReadImpl.streamObject(response, pid);
+		
+	}
 
 }

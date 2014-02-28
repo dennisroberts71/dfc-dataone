@@ -33,7 +33,7 @@ public class RestAuthUtils {
 	private static Logger log = LoggerFactory.getLogger(RestAuthUtils.class);
 
 	/**
-	 * from anoymous build an iRODS
+	 * from anonymous build an iRODS
 	 * account
 	 * 
 	 * @param restConfiguration
@@ -48,7 +48,7 @@ public class RestAuthUtils {
 		if (restConfiguration == null) {
 			throw new IllegalArgumentException("null restConfiguration");
 		}
-		
+
 		return IRODSAccount.instanceForAnonymous(
 								restConfiguration.getIrodsHost(),
 								restConfiguration.getIrodsPort(),

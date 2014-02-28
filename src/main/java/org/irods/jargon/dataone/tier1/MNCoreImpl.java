@@ -30,7 +30,7 @@ public class MNCoreImpl implements MNCore {
 	
 	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
 	private final RestConfiguration restConfiguration;
-	private final MNCoreModel mnCoreModel;
+//	private final MNCoreModel mnCoreModel;
     
     public MNCoreImpl(
     			IRODSAccessObjectFactory irodsAccessObjectFactory,
@@ -38,16 +38,32 @@ public class MNCoreImpl implements MNCore {
     	
     	this.irodsAccessObjectFactory = irodsAccessObjectFactory;
     	this.restConfiguration = restConfiguration;
-    	this.mnCoreModel = new MNCoreModel(irodsAccessObjectFactory, restConfiguration);
+//    	this.mnCoreModel = new MNCoreModel(irodsAccessObjectFactory, restConfiguration);
     }
 
     @Override
     public Date ping() throws NotImplemented, ServiceFailure, InsufficientResources {
     	
-    	Date serverTime = null;
-    	serverTime = mnCoreModel.doPing();
-
-        return serverTime;
+//    	Date serverTime = null;
+//    	serverTime = mnCoreModel.doPing();
+//
+//        return serverTime;
+        
+        try {
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+	
+			EnvironmentalInfoAO environmentalInfoAO = irodsAccessObjectFactory
+					.getEnvironmentalInfoAO(irodsAccount);
+	
+			long currentTime = environmentalInfoAO.getIRODSServerCurrentTime();
+			return new Date(currentTime);
+			
+		} catch (Exception e) {
+			throw new ServiceFailure(e.getMessage(), e.toString());
+		} finally {
+			irodsAccessObjectFactory.closeSessionAndEatExceptions();
+		}
     }
 
     @Override
@@ -58,17 +74,78 @@ public class MNCoreImpl implements MNCore {
     @Override
     public Node getCapabilities() throws NotImplemented, ServiceFailure {
     	
-    	Node node = null;
-    	node = mnCoreModel.doGetCapabilities();
+//    	Node node = null;
+//    	node = mnCoreModel.doGetCapabilities();
+//    	
+//    	return node;
+    	// TODO: need to fill in the real stuff here
+    	// get most from a config file I think
+    	NodeReference identifier = new NodeReference();
+    	identifier.setValue("urn:node:DFC");
     	
-    	return node;
+    	String name = "DFC : iRODS Member Node";
+    	
+    	String description = "DFC DataONE Member Node";
+    	
+    	String baseURL = "https://dfcweb.datafed.org/irods-dataone/rest/mn/v1";
+
+    	Service s1 = new Service();
+    	s1.setName("MNCore");
+    	s1.setVersion("v1");
+    	s1.setAvailable(true);
+    	Service s2 = new Service();
+    	s2.setName("MNRead");
+    	s2.setVersion("v1");
+    	s2.setAvailable(false);
+    	Services services = new Services();
+    	services.addService(s1);
+    	services.addService(s2);
+    	
+    	Synchronization synchronization = new Synchronization();
+    	Schedule schedule = new Schedule();
+    	schedule.setHour("hour");
+    	schedule.setMday("mday");
+    	schedule.setMin("min");
+    	schedule.setMon("mon");
+    	schedule.setSec("sec");
+    	schedule.setWday("wday");
+    	schedule.setYear("year");
+    	synchronization.setSchedule(schedule);
+    	synchronization.setLastHarvested(new Date());
+    	synchronization.setLastCompleteHarvest(new Date());
+    	
+    	Ping ping = new Ping();
+    	ping.setSuccess(true);
+    	
+    	List<Subject> subjects = new ArrayList<Subject>();
+    	Subject subject = new Subject();
+    	subject.setValue("CN=urn:node:DEMO2, DC=dataone, DC=org");
+    	subjects.add(subject);
+    	List<Subject> contactSubjects =  new ArrayList<Subject>();
+    	Subject contactSubject = new Subject();
+    	contactSubject.setValue("CN=METACAT1, DC=dataone, DC=org");
+    	contactSubjects.add(contactSubject);
+    	
+    	// populate node capabilties here
+    	Node node = new Node();
+    	node.setIdentifier(identifier);
+    	node.setName(name);
+    	node.setDescription(description);
+    	node.setBaseURL(baseURL);
+    	node.setServices(services);
+    	node.setSynchronization(synchronization);
+    	node.setPing(ping);
+    	node.setSubjectList(subjects);
+    	node.setContactSubjectList(contactSubjects);
+    	
+        return node;
     }
 
     @Override
     public Log getLogRecords(Session session, Date date1, Date date2, Event event, String s, Integer integer1, Integer integer2) throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
     	
     	Log log = null;
-    	log = mnCoreModel.doGetLogRecords(session, date1, date2, event, s, integer1, integer2);
+//    	log = mnCoreModel.doGetLogRecords(session, date1, date2, event, s, integer1, integer2);
     	
     	return log;
     }

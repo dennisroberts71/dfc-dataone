@@ -1,18 +1,30 @@
+
 package org.irods.jargon.dataone.domain;
 
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
-@XmlRootElement(name = "nodeCapabilities")
+@XmlRootElement(name = "node")
 public class MNNode {
 	
-	public MNNode() {
-	}
+//	@XmlAttribute (name = "d1:xmlns")
+//	private String xmlns = "http://ns.dataone.org/service/types/v1";
 	
+	@XmlAttribute
+	private String replicate = "false";
+	
+	@XmlAttribute
+	private String synchronize = "false";
+	
+	@XmlAttribute 
+	private String type = "mn";
+	
+	@XmlAttribute
+	private String state = "up";
 	
 	private String identifier; // MN NodeReference type
 	private String name;
@@ -26,6 +38,8 @@ public class MNNode {
 	private List<String> subject;
 	private List<String> contactSubject;
 	
+	public MNNode() {
+	}
 	
 	//public NodeReference getIdentifier() {
 	public String getIdentifier() {

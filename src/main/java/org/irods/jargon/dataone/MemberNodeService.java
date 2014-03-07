@@ -7,7 +7,9 @@ import org.dataone.service.exceptions.NotAuthorized;
 import org.dataone.service.exceptions.NotFound;
 import org.dataone.service.exceptions.NotImplemented;
 import org.dataone.service.exceptions.ServiceFailure;
+import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.Event;
+import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
 import org.dataone.service.types.v1.Node;
 import org.dataone.service.types.v1.Schedule;
@@ -21,6 +23,7 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
 import org.irods.jargon.dataone.tier1.MNReadImpl;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
+import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNLog;
 import org.irods.jargon.dataone.domain.MNSchedule;
 import org.irods.jargon.dataone.domain.MNService;
@@ -37,6 +40,7 @@ import com.ibm.icu.text.SimpleDateFormat;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PathParam;
@@ -178,7 +182,7 @@ public class MemberNodeService {
     //log?[fromDate={fromDate}][&toDate={toDate}][&event={event}][&pidFilter={pidFilter}][&start={start}][&count={count}]
 	@GET
     @Path("/log")
-    @Produces(MediaType.APPLICATION_XML)
+    @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public MNLog handleGetLogRecords(
     							@HeaderParam("Authorization") final String authorization,
@@ -233,7 +237,7 @@ public class MemberNodeService {
 
 
 		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("invalid", "identifier is invalid");
+			throw new NotFound("404", "1020");
 		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
@@ -243,5 +247,64 @@ public class MemberNodeService {
 		mnReadImpl.streamObject(response, pid);
 		
 	}
+		
+	@GET
+	@Path("/checksum/{id}")
+	@Produces(MediaType.TEXT_XML)
+	public MNChecksum handleGetChecksum(@PathParam("id") final String pid, 
+								  @DefaultValue("MD5") @QueryParam("checksumAlgorithm") final String algorithm,
+								  @Context final HttpServletResponse response) 
+										  throws InvalidToken,
+										  ServiceFailure,
+										  NotAuthorized,
+										  NotFound,
+										  NotImplemented,
+										  InvalidRequest {
+		
+		MNChecksum mnChecksum = new MNChecksum();
+		
+		if (!algorithm.toUpperCase().equals("MD5")) {
+			throw new InvalidRequest("400", "1402");
+		}
 
+		if (pid == null || pid.isEmpty()) {
+			throw new NotFound("404", "1420");
+		}
+		
+		Identifier id = new Identifier();
+		id.setValue(pid);
+		
+		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
+		Checksum checksum = mnReadImpl.getChecksum(id, algorithm);
+		
+		mnChecksum.setValue(checksum.getValue());
+		mnChecksum.setAlgorithm(checksum.getAlgorithm());		
+		
+		return mnChecksum;
+	}
+	
+	@GET
+	@Path("/replica/{id}")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public void handleReplica(@PathParam("id") final String pid,
+								  @Context final HttpServletResponse response) 
+										  throws InvalidToken,
+										  ServiceFailure,
+										  NotAuthorized,
+										  NotFound,
+										  NotImplemented,
+										  InsufficientResources {
+
+
+		if (pid == null || pid.isEmpty()) {
+			throw new NotFound("404", "2185");
+		}
+		
+		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
+		
+		// Had to write new method in mnReadImpl since I
+		// couldn't figure out how to override the get method
+		mnReadImpl.streamObject(response, pid);
+		
+	}
 }

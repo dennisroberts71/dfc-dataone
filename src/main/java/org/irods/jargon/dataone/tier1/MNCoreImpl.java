@@ -20,6 +20,8 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.tier1.model.MNCoreModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,6 +30,7 @@ import java.util.List;
 
 public class MNCoreImpl implements MNCore {
 	
+	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
 	private final RestConfiguration restConfiguration;
 //	private final MNCoreModel mnCoreModel;
@@ -60,7 +63,8 @@ public class MNCoreImpl implements MNCore {
 			return new Date(currentTime);
 			
 		} catch (Exception e) {
-			throw new ServiceFailure(e.getMessage(), e.toString());
+			log.error("ping failed: {}", e.getMessage());
+			throw new ServiceFailure("500", "2042");
 		} finally {
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}

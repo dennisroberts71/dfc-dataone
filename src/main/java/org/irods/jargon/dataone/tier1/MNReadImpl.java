@@ -1,7 +1,6 @@
 package org.irods.jargon.dataone.tier1;
 
 import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -25,16 +24,19 @@ import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.Stream2StreamAO;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
-import org.irods.jargon.dataone.tier1.model.MNReadModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
+// TODO: NEED TO ADD LOGGING OF THESE EVENTS
+// GETREPLICA IS SAME AS GET, EXCEPT SHOULD BE LOGGED AS REPLICATION
 
 public class MNReadImpl implements MNRead {
 	
@@ -42,7 +44,6 @@ public class MNReadImpl implements MNRead {
 	
 	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
 	private final RestConfiguration restConfiguration;
-	private final MNReadModel mnReadModel;
     
     public MNReadImpl(
     			IRODSAccessObjectFactory irodsAccessObjectFactory,
@@ -50,7 +51,6 @@ public class MNReadImpl implements MNRead {
     	
     	this.irodsAccessObjectFactory = irodsAccessObjectFactory;
     	this.restConfiguration = restConfiguration;
-    	this.mnReadModel = new MNReadModel(irodsAccessObjectFactory, restConfiguration);
     }
 
 	@Override
@@ -64,8 +64,7 @@ public class MNReadImpl implements MNRead {
 	public DescribeResponse describe(Session arg0, Identifier arg1)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
 			NotFound {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplemented("501", "1361");
 	}
 	
 	public void streamObject(HttpServletResponse response, String pid) throws ServiceFailure, NotFound {
@@ -93,12 +92,13 @@ public class MNReadImpl implements MNRead {
 
 			if (!irodsFile.exists()) {
 				log.info("file does not exist");
-				throw new NotFound("404", "The iRODS member node can't find object requested - "+id.toString());
+				throw new NotFound("404", "1020");
 			}
 
 			stream = irodsAccessObjectFactory
 					.getIRODSFileFactory(irodsAccount)
 					.instanceIRODSFileInputStream(irodsFile);
+			// TODO: need to catch and return appropriate exceptions here for no permission
 			
 			
 			contentLength = (int) irodsFile.length();
@@ -130,7 +130,7 @@ public class MNReadImpl implements MNRead {
 			
 		} catch (Exception e) {
 			log.error("Cannot stream iRODS object: {}", path);
-			throw new ServiceFailure(e.getMessage(), e.toString()); //TODO: fix this with correct exception
+			throw new ServiceFailure(e.getMessage(), e.toString()); //TODO: fix this with correct exception for read and getreplica
 		} finally {	  
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}	
@@ -140,7 +140,7 @@ public class MNReadImpl implements MNRead {
 	public IRODSFileInputStream get(Identifier id) throws InvalidToken, NotAuthorized,
 			NotImplemented, ServiceFailure, NotFound, InsufficientResources {
 		
-		// TODO: Not sure how to implement this properly
+		// TODO: Not sure how to implement this properly - used streamObject method instead
 		IRODSFileInputStream stream = null;
 
 //		if (id == null || id.toString().isEmpty()) {
@@ -169,7 +169,7 @@ public class MNReadImpl implements MNRead {
 //					.instanceIRODSFileInputStream(irodsFile);
 //
 //		} catch (Exception e) {
-//			throw new ServiceFailure(e.getMessage(), e.toString()); //TODO: fix this with correct exception
+//			throw new ServiceFailure(e.getMessage(), e.toString());
 //		} finally {
 //			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 //
@@ -182,24 +182,58 @@ public class MNReadImpl implements MNRead {
 	public InputStream get(Session arg0, Identifier arg1) throws InvalidToken,
 			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
 			InsufficientResources {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplemented("501", "1001");
 	}
 
 	@Override
-	public Checksum getChecksum(Identifier arg0, String arg1)
+	public Checksum getChecksum(Identifier id, String algorithm)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
 			ServiceFailure, NotFound {
-		// TODO Auto-generated method stub
-		return null;
+
+		Checksum checksum = new Checksum();
+		
+		// Find iRODS object here from Identifier in metadata
+		//String path = "/dfcmain/home/DFC-public/DFC-slide.pptx";
+		String path = "/dfcmain/home/lisa/test_this.txt";	
+
+		log.info("decoded path:{}", path);
+		
+		try {
+			
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+			IRODSFile irodsFile = irodsAccessObjectFactory
+									.getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
+			if (!irodsFile.exists()) {
+				log.info("file does not exist: {}", path);
+				throw new NotFound("404", "1420");
+			}
+			log.info("found iRODS file: {}", irodsFile.getName());
+			
+			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
+			log.info("got dataObjectAO: {}", dataObjectAO.toString());
+			String csum = dataObjectAO.findByAbsolutePath(path).getChecksum();
+			if (csum == null) {
+				log.info("checksum does not exist for file: {}", path);
+				throw new NotFound("404", "1420");
+			}
+			checksum.setValue(csum);
+			checksum.setAlgorithm("MD5");
+			
+		} catch (Exception e) {
+			log.error("Cannot access iRODS object: {}", path);
+			throw new ServiceFailure(e.getMessage(), e.toString()); //TODO: fix this with correct exception
+		} finally {	  
+			irodsAccessObjectFactory.closeSessionAndEatExceptions();
+		}	
+		return checksum;
 	}
 
 	@Override
 	public Checksum getChecksum(Session arg0, Identifier arg1, String arg2)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
 			ServiceFailure, NotFound {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplemented("501", "1401");
 	}
 
 	@Override
@@ -214,8 +248,7 @@ public class MNReadImpl implements MNRead {
 	public InputStream getReplica(Session arg0, Identifier arg1)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
 			NotFound, InsufficientResources {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplemented("501", "2180");
 	}
 
 	@Override
@@ -230,8 +263,7 @@ public class MNReadImpl implements MNRead {
 	public SystemMetadata getSystemMetadata(Session arg0, Identifier arg1)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
 			NotFound {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplemented("501", "1041");
 	}
 
 	@Override
@@ -248,8 +280,7 @@ public class MNReadImpl implements MNRead {
 			ObjectFormatIdentifier arg3, Boolean arg4, Integer arg5,
 			Integer arg6) throws InvalidRequest, InvalidToken, NotAuthorized,
 			NotImplemented, ServiceFailure {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplemented("501", "1521");
 	}
 
 	@Override
@@ -263,8 +294,7 @@ public class MNReadImpl implements MNRead {
 	public boolean synchronizationFailed(Session arg0,
 			SynchronizationFailed arg1) throws InvalidToken, NotAuthorized,
 			NotImplemented, ServiceFailure {
-		// TODO Auto-generated method stub
-		return false;
+		throw new NotImplemented("501", "2160");
 	}
 
 }

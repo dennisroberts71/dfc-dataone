@@ -1,5 +1,10 @@
 package org.irods.jargon.dataone.domain;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -22,6 +27,41 @@ public class MNSchedule {
 	@XmlAttribute
 	private String year;
 	
+	public MNSchedule() {
+		initializeProperties();
+	}
+	
+	private void initializeProperties() {
+		Properties prop = new Properties();
+		InputStream input = null;
+	 
+		try {
+	 
+			input = new FileInputStream("../configuration/config.properties");
+	 
+			// load a properties file
+			prop.load(input);
+			
+			setHour(prop.getProperty("irods.dataone.sync.schedule.hour"));
+			setMday(prop.getProperty("irods.dataone.sync.schedule.mday"));
+			setMin(prop.getProperty("irods.dataone.sync.schedule.min"));
+			setMon(prop.getProperty("irods.dataone.sync.schedule.mon"));
+			setSec(prop.getProperty("irods.dataone.sync.schedule.sec"));
+			setWday(prop.getProperty("irods.dataone.sync.schedule.wday"));
+			setYear(prop.getProperty("irods.dataone.sync.schedule.year"));
+	 
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	public String getHour() {
 		return hour;
 	}	

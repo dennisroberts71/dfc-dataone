@@ -112,52 +112,56 @@ public class MemberNodeService {
     public MNNode handleGetCapabilities()
     		throws NotImplemented, ServiceFailure {
     	
-    	MNNode nodeCapabilities = null;
+    	MNNode nodeCapabilities = new MNNode();
     	    	
     	MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
     	Node node = mnCoreImpl.getCapabilities();
     	
-    	nodeCapabilities = new MNNode();
-    	
-    	nodeCapabilities.setName(node.getName());
-    	nodeCapabilities.setIdentifier(node.getIdentifier().getValue());
-    	nodeCapabilities.setDescription(node.getDescription());
-    	nodeCapabilities.setBaseURL(node.getBaseURL());
-    	
-    	Services services = node.getServices();
-    	List<MNService> mnServices = new ArrayList<MNService>();
-    	for (int i=0; i<services.sizeServiceList(); i++) {
-    		Service s = services.getService(i);
-    		MNService mnService = new MNService();
-    		mnService.setName(s.getName());
-    		mnService.setVersion(s.getVersion());
-    		mnService.setAvailable(s.getAvailable());
-    		mnServices.add(mnService);
-    	}
-    	nodeCapabilities.setServices(mnServices);
-    	
-    	MNSynchronization mnSynchronization = new MNSynchronization();
-    	Synchronization synchronization= node.getSynchronization();
-    	
-    	MNSchedule mnSchedule = new MNSchedule();
-    	
-    	Schedule schedule = synchronization.getSchedule();
-    	mnSchedule.setHour(schedule.getHour());
-    	mnSchedule.setMday(schedule.getMday());
-    	mnSchedule.setMin(schedule.getMin());
-    	mnSchedule.setMon(schedule.getMon());
-    	mnSchedule.setSec(schedule.getSec());
-    	mnSchedule.setWday(schedule.getWday());
-    	mnSchedule.setYear(schedule.getYear());
-    	
-    	mnSynchronization.setSchedule(mnSchedule);
-    	mnSynchronization.setLastHarvested(synchronization.getLastHarvested());
-    	mnSynchronization.setLastCompleteHarvest(synchronization.getLastCompleteHarvest());
-    	nodeCapabilities.setSynchronization(mnSynchronization);
+//    	nodeCapabilities.setName(node.getName());
+//    	nodeCapabilities.setIdentifier(node.getIdentifier().getValue());
+//    	nodeCapabilities.setDescription(node.getDescription());
+//    	nodeCapabilities.setBaseURL(node.getBaseURL());
+//    	
+//    	Services services = node.getServices();
+//    	List<MNService> mnServices = new ArrayList<MNService>();
+//    	for (int i=0; i<services.sizeServiceList(); i++) {
+//    		Service s = services.getService(i);
+//    		MNService mnService = new MNService();
+//    		mnService.setName(s.getName());
+//    		mnService.setVersion(s.getVersion());
+//    		mnService.setAvailable(s.getAvailable());
+//    		mnServices.add(mnService);
+//    	}
+//    	nodeCapabilities.setServices(mnServices);
+//    	
+//    	MNSynchronization mnSynchronization = new MNSynchronization();
+//    	Synchronization synchronization= node.getSynchronization();
+//    	
+//    	MNSchedule mnSchedule = new MNSchedule();
+//    	
+//    	Schedule schedule = synchronization.getSchedule();
+//    	mnSchedule.setHour(schedule.getHour());
+//    	mnSchedule.setMday(schedule.getMday());
+//    	mnSchedule.setMin(schedule.getMin());
+//    	mnSchedule.setMon(schedule.getMon());
+//    	mnSchedule.setSec(schedule.getSec());
+//    	mnSchedule.setWday(schedule.getWday());
+//    	mnSchedule.setYear(schedule.getYear());
+//    	
+//    	mnSynchronization.setSchedule(mnSchedule);
+//    	mnSynchronization.setLastHarvested(synchronization.getLastHarvested());
+//    	mnSynchronization.setLastCompleteHarvest(synchronization.getLastCompleteHarvest());
+//    	nodeCapabilities.setSynchronization(mnSynchronization);
     	
     	MNPing mnPing = new MNPing();
     	mnPing.setSuccess(node.getPing().getSuccess());
     	nodeCapabilities.setPing(mnPing);
+    	if(node.getPing().getSuccess()) {
+    		nodeCapabilities.setState("up");
+    	}
+    	else {
+    		nodeCapabilities.setState("down");
+    	}
     	
     	List<String> s1 = new ArrayList<String>();
     	List<Subject> subjects = node.getSubjectList();

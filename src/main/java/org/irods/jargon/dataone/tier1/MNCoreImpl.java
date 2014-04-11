@@ -19,6 +19,7 @@ import org.irods.jargon.core.pub.EnvironmentalInfoAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
+import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.tier1.model.MNCoreModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +47,6 @@ public class MNCoreImpl implements MNCore {
 
     @Override
     public Date ping() throws NotImplemented, ServiceFailure, InsufficientResources {
-    	
-//    	Date serverTime = null;
-//    	serverTime = mnCoreModel.doPing();
-//
-//        return serverTime;
         
         try {
 			IRODSAccount irodsAccount = RestAuthUtils
@@ -78,49 +74,28 @@ public class MNCoreImpl implements MNCore {
     @Override
     public Node getCapabilities() throws NotImplemented, ServiceFailure {
     	
-//    	Node node = null;
-//    	node = mnCoreModel.doGetCapabilities();
-//    	
-//    	return node;
-    	// TODO: need to fill in the real stuff here
-    	// get most from a config file I think
-    	NodeReference identifier = new NodeReference();
-    	identifier.setValue("urn:node:DFC");
-    	
-    	String name = "DFC : iRODS Member Node";
-    	
-    	String description = "DFC DataONE Member Node";
-    	
-    	String baseURL = "https://dfcweb.datafed.org/irods-dataone/rest/mn/v1";
-
-    	Service s1 = new Service();
-    	s1.setName("MNCore");
-    	s1.setVersion("v1");
-    	s1.setAvailable(true);
-    	Service s2 = new Service();
-    	s2.setName("MNRead");
-    	s2.setVersion("v1");
-    	s2.setAvailable(false);
-    	Services services = new Services();
-    	services.addService(s1);
-    	services.addService(s2);
-    	
-    	Synchronization synchronization = new Synchronization();
-    	Schedule schedule = new Schedule();
-    	schedule.setHour("hour");
-    	schedule.setMday("mday");
-    	schedule.setMin("min");
-    	schedule.setMon("mon");
-    	schedule.setSec("sec");
-    	schedule.setWday("wday");
-    	schedule.setYear("year");
-    	synchronization.setSchedule(schedule);
-    	synchronization.setLastHarvested(new Date());
-    	synchronization.setLastCompleteHarvest(new Date());
+    	Node node = new Node();
     	
     	Ping ping = new Ping();
     	ping.setSuccess(true);
     	
+    	try {
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+	
+			EnvironmentalInfoAO environmentalInfoAO = irodsAccessObjectFactory
+					.getEnvironmentalInfoAO(irodsAccount);
+	
+			long bootTime = environmentalInfoAO.getIRODSServerProperties().getServerBootTime();
+			
+		} catch (Exception e) {
+			log.error("getCapabilities: iRODS server is not running");
+			ping.setSuccess(false);
+		} finally {
+			irodsAccessObjectFactory.closeSessionAndEatExceptions();
+		}
+    	
+    // TODO: need to figure out correct format for these and implement properly
     	List<Subject> subjects = new ArrayList<Subject>();
     	Subject subject = new Subject();
     	subject.setValue("CN=urn:node:DEMO2, DC=dataone, DC=org");
@@ -129,15 +104,7 @@ public class MNCoreImpl implements MNCore {
     	Subject contactSubject = new Subject();
     	contactSubject.setValue("CN=METACAT1, DC=dataone, DC=org");
     	contactSubjects.add(contactSubject);
-    	
-    	// populate node capabilties here
-    	Node node = new Node();
-    	node.setIdentifier(identifier);
-    	node.setName(name);
-    	node.setDescription(description);
-    	node.setBaseURL(baseURL);
-    	node.setServices(services);
-    	node.setSynchronization(synchronization);
+
     	node.setPing(ping);
     	node.setSubjectList(subjects);
     	node.setContactSubjectList(contactSubjects);
@@ -153,4 +120,5 @@ public class MNCoreImpl implements MNCore {
     	
     	return log;
     }
+    
 }

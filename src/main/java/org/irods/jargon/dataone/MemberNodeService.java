@@ -8,6 +8,7 @@ import org.dataone.service.exceptions.NotFound;
 import org.dataone.service.exceptions.NotImplemented;
 import org.dataone.service.exceptions.ServiceFailure;
 import org.dataone.service.types.v1.Checksum;
+import org.dataone.service.types.v1.DescribeResponse;
 import org.dataone.service.types.v1.Event;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
@@ -44,6 +45,7 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -342,4 +344,39 @@ public class MemberNodeService {
 		
 		return mnSystemMetadata;
 	}
+	
+	@HEAD
+    @Path("/object/{id}")
+    @Produces(MediaType.TEXT_XML)
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    public Response handleDescribe(@PathParam("id") final String pid,
+			  @Context final HttpServletResponse response)
+    		throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
+
+		if (pid == null || pid.isEmpty()) {
+			throw new NotFound("404", "1420");
+		}
+		
+		Identifier id = new Identifier();
+		id.setValue(pid);
+
+		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
+    	DescribeResponse describeResponse = mnReadImpl.describe(id);
+    	
+    	Checksum checksum = describeResponse.getDataONE_Checksum();
+    	String checksumStr = checksum.getAlgorithm() + "," + checksum.getValue();
+    	
+    	SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+		String dateStr = df.format(describeResponse.getLast_Modified());
+		
+		Response.ResponseBuilder builder = Response.ok();
+        builder.header("Last-Modified", dateStr);
+        builder.header("Content-Length", describeResponse.getContent_Length().toString());
+        builder.type(MediaType.APPLICATION_OCTET_STREAM);
+        builder.header("DataONE-ObjectFormat", describeResponse.getDataONE_ObjectFormatIdentifier().getValue().toString());
+        builder.header("DataONE-Checksum", checksumStr);
+        builder.header("DataONE-SerialVersion", describeResponse.getSerialVersion().toString());
+        
+        return builder.build();
+    }
 }

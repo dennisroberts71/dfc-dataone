@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 
 import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
@@ -75,10 +76,56 @@ public class MNReadImpl implements MNRead {
     }
 
 	@Override
-	public DescribeResponse describe(Identifier arg0) throws InvalidToken,
+	public DescribeResponse describe(Identifier id) throws InvalidToken,
 			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
-		// TODO Auto-generated method stub
-		return null;
+		
+		if (id == null || id.getValue().isEmpty()) {
+			throw new InvalidToken("400", "1402");
+		}
+
+		DataObject dataObject = new DataObject();
+		Checksum checksum = new Checksum();
+		ObjectFormatIdentifier formatIdentifier = new ObjectFormatIdentifier();
+		BigInteger contentLength;
+		Date lastModified;
+		BigInteger serialVersion;
+		
+		try {
+			// need last modified, content length, Content-Type: application/octet-stream, object format (mime), checksum, serial version
+			
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+			
+			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
+			dataObject = getDataObject(id);
+			
+			lastModified = dataObject.getUpdatedAt();
+			
+			Long contentLengthLong = dataObject.getDataSize();
+			String contentLengthStr = contentLengthLong.toString();
+			contentLength =  new BigInteger(contentLengthStr);
+			
+			// TODO: needs to be updated with correct data type from AVU
+			String format = "application/zip";
+			formatIdentifier.setValue(format);
+			
+			String csum = dataObject.getChecksum();
+			if (csum == null) {
+				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
+				throw new NotFound("404", "1420");
+			}
+			checksum.setValue(csum);
+			checksum.setAlgorithm("MD5");
+			
+			serialVersion = getSerialVersion();
+			
+		} catch (Exception e) {
+			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
+			throw new ServiceFailure(e.getMessage(), e.toString()); //TODO: fix this with correct exception
+		} finally {	  
+			irodsAccessObjectFactory.closeSessionAndEatExceptions();
+		}	
+		return new DescribeResponse(formatIdentifier, contentLength, lastModified, checksum, serialVersion);
 	}
 
 	@Override
@@ -279,10 +326,8 @@ public class MNReadImpl implements MNRead {
 		DataObject dataObject = new DataObject();
 		SystemMetadata metadata = new SystemMetadata();
 		
-		// hardcode version to 1 for now
-		Long verLong = new Long(1);
-		String verStr = verLong.toString();
-		metadata.setSerialVersion(new BigInteger(verStr));
+		// TODO: hardcode version to 1 for now
+		metadata.setSerialVersion(getSerialVersion());
 		
 		Checksum checksum = new Checksum();
 		
@@ -465,6 +510,13 @@ public class MNReadImpl implements MNRead {
 				}
 			}
 		}
+	}
+	
+	private BigInteger getSerialVersion() {
+		// TODO: hardcode version to 1 for now
+		Long verLong = new Long(1);
+		String verStr = verLong.toString();
+		return new BigInteger(verStr);
 	}
 
 }

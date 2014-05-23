@@ -16,6 +16,8 @@ public class RestConfiguration {
 	private boolean smimeEncryptAdminFunctions = false;
 	private String privateCertAbsPath = "";
 	private String publicKeyAbsPath = "";
+	
+	private String handlePrefix = "11333/";
 
 	/**
 	 * Optional URL for a web interface to access grid data (typically an

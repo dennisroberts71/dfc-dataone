@@ -18,6 +18,7 @@ import org.dataone.service.types.v1.Service;
 import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.Synchronization;
+import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
@@ -30,6 +31,7 @@ import org.irods.jargon.dataone.domain.MNService;
 import org.irods.jargon.dataone.domain.MNSynchronization;
 import org.irods.jargon.dataone.domain.MNPing;
 import org.irods.jargon.dataone.domain.MNNode;
+import org.irods.jargon.dataone.domain.MNSystemMetadata;
 import org.jboss.resteasy.annotations.providers.jaxb.json.Mapped;
 import org.jboss.resteasy.annotations.providers.jaxb.json.XmlNsMap;
 import org.slf4j.Logger;
@@ -310,5 +312,34 @@ public class MemberNodeService {
 		// couldn't figure out how to override the get method
 		mnReadImpl.streamObject(response, pid);
 		
+	}
+	
+	@GET
+	@Path("/meta/{id}")
+	@Produces(MediaType.TEXT_XML)
+	public MNSystemMetadata handleGetSystemMetadata(@PathParam("id") final String pid, 
+								  @Context final HttpServletResponse response) 
+										  throws InvalidToken,
+										  ServiceFailure,
+										  NotAuthorized,
+										  NotFound,
+										  NotImplemented,
+										  InvalidRequest {
+		
+		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
+
+		if (pid == null || pid.isEmpty()) {
+			throw new NotFound("404", "1420");
+		}
+		
+		Identifier id = new Identifier();
+		id.setValue(pid);
+		
+		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
+		SystemMetadata sysMetadata = mnReadImpl.getSystemMetadata(id);
+		
+		mnSystemMetadata.copy(sysMetadata);		
+		
+		return mnSystemMetadata;
 	}
 }

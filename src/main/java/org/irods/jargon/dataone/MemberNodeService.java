@@ -7,6 +7,7 @@ import org.dataone.service.exceptions.NotAuthorized;
 import org.dataone.service.exceptions.NotFound;
 import org.dataone.service.exceptions.NotImplemented;
 import org.dataone.service.exceptions.ServiceFailure;
+import org.dataone.service.exceptions.SynchronizationFailed;
 import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.DescribeResponse;
 import org.dataone.service.types.v1.Event;
@@ -20,6 +21,7 @@ import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.Synchronization;
 import org.dataone.service.types.v1.SystemMetadata;
+import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
@@ -33,6 +35,7 @@ import org.irods.jargon.dataone.domain.MNSynchronization;
 import org.irods.jargon.dataone.domain.MNPing;
 import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.domain.MNSystemMetadata;
+import org.irods.jargon.dataone.events.EventLogAO;
 import org.jboss.resteasy.annotations.providers.jaxb.json.Mapped;
 import org.jboss.resteasy.annotations.providers.jaxb.json.XmlNsMap;
 import org.slf4j.Logger;
@@ -47,6 +50,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.Path;
@@ -250,9 +254,19 @@ public class MemberNodeService {
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		
+		Identifier id = new Identifier();
+		id.setValue(pid);
 		// Had to write new method in mnReadImpl since I
 		// couldn't figure out how to override the get method
-		mnReadImpl.streamObject(response, pid);
+		mnReadImpl.streamObject(response, id);
+		
+		// now log the event
+				EventLogAO eventLog = new EventLogAO(irodsAccessObjectFactory, restConfiguration);
+				try {
+					eventLog.recordEvent(Event.READ, id, "DataONE replication");
+				} catch (Exception e) {
+					log.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
+				}
 		
 	}
 		
@@ -260,8 +274,7 @@ public class MemberNodeService {
 	@Path("/checksum/{id}")
 	@Produces(MediaType.TEXT_XML)
 	public MNChecksum handleGetChecksum(@PathParam("id") final String pid, 
-								  @DefaultValue("MD5") @QueryParam("checksumAlgorithm") final String algorithm,
-								  @Context final HttpServletResponse response) 
+								  @DefaultValue("MD5") @QueryParam("checksumAlgorithm") final String algorithm) 
 										  throws InvalidToken,
 										  ServiceFailure,
 										  NotAuthorized,
@@ -310,17 +323,28 @@ public class MemberNodeService {
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		
+		Identifier id = new Identifier();
+		id.setValue(pid);
+		
 		// Had to write new method in mnReadImpl since I
 		// couldn't figure out how to override the get method
-		mnReadImpl.streamObject(response, pid);
+		mnReadImpl.streamObject(response, id);
+		
+		// now log the event
+		EventLogAO eventLog = new EventLogAO(irodsAccessObjectFactory, restConfiguration);
+		try {
+			eventLog.recordEvent(Event.REPLICATE, id, "DataONE replication");
+		} catch (Exception e) {
+			log.error("Unable to log EVENT: {} for data object id: {}", Event.REPLICATE, pid);
+		}
 		
 	}
 	
 	@GET
 	@Path("/meta/{id}")
 	@Produces(MediaType.TEXT_XML)
-	public MNSystemMetadata handleGetSystemMetadata(@PathParam("id") final String pid, 
-								  @Context final HttpServletResponse response) 
+	public MNSystemMetadata handleGetSystemMetadata(@PathParam("id") final String pid)
+								  //@Context final HttpServletResponse response) 
 										  throws InvalidToken,
 										  ServiceFailure,
 										  NotAuthorized,
@@ -349,8 +373,8 @@ public class MemberNodeService {
     @Path("/object/{id}")
     @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
-    public Response handleDescribe(@PathParam("id") final String pid,
-			  @Context final HttpServletResponse response)
+    public Response handleDescribe(@PathParam("id") final String pid)
+			  //@Context final HttpServletResponse response)
     		throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
 
 		if (pid == null || pid.isEmpty()) {
@@ -379,4 +403,28 @@ public class MemberNodeService {
         
         return builder.build();
     }
+	
+	@POST
+    @Path("/error")
+    @Produces(MediaType.TEXT_XML)
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    public Response handleSynchronizationFailed(
+				final SynchronizationFailed message)
+    		throws NotAuthorized, NotImplemented, ServiceFailure, InvalidToken {
+
+		if (message == null) {
+			throw new ServiceFailure("2161", "Synch Failure Exception object is null");
+		}
+		
+		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
+		boolean success = mnReadImpl.synchronizationFailed(message);
+		
+		if (!success) {
+			throw new ServiceFailure("2161", "Failed to log Synchronization Failure event");
+		}
+		
+		Response.ResponseBuilder builder = Response.ok();
+		
+		return builder.build();
+	}
 }

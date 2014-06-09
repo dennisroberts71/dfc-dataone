@@ -2,6 +2,8 @@ package org.irods.jargon.dataone.domain;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.dataone.service.types.v1.Checksum;
+
 @XmlRootElement(name = "checksum")
 public class MNChecksum {
 	
@@ -23,6 +25,22 @@ public class MNChecksum {
 	}
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
+	}
+	
+	public void copy(Checksum checksum) {
+		
+		if (checksum == null) {
+			throw new IllegalArgumentException("MNChecksum::copy - Checksum is null");
+		}
+		
+		if (checksum.getValue() != null) {
+			this.value = checksum.getValue();
+		}
+		
+		if (checksum.getAlgorithm() != null) {
+			this.algorithm = checksum.getAlgorithm();
+		}
+		
 	}
 
 }

@@ -20,7 +20,6 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNNode;
-import org.irods.jargon.dataone.tier1.model.MNCoreModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

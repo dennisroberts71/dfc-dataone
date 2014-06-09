@@ -13,6 +13,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.dataone.service.types.v1.Node;
+import org.dataone.service.types.v1.Ping;
+import org.dataone.service.types.v1.Service;
+import org.dataone.service.types.v1.Services;
+import org.dataone.service.types.v1.Subject;
+import org.dataone.service.types.v1.Synchronization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -215,6 +221,82 @@ public class MNNode {
 
 	public void setState(String state) {
 		this.state = state;
+	}
+	
+	public void copy(Node node) {
+		
+		if (node == null) {
+			throw new IllegalArgumentException("MNNode::copy - Node is null");
+		}
+		
+		this.replicate = Boolean.toString(node.isReplicate());
+		this.synchronize = Boolean.toString(node.isSynchronize());
+		
+		if (node.getType() != null) {
+			this.type = node.getType().name();
+		}
+		
+		if (node.getState() != null) {
+			this.state = node.getState().name();
+		}
+		
+		if (node.getIdentifier() != null) {
+			this.identifier = node.getIdentifier().getValue();
+		}
+		
+		if (node.getName() != null) {
+			this.name = node.getName();
+		}
+		
+		if (node.getDescription() != null) {
+			this.description = node.getDescription();
+		}
+		
+		if (node.getBaseURL() != null) {
+			this.baseURL = node.getBaseURL();
+		}
+		
+		if (node.getServices() != null) {
+			Services services = node.getServices();
+			List<Service> serviceList = services.getServiceList();
+			this.services = new ArrayList<MNService>();
+			
+			for (Service s : serviceList) {
+				MNService mnService = new MNService();
+				mnService.copy(s);
+				this.services.add(mnService);
+			}
+		}
+		
+		if (node.getSynchronization() != null) {
+			Synchronization synch = node.getSynchronization();
+			this.synchronization = new MNSynchronization();
+			this.synchronization.copy(synch);	
+		}
+		
+		if (node.getPing() != null) {
+			Ping ping = node.getPing();
+			this.ping = new MNPing();
+			this.ping.copy(ping);	
+		}
+		
+		if (node.getSubjectList() != null) {
+			List<Subject> subjectList = node.getSubjectList();
+			this.subject = new ArrayList<String>();
+
+			for (Subject s : subjectList) {
+				this.subject.add(s.getValue());
+			}
+		}
+
+		if (node.getContactSubjectList() != null) {
+			List<Subject> subjectList = node.getContactSubjectList();
+			this.contactSubject = new ArrayList<String>();
+
+			for (Subject s : subjectList) {
+				this.contactSubject.add(s.getValue());
+			}
+		}
 	}
 
 }

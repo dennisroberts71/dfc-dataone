@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
 
 import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
@@ -30,6 +29,7 @@ import org.dataone.service.types.v1.Event;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.NodeReference;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.dataone.service.types.v1.ObjectInfo;
 import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.Permission;
 import org.dataone.service.types.v1.ReplicationPolicy;
@@ -37,20 +37,19 @@ import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.core.pub.Stream2StreamAO;
+//import org.irods.jargon.core.pub.Stream2StreamAO;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
-import org.irods.jargon.dataone.events.EventLogAO;
-import org.irods.jargon.dataone.utils.HandleUtils;
+import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
+import org.irods.jargon.dataone.id.UniqueIdAOHandleImpl;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,6 @@ import org.slf4j.LoggerFactory;
 
 
 // TODO: NEED TO ADD LOGGING OF THESE EVENTS
-// GETREPLICA IS SAME AS GET, EXCEPT SHOULD BE LOGGED AS REPLICATION
 
 public class MNReadImpl implements MNRead {
 	
@@ -98,12 +96,8 @@ public class MNReadImpl implements MNRead {
 		try {
 			// need last modified, content length, Content-Type: application/octet-stream, object format (mime), checksum, serial version
 			
-			IRODSAccount irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-			
-			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-			HandleUtils handleUtils = new HandleUtils(restConfiguration, irodsAccessObjectFactory);
-			dataObject = handleUtils.getDataObjectFromDataOneIdentifier(id);
+			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+			dataObject = handleImpl.getDataObjectFromIdentifier(id);
 			
 			lastModified = dataObject.getUpdatedAt();
 			
@@ -146,16 +140,16 @@ public class MNReadImpl implements MNRead {
 		IRODSFileInputStream stream = null;
 		OutputStream output = null;
 		int contentLength = 0;
-		String path = new String();;
+		String path = new String();
+		DataObject dataObject = new DataObject();
 		
 		try {
 			// Find iRODS object
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
 			
-			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-			HandleUtils handleUtils = new HandleUtils(restConfiguration, irodsAccessObjectFactory);
-			DataObject dataObject = handleUtils.getDataObjectFromDataOneIdentifier(id);
+			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+			dataObject = handleImpl.getDataObjectFromIdentifier(id);
 			path = dataObject.getAbsolutePath();
 			//String path = "/dfcmain/home/DFC-public/DFC-slide.pptx";
 			//String path = "/dfcmain/home/lisa/test_this.txt";	
@@ -275,12 +269,8 @@ public class MNReadImpl implements MNRead {
 		
 		try {
 			
-			IRODSAccount irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-			
-			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-			HandleUtils handleUtils = new HandleUtils(restConfiguration, irodsAccessObjectFactory);
-			dataObject = handleUtils.getDataObjectFromDataOneIdentifier(id);
+			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+			dataObject = handleImpl.getDataObjectFromIdentifier(id);
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
 				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
@@ -309,7 +299,7 @@ public class MNReadImpl implements MNRead {
 	public InputStream getReplica(Identifier arg0) throws InvalidToken,
 			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
 			InsufficientResources {
-		// TODO Auto-generated method stub
+		// This is implemented in streamObject
 		return null;
 	}
 
@@ -342,8 +332,8 @@ public class MNReadImpl implements MNRead {
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
 			
 			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-			HandleUtils handleUtils = new HandleUtils(restConfiguration, irodsAccessObjectFactory);
-			dataObject = handleUtils.getDataObjectFromDataOneIdentifier(id);
+			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+			dataObject = handleImpl.getDataObjectFromIdentifier(id);
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
 				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
@@ -380,7 +370,8 @@ public class MNReadImpl implements MNRead {
 					for(Permission d1Premission : d1Premissions) {
 						rule.addPermission(d1Premission);
 					}
-				}	
+					accessPolicy.addAllow(rule);
+				}
 			}
 			
 			ReplicationPolicy replicationPolicy = new ReplicationPolicy();
@@ -415,12 +406,70 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public ObjectList listObjects(Date arg0, Date arg1,
-			ObjectFormatIdentifier arg2, Boolean arg3, Integer arg4,
-			Integer arg5) throws InvalidRequest, InvalidToken, NotAuthorized,
-			NotImplemented, ServiceFailure {
-		// TODO Auto-generated method stub
-		return null;
+	public ObjectList listObjects(
+			Date fromDate,
+			Date toDate,
+			ObjectFormatIdentifier formatId,
+			Boolean replicaStatus,
+			Integer start,
+			Integer count) throws
+				InvalidRequest,
+				InvalidToken,
+				NotAuthorized,
+				NotImplemented,
+				ServiceFailure {
+		List<DataObject> dataObjectList = new ArrayList<DataObject>();
+		List<ObjectInfo> objectInfoList = new ArrayList<ObjectInfo>();
+		ObjectList objectList = new ObjectList();
+		UniqueIdAOHandleImpl handleImpl;
+		
+		try {
+			handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+
+			dataObjectList = handleImpl.getListOfDataoneExposedDataObjects(
+						fromDate,
+						toDate,
+						formatId,
+						replicaStatus,
+						start,
+						count);
+		} catch(Exception ex) {
+			throw new ServiceFailure("1580", "Could not retrieve list of data objects");
+		}
+		
+		for (DataObject dObject : dataObjectList) {
+			
+			ObjectInfo oInfo = new ObjectInfo();
+			
+			Checksum checksum = new Checksum();
+			checksum.setValue(dObject.getChecksum());
+			checksum.setAlgorithm("MD5"); //TODO: put this in properties file?
+			oInfo.setChecksum(checksum);
+			
+			oInfo.setDateSysMetadataModified(dObject.getUpdatedAt());
+			ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
+			
+			fId.setValue("application/zip"); // TODO: fix this
+			
+			oInfo.setFormatId(fId);
+			Identifier id;
+			try {
+				id = handleImpl.getIdentifierFromDataObject(dObject);
+			} catch (JargonException e) {
+				log.error("could not convert data object id to identifier: {}", e.toString());
+				throw new ServiceFailure("1580", "Could not retrieve list of data objects");
+			}
+			oInfo.setIdentifier(id);
+			
+			Long dataSizeLong = new Long(dObject.getDataSize());
+			String dataSizeStr = dataSizeLong.toString();
+			oInfo.setSize(new BigInteger(dataSizeStr));
+			
+			objectInfoList.add(oInfo);
+		}
+		
+		objectList.setObjectInfoList(objectInfoList);
+		return objectList;
 	}
 
 	@Override
@@ -447,22 +496,19 @@ public class MNReadImpl implements MNRead {
 		
 		// check to make sure pid is valid
 		try {
-			IRODSAccount irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-			
-			HandleUtils handleUtils = new HandleUtils(restConfiguration, irodsAccessObjectFactory);
+			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
 			// just try to access the object to see if is there or not
-			handleUtils.getDataObjectFromDataOneIdentifier(pid);
+			handleImpl.getDataObjectFromIdentifier(pid);
 		} catch(Exception ex) {
 			throw new ServiceFailure("2161", "The identifier specified by " + 
                     syncFailed.getPid() + " was not found on this node.");
 		}			
         
-        EventLogAO eventLog = new EventLogAO(irodsAccessObjectFactory, restConfiguration);
+        EventLogAOElasticSearchImpl eventLog = new EventLogAOElasticSearchImpl(irodsAccessObjectFactory, restConfiguration);
         try {
 			eventLog.recordEvent(Event.SYNCHRONIZATION_FAILED, pid, syncFailed.getDescription());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			log.error("failed to log synchronization failed event: {}", e.toString());
 			throw new ServiceFailure("2161", "Failed to log Synchronization Failure event");
 		}
         
@@ -495,6 +541,9 @@ public class MNReadImpl implements MNRead {
 		case OWN:
 			permissions.add(Permission.READ);
 			permissions.add(Permission.WRITE);
+			permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
+			break;
+		default:
 			permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
 			break;
 		}

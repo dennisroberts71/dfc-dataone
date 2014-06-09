@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
+import org.dataone.service.types.v1.Ping;
+
 @XmlAccessorType(XmlAccessType.NONE)
 public class MNPing {
 	
@@ -15,6 +17,17 @@ public class MNPing {
 	}
 	public void setSuccess(boolean success) {
 		this.success = success;
+	}
+	
+	public void copy(Ping ping) {
+		
+		if (ping == null) {
+			throw new IllegalArgumentException("MNPing::copy - Ping is null");
+		}
+		
+		if (ping.getSuccess() != null) {
+			this.success = ping.getSuccess().booleanValue();
+		}
 	}
 
 }

@@ -2,6 +2,8 @@ package org.irods.jargon.dataone.domain;
 
 import java.util.Date;
 
+import org.dataone.service.types.v1.Synchronization;
+
 public class MNSynchronization {
 	
 	private Date lastHarvested;
@@ -30,6 +32,23 @@ public class MNSynchronization {
 
 	public void setSchedule(MNSchedule schedule) {
 		this.schedule = schedule;
+	}
+	
+	public void copy(Synchronization synch) {
+		
+		if (synch == null) {
+			throw new IllegalArgumentException("MNSynchronization::copy - Synchronization is null");
+		}
+		
+		if (synch.getLastHarvested() != null) {
+			this.lastHarvested = synch.getLastHarvested();
+		}
+		
+		if (synch.getLastCompleteHarvest() != null) {
+			this.lastCompleteHarvest = synch.getLastCompleteHarvest();
+		}
+		
+		this.schedule = new MNSchedule();
 	}
 
 }

@@ -5,6 +5,8 @@ import java.util.Date;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
+import org.dataone.service.types.v1.LogEntry;
+
 @XmlAccessorType(XmlAccessType.NONE)
 public class MNLogEntry {
 	
@@ -71,6 +73,46 @@ public class MNLogEntry {
 	}
 	public void setSubject(String subject) {
 		this.subject = subject;
+	}
+	
+	public void copy(LogEntry logEntry) {
+		
+		if (logEntry == null) {
+			throw new IllegalArgumentException("MNLogEntry::copy - LogEntry is null");
+		}
+		
+		if (logEntry.getEntryId() != null) {
+			this.entryId = logEntry.getEntryId();
+		}
+		
+		if (logEntry.getDateLogged() != null) {
+			this.dateLogged = logEntry.getDateLogged();
+		}
+		
+		if (logEntry.getEvent() != null) {
+			this.event = logEntry.getEvent().name();
+		}
+		
+		if (logEntry.getIdentifier() != null) {
+			this.identifier = logEntry.getIdentifier().getValue();
+		}
+		
+		if (logEntry.getNodeIdentifier() != null) {
+			this.nodeIdentifier = logEntry.getNodeIdentifier().getValue();
+		}
+		
+		if (logEntry.getIpAddress() != null) {
+			this.ipAddress = logEntry.getIpAddress();
+		}
+		
+		if (logEntry.getUserAgent() != null) {
+			this.userAgent = logEntry.getUserAgent();
+		}
+		
+		if (logEntry.getSubject() != null) {
+			this.subject = logEntry.getSubject().getValue();
+		}	
+		
 	}
 		
 }

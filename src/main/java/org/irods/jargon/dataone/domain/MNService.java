@@ -5,6 +5,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.dataone.service.types.v1.Service;
+
 @XmlAccessorType(XmlAccessType.NONE)
 public class MNService {
 	
@@ -37,6 +39,24 @@ public class MNService {
 	
 	public void setAvailable(boolean available) {
 		this.available = available;
+	}
+	
+	public void copy(Service service) {
+		if (service == null) {
+			throw new IllegalArgumentException("MNService::copy - Service is null");
+		}
+		
+		if (service.getName() != null) {
+			this.name = service.getName();
+		}
+		
+		if (service.getVersion() != null) {
+			this.version = service.getVersion();
+		}
+		
+		if (service.getAvailable() != null) {
+			this.available = service.getAvailable().booleanValue();
+		}
 	}
 
 }

@@ -14,6 +14,8 @@ import org.dataone.service.types.v1.Event;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
 import org.dataone.service.types.v1.Node;
+import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.Schedule;
 import org.dataone.service.types.v1.Services;
 import org.dataone.service.types.v1.Service;
@@ -29,13 +31,14 @@ import org.irods.jargon.dataone.tier1.MNReadImpl;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNLog;
+import org.irods.jargon.dataone.domain.MNObjectList;
 import org.irods.jargon.dataone.domain.MNSchedule;
 import org.irods.jargon.dataone.domain.MNService;
 import org.irods.jargon.dataone.domain.MNSynchronization;
 import org.irods.jargon.dataone.domain.MNPing;
 import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.domain.MNSystemMetadata;
-import org.irods.jargon.dataone.events.EventLogAO;
+import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
 import org.jboss.resteasy.annotations.providers.jaxb.json.Mapped;
 import org.jboss.resteasy.annotations.providers.jaxb.json.XmlNsMap;
 import org.slf4j.Logger;
@@ -125,68 +128,34 @@ public class MemberNodeService {
     	MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
     	Node node = mnCoreImpl.getCapabilities();
     	
-//    	nodeCapabilities.setName(node.getName());
-//    	nodeCapabilities.setIdentifier(node.getIdentifier().getValue());
-//    	nodeCapabilities.setDescription(node.getDescription());
-//    	nodeCapabilities.setBaseURL(node.getBaseURL());
-//    	
-//    	Services services = node.getServices();
-//    	List<MNService> mnServices = new ArrayList<MNService>();
-//    	for (int i=0; i<services.sizeServiceList(); i++) {
-//    		Service s = services.getService(i);
-//    		MNService mnService = new MNService();
-//    		mnService.setName(s.getName());
-//    		mnService.setVersion(s.getVersion());
-//    		mnService.setAvailable(s.getAvailable());
-//    		mnServices.add(mnService);
+    	nodeCapabilities.copy(node);
+    	
+//    	MNPing mnPing = new MNPing();
+//    	mnPing.setSuccess(node.getPing().getSuccess());
+//    	nodeCapabilities.setPing(mnPing);
+//    	if(node.getPing().getSuccess()) {
+//    		nodeCapabilities.setState("up");
 //    	}
-//    	nodeCapabilities.setServices(mnServices);
+//    	else {
+//    		nodeCapabilities.setState("down");
+//    	}
 //    	
-//    	MNSynchronization mnSynchronization = new MNSynchronization();
-//    	Synchronization synchronization= node.getSynchronization();
+//    	List<String> s1 = new ArrayList<String>();
+//    	List<Subject> subjects = node.getSubjectList();
+//    	for (int i=0; i<subjects.size(); i++) {
+//    		Subject s = subjects.get(i);
+//    		s1.add(s.getValue());
+//    	}
+//    	nodeCapabilities.setSubject(s1);
 //    	
-//    	MNSchedule mnSchedule = new MNSchedule();
-//    	
-//    	Schedule schedule = synchronization.getSchedule();
-//    	mnSchedule.setHour(schedule.getHour());
-//    	mnSchedule.setMday(schedule.getMday());
-//    	mnSchedule.setMin(schedule.getMin());
-//    	mnSchedule.setMon(schedule.getMon());
-//    	mnSchedule.setSec(schedule.getSec());
-//    	mnSchedule.setWday(schedule.getWday());
-//    	mnSchedule.setYear(schedule.getYear());
-//    	
-//    	mnSynchronization.setSchedule(mnSchedule);
-//    	mnSynchronization.setLastHarvested(synchronization.getLastHarvested());
-//    	mnSynchronization.setLastCompleteHarvest(synchronization.getLastCompleteHarvest());
-//    	nodeCapabilities.setSynchronization(mnSynchronization);
-    	
-    	MNPing mnPing = new MNPing();
-    	mnPing.setSuccess(node.getPing().getSuccess());
-    	nodeCapabilities.setPing(mnPing);
-    	if(node.getPing().getSuccess()) {
-    		nodeCapabilities.setState("up");
-    	}
-    	else {
-    		nodeCapabilities.setState("down");
-    	}
-    	
-    	List<String> s1 = new ArrayList<String>();
-    	List<Subject> subjects = node.getSubjectList();
-    	for (int i=0; i<subjects.size(); i++) {
-    		Subject s = subjects.get(i);
-    		s1.add(s.getValue());
-    	}
-    	nodeCapabilities.setSubject(s1);
-    	
-    	List<String> s2 = new ArrayList<String>();
-    	List<Subject> contactSubjects = node.getContactSubjectList();
-    	for (int i=0; i<contactSubjects.size(); i++) {
-    		Subject s = contactSubjects.get(i);
-    		s2.add(s.getValue());
-    	}
-    	nodeCapabilities.setSubject(s1);
-    	nodeCapabilities.setContactSubject(s2);
+//    	List<String> s2 = new ArrayList<String>();
+//    	List<Subject> contactSubjects = node.getContactSubjectList();
+//    	for (int i=0; i<contactSubjects.size(); i++) {
+//    		Subject s = contactSubjects.get(i);
+//    		s2.add(s.getValue());
+//    	}
+//    	nodeCapabilities.setSubject(s1);
+//    	nodeCapabilities.setContactSubject(s2);
     	  	  		
     	return nodeCapabilities;
     }
@@ -202,8 +171,8 @@ public class MemberNodeService {
     							@QueryParam("toDate") Date toDate,
     							@QueryParam("event") Event event,
     							@QueryParam("pidFilter") String pidFilter,
-    							@QueryParam("start") int start,
-    							@QueryParam("count") int count
+    							@DefaultValue("0") @QueryParam("start") int start,
+    							@DefaultValue("1000") @QueryParam("count") int count
     							)
     							throws NotImplemented,
     								   ServiceFailure,
@@ -231,6 +200,7 @@ public class MemberNodeService {
 		
 		// set Log attributes in MNLog
 		MNLog mnLog = new MNLog();
+		mnLog.copy(log);
     	
 		return mnLog;
 	}
@@ -261,12 +231,12 @@ public class MemberNodeService {
 		mnReadImpl.streamObject(response, id);
 		
 		// now log the event
-				EventLogAO eventLog = new EventLogAO(irodsAccessObjectFactory, restConfiguration);
-				try {
-					eventLog.recordEvent(Event.READ, id, "DataONE replication");
-				} catch (Exception e) {
-					log.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
-				}
+		EventLogAOElasticSearchImpl eventLog = new EventLogAOElasticSearchImpl(irodsAccessObjectFactory, restConfiguration);
+		try {
+			eventLog.recordEvent(Event.READ, id, "DataONE replication");
+		} catch (Exception e) {
+			log.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
+		}
 		
 	}
 		
@@ -298,8 +268,7 @@ public class MemberNodeService {
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		Checksum checksum = mnReadImpl.getChecksum(id, algorithm);
 		
-		mnChecksum.setValue(checksum.getValue());
-		mnChecksum.setAlgorithm(checksum.getAlgorithm());		
+		mnChecksum.copy(checksum);		
 		
 		return mnChecksum;
 	}
@@ -331,7 +300,7 @@ public class MemberNodeService {
 		mnReadImpl.streamObject(response, id);
 		
 		// now log the event
-		EventLogAO eventLog = new EventLogAO(irodsAccessObjectFactory, restConfiguration);
+		EventLogAOElasticSearchImpl eventLog = new EventLogAOElasticSearchImpl(irodsAccessObjectFactory, restConfiguration);
 		try {
 			eventLog.recordEvent(Event.REPLICATE, id, "DataONE replication");
 		} catch (Exception e) {
@@ -426,5 +395,37 @@ public class MemberNodeService {
 		Response.ResponseBuilder builder = Response.ok();
 		
 		return builder.build();
+	}
+	
+	// GET /object[?fromDate={fromDate}&toDate={toDate}&formatId={formatId}
+	// &replicaStatus={replicaStatus} &start={start}&count={count}]
+	@GET
+	@Path("/object")
+	@Produces(MediaType.TEXT_XML)
+	public MNObjectList handleListObjects( 
+					@QueryParam("fromDate") final Date fromDate,
+					@QueryParam("toDate") final Date toDate,
+					@QueryParam("formatId") final String formatIdStr,
+					@QueryParam("replicaStatus") final Boolean replicaStatus,
+					@DefaultValue("0") @QueryParam("start") final Integer start,
+					@DefaultValue("1000") @QueryParam("count") final Integer count
+				) throws 
+					InvalidToken,
+					ServiceFailure,
+					NotAuthorized,
+					InvalidRequest,
+					NotImplemented {
+		MNObjectList mnObjectList = new MNObjectList();
+		
+		// parse any query arguments to convert into correct formats,
+		// if not handled by data type constructors
+		ObjectFormatIdentifier formatId = new ObjectFormatIdentifier();
+		formatId.setValue(formatIdStr);
+		
+		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
+		ObjectList objectList = mnReadImpl.listObjects(fromDate, toDate, formatId, replicaStatus, start, count);
+		mnObjectList.copy(objectList);
+		
+		return mnObjectList;
 	}
 }

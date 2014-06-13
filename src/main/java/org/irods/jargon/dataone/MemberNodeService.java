@@ -166,7 +166,6 @@ public class MemberNodeService {
     @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public MNLog handleGetLogRecords(
-    							@HeaderParam("Authorization") final String authorization,
     							@QueryParam("fromDate") Date fromDate,
     							@QueryParam("toDate") Date toDate,
     							@QueryParam("event") Event event,
@@ -185,12 +184,10 @@ public class MemberNodeService {
 		log.info("/log request: start={} count={}", start, count);
 		
 		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
-		//TODO: need to permissions of user here?
-		// If no session info provided - defaults to public user
-    	Session session = new Session();
     	
+		// TODO: make sure dates are converted to UTC?
+		
 		Log log = mnCoreImpl.getLogRecords(
-									session,
 									fromDate,
 									toDate,
 									event,

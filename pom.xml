@@ -316,6 +316,11 @@
 				<scope>system</scope>
     				<systemPath>${project.basedir}/lib/handle.jar</systemPath>
    			</dependency>
+			<dependency>
+				<groupId>org.elasticsearch</groupId>
+				<artifactId>elasticsearch</artifactId>
+				<version>1.1.2</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 		<dependencies>
@@ -443,6 +448,10 @@
 				<scope>system</scope>
     				<systemPath>${project.basedir}/lib/handle.jar</systemPath>
    			</dependency>
+			<dependency>
+				<groupId>org.elasticsearch</groupId>
+				<artifactId>elasticsearch</artifactId>
+			</dependency>
 		</dependencies>
 	<build>
 		<plugins>

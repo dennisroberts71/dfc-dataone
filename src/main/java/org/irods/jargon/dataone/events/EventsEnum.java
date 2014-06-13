@@ -16,7 +16,9 @@ public enum EventsEnum {
 	private String databookEvent;
 	private Event dataoneEvent;	
 	
-	EventsEnum(Event dataoneEvent, String databookEvent) {	
+	EventsEnum(Event dataoneEvent, String databookEvent) {
+		this.databookEvent = databookEvent;
+		this.dataoneEvent = dataoneEvent;
 	}
 
 	
@@ -50,7 +52,7 @@ public enum EventsEnum {
 			return SYNCHRONIZATION_FAILED;
 		//case REPLICATION_FAILED: not supported yet
 		default:
-			return null;
+			return READ;
 		}
 	}
 	
@@ -70,7 +72,7 @@ public enum EventsEnum {
 		//else if (e.equals("?"))
 			//return REPLICATION_FAILED; not supported yet
 		else
-			return null;
+			return READ;
 	}
 
 }

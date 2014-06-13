@@ -13,6 +13,7 @@ import org.dataone.service.types.v1.Services;
 import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.Synchronization;
+import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.pub.EnvironmentalInfoAO;
@@ -20,6 +21,8 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNNode;
+import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
+import org.irods.jargon.dataone.events.EventsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +69,36 @@ public class MNCoreImpl implements MNCore {
     }
 
     @Override
-    public Log getLogRecords(Date date, Date date2, Event event, String s, Integer integer, Integer integer2) throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Log getLogRecords(
+    		Date fromDate,
+    		Date toDate,
+    		Event event,
+    		String pidFilter,
+    		Integer startIdx,
+    		Integer count) 
+    				throws InvalidRequest,
+    					   InvalidToken,
+    					   NotAuthorized,
+    					   NotImplemented,
+    					   ServiceFailure {
+        
+    	Log d1log = new Log();
+    	EventsEnum newEvent = null;
+    	
+    	log.info("getLogRecords: elasticsearch implementation");
+    	if (event != null) {
+    		newEvent = EventsEnum.valueOfFromDataOne(event);
+    	}
+    	
+    	EventLogAOElasticSearchImpl eventLogAO = 
+    			new EventLogAOElasticSearchImpl(irodsAccessObjectFactory, restConfiguration);
+    	try {
+    		d1log = eventLogAO.getLogs(fromDate, toDate, newEvent, pidFilter, startIdx, count);
+    	} catch(NoNodeAvailableException ex) {
+    		throw new ServiceFailure("1490", "retrieval of log records failed");
+    	}
+    	
+    	return d1log;
     }
 
     @Override
@@ -112,12 +143,21 @@ public class MNCoreImpl implements MNCore {
     }
 
     @Override
-    public Log getLogRecords(Session session, Date date1, Date date2, Event event, String s, Integer integer1, Integer integer2) throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
+    public Log getLogRecords(
+    		Session session,
+    		Date date1,
+    		Date date2,
+    		Event event,
+    		String s,
+    		Integer integer1,
+    		Integer integer2) 
+    				throws InvalidRequest,
+    					   InvalidToken,
+    					   NotAuthorized,
+    					   NotImplemented,
+    					   ServiceFailure {
     	
-    	Log log = null;
-//    	log = mnCoreModel.doGetLogRecords(session, date1, date2, event, s, integer1, integer2);
-    	
-    	return log;
+    	throw new NotImplemented("1461", "Authenticated getLogRecords not implemented");
     }
     
 }

@@ -129,33 +129,6 @@ public class MemberNodeService {
     	Node node = mnCoreImpl.getCapabilities();
     	
     	nodeCapabilities.copy(node);
-    	
-//    	MNPing mnPing = new MNPing();
-//    	mnPing.setSuccess(node.getPing().getSuccess());
-//    	nodeCapabilities.setPing(mnPing);
-//    	if(node.getPing().getSuccess()) {
-//    		nodeCapabilities.setState("up");
-//    	}
-//    	else {
-//    		nodeCapabilities.setState("down");
-//    	}
-//    	
-//    	List<String> s1 = new ArrayList<String>();
-//    	List<Subject> subjects = node.getSubjectList();
-//    	for (int i=0; i<subjects.size(); i++) {
-//    		Subject s = subjects.get(i);
-//    		s1.add(s.getValue());
-//    	}
-//    	nodeCapabilities.setSubject(s1);
-//    	
-//    	List<String> s2 = new ArrayList<String>();
-//    	List<Subject> contactSubjects = node.getContactSubjectList();
-//    	for (int i=0; i<contactSubjects.size(); i++) {
-//    		Subject s = contactSubjects.get(i);
-//    		s2.add(s.getValue());
-//    	}
-//    	nodeCapabilities.setSubject(s1);
-//    	nodeCapabilities.setContactSubject(s2);
     	  	  		
     	return nodeCapabilities;
     }
@@ -216,7 +189,7 @@ public class MemberNodeService {
 
 
 		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("404", "1020");
+			throw new NotFound("1020", "invalid iRODS data object id");
 		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
@@ -252,11 +225,11 @@ public class MemberNodeService {
 		MNChecksum mnChecksum = new MNChecksum();
 		
 		if (!algorithm.toUpperCase().equals("MD5")) {
-			throw new InvalidRequest("400", "1402");
+			throw new InvalidRequest("1402", "invalid checksum algorithm requested - only MD5 supported");
 		}
 
 		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("404", "1420");
+			throw new NotFound("1420", "invalid iRODS data object id");
 		}
 		
 		Identifier id = new Identifier();
@@ -284,7 +257,7 @@ public class MemberNodeService {
 
 
 		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("404", "2185");
+			throw new NotFound("2185", "invalid iRODS data object id");
 		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
@@ -321,7 +294,7 @@ public class MemberNodeService {
 		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
 
 		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("404", "1420");
+			throw new NotFound("1420", "invalid iRODS data object id");
 		}
 		
 		Identifier id = new Identifier();
@@ -344,7 +317,7 @@ public class MemberNodeService {
     		throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
 
 		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("404", "1420");
+			throw new NotFound("1420", "invalid iRODS data object id");
 		}
 		
 		Identifier id = new Identifier();

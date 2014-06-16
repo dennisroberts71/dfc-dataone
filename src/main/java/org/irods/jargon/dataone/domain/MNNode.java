@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.dataone.service.types.v1.Node;
+import org.dataone.service.types.v1.NodeReplicationPolicy;
 import org.dataone.service.types.v1.Ping;
 import org.dataone.service.types.v1.Service;
 import org.dataone.service.types.v1.Services;
@@ -46,9 +47,8 @@ public class MNNode {
 	private String baseURL;
 	private List<MNService> services;
 	private MNSynchronization synchronization;
+//	private NodeReplicationPolicy nodeReplicationPolicy;
 	private MNPing ping;
-//	private MNSubject subject;
-//	private MNSubject contactSubject;
 	private List<String> subject;
 	private List<String> contactSubject;
 	
@@ -214,14 +214,15 @@ public class MNNode {
 	public void setContactSubject(List<String> contactSubject) {
 		this.contactSubject = contactSubject;
 	}
+	
+//	public NodeReplicationPolicy getNodeReplicationPolicy() {
+//		return nodeReplicationPolicy;
+//	}
+//
+//	public void setNodeReplicationPolicy(NodeReplicationPolicy nodeReplicationPolicy) {
+//		this.nodeReplicationPolicy = nodeReplicationPolicy;
+//	}
 
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
 	
 	public void copy(Node node) {
 		
@@ -237,7 +238,7 @@ public class MNNode {
 		}
 		
 		if (node.getState() != null) {
-			this.state = node.getState().name();
+			this.state = node.getState().toString();
 		}
 		
 		if (node.getIdentifier() != null) {
@@ -298,5 +299,4 @@ public class MNNode {
 			}
 		}
 	}
-
 }

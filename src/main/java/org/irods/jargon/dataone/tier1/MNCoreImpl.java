@@ -13,6 +13,7 @@ import org.dataone.service.types.v1.Services;
 import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.Synchronization;
+import org.dataone.service.types.v1.NodeState;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.IRODSServerProperties;
@@ -62,7 +63,7 @@ public class MNCoreImpl implements MNCore {
 			
 		} catch (Exception e) {
 			log.error("ping failed: {}", e.getMessage());
-			throw new ServiceFailure("500", "2042");
+			throw new ServiceFailure("2042", "failed to contact iRODS server");
 		} finally {
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
@@ -108,6 +109,7 @@ public class MNCoreImpl implements MNCore {
     	
     	Ping ping = new Ping();
     	ping.setSuccess(true);
+    	node.setState(NodeState.UP);
     	
     	try {
 			IRODSAccount irodsAccount = RestAuthUtils
@@ -121,6 +123,7 @@ public class MNCoreImpl implements MNCore {
 		} catch (Exception e) {
 			log.error("getCapabilities: iRODS server is not running");
 			ping.setSuccess(false);
+			node.setState(NodeState.DOWN);
 		} finally {
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
@@ -138,6 +141,8 @@ public class MNCoreImpl implements MNCore {
     	node.setPing(ping);
     	node.setSubjectList(subjects);
     	node.setContactSubjectList(contactSubjects);
+    	
+    	log.info("returning node: {}", node.toString());
     	
         return node;
     }

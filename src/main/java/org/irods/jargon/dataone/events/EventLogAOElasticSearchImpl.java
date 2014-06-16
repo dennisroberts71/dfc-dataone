@@ -1,6 +1,10 @@
 package org.irods.jargon.dataone.events;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 import org.dataone.service.exceptions.ServiceFailure;
 import org.dataone.service.types.v1.Event;
@@ -27,7 +31,10 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeFilterBuilder;
+import org.elasticsearch.search.SearchHit;
 
 public class EventLogAOElasticSearchImpl implements EventLogAO {
 	
@@ -55,37 +62,37 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			
 			// ignoring pidFilter for now
 			
-			long from;
-			long to;
+			boolean datesExist = true;
+			if (fromDate == null && toDate == null) {
+				datesExist = false;
+			}
 			// should put these in settings? or maybe implement spring bean?
 			String searchIndex = "databook";
 			String searchType = "entity";
 			String rangeField = "created";
-			
-			// make some defaults for the Dates
-			if (fromDate == null) {
-				from = 0;
-			}
-			if (toDate == null) {
-				// default to now
-				to = System.currentTimeMillis()/1000;
-			}
 
 			BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
 					.must(QueryBuilders.matchQuery("type", "databook.persistence.rule.rdf.ruleset.Access"));
-					//.must(QueryBuilders.matchQuery("userEntityink", SUBJECT_USER));
-			if (event != null) {
+				  //.must(QueryBuilders.matchQuery("userEntityLink", userEntityLink));
+			if (event  != null) {
 				boolQuery.must(QueryBuilders.matchQuery("title", event.getDatabookEvent()));
 			}
 
 			// Note that date time precision is limited to one millisecond.
 			// TODO: If no timezone information is provided UTC will be assumed.
-			FilterBuilder filterBuilder = FilterBuilders
-				.rangeFilter(rangeField)
+			RangeFilterBuilder filterBuilder = FilterBuilders
+				.rangeFilter(rangeField);
+
+			if (fromDate != null) {
+				filterBuilder
 					.from(fromDate.getTime()/1000)
-					.to(toDate.getTime()/1000)
-					.includeLower(true)
-					.includeUpper(false);
+					.includeLower(true);
+			}
+			if (toDate != null) {
+				filterBuilder
+				.to(toDate.getTime()/1000)
+				.includeUpper(false);
+			}
 
 			Client client = new TransportClient()
 	        	.addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
@@ -93,16 +100,29 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 
 			SearchRequestBuilder srBuilder = client.prepareSearch(searchIndex)
 					.setTypes(searchType)
-					.setSearchType(SearchType.DEFAULT)
+					//.setSearchType(SearchType.DEFAULT)
 					.setQuery(boolQuery)
-					.setPostFilter(filterBuilder)
+					//.setPostFilter(filterBuilder)
 					.setFrom(startIdx).setSize(count);
+			if (datesExist) {
+				srBuilder.setPostFilter(filterBuilder);
+			}
 			log.info("getLogs: built search request: {}", srBuilder.toString());
 			
 			SearchResponse response = srBuilder.execute().actionGet();
 			log.info("getLogs: got search response: {}", response.toString());
 			
-			// now extract data and put in Log object
+			// get uri from response and validate 2 things:
+			// event is related to a DataOne object AND it
+			// TODO: is publicly accessible
+			
+			SearchHit[] searchHits = response.getHits().getHits();
+		    Map<String, Object> s=searchHits[0].sourceAsMap();
+//		    Map<String, Date> duration=(Map<String, Date>) s.get("duration");
+//		    Date start=duration.get("start");
+//		    Date end=duration.get("end");
+		    
+			// now put data and put in Log object
 			Log log = new Log();
 
 			return log;

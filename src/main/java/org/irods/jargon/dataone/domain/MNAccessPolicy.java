@@ -7,18 +7,18 @@ import javax.xml.bind.annotation.XmlElement;
 public class MNAccessPolicy {
 	
 	private String subject; // MNSubject type?
-	private List<MNPermissionEnum> permission;
+	private List<String> permission;
 	
 	public MNAccessPolicy() {
 		
 	}
 	
 	@XmlElement(name = "permission")
-	public List<MNPermissionEnum> getPermission() {
+	public List<String> getPermission() {
 		return permission;
 	}
 	
-	public void setPermission(List<MNPermissionEnum> p) {
+	public void setPermission(List<String> p) {
 		permission = p;
 	}
 

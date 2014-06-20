@@ -11,10 +11,6 @@ public class MNReplicationPolicy {
 		
 	}
 	
-	public boolean getReplicationAllowed() {
-		return replicationAllowed;
-	}
-	
 	public void setReplicationAllowed(boolean flag) {
 		replicationAllowed = flag;
 	}

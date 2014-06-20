@@ -22,29 +22,17 @@ public class MNObjectList {
 	private int total;
 	
 	private List<MNObjectInfo> objectInfo;
-
-	public int getCount() {
-		return count;
+	
+	public void setCnt(int cnt) {
+		this.count = cnt;
 	}
-
-	public void setCount(int count) {
-		this.count = count;
+	
+	public void setStrt(int strt) {
+		this.start = strt;
 	}
-
-	public int getStart() {
-		return start;
-	}
-
-	public void setStart(int start) {
-		this.start = start;
-	}
-
-	public int getTotal() {
-		return total;
-	}
-
-	public void setTotal(int total) {
-		this.total = total;
+	
+	public void setTot(int tot) {
+		this.total = tot;
 	}
 
 	public List<MNObjectInfo> getObjectInfo() {
@@ -65,7 +53,7 @@ public class MNObjectList {
 		this.start = objectList.getStart();
 		this.total = objectList.getTotal();
 		
-		if (objectList.getObjectInfoList() == null) {
+		if (objectList.getObjectInfoList() != null) {
 			List<ObjectInfo> newObjectInfoList = objectList.getObjectInfoList();
 			this.objectInfo = new ArrayList<MNObjectInfo>();
 			

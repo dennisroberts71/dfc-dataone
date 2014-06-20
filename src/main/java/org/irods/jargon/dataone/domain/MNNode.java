@@ -12,9 +12,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.dataone.service.types.v1.Node;
-import org.dataone.service.types.v1.NodeReplicationPolicy;
 import org.dataone.service.types.v1.Ping;
 import org.dataone.service.types.v1.Service;
 import org.dataone.service.types.v1.Services;
@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @XmlRootElement(name = "node")
+@XmlType(propOrder={"identifier","name","description","baseURL",
+			"services","synchronization","ping","subject","contactSubject"})
 public class MNNode {
 	
 	private final String serviceKey = "irods.dataone.service.";
@@ -238,7 +240,7 @@ public class MNNode {
 		}
 		
 		if (node.getState() != null) {
-			this.state = node.getState().toString();
+			this.state = node.getState().xmlValue();
 		}
 		
 		if (node.getIdentifier() != null) {

@@ -19,6 +19,7 @@ import org.irods.jargon.core.rule.IRODSRuleExecResult;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.id.UniqueIdAOHandleImpl;
+import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -39,7 +40,7 @@ import org.elasticsearch.search.SearchHit;
 public class EventLogAOElasticSearchImpl implements EventLogAO {
 	
 		// Hard-code subject for now
-		private final String SUBJECT_USER = "Public"; // TODO:should this be anonymous instead??
+		private final String SUBJECT_USER = "anonymous"; // TODO:should this be anonymous instead??
 		final IRODSAccessObjectFactory irodsAccessObjectFactory;
 		final RestConfiguration restConfiguration;
 		
@@ -66,9 +67,13 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			if (fromDate == null && toDate == null) {
 				datesExist = false;
 			}
-			// should put these in settings? or maybe implement spring bean?
-			String searchIndex = "databook";
-			String searchType = "entity";
+			// maybe implement spring bean for these settings?
+			// get elasticsearch properties
+			PropertiesLoader loader = new PropertiesLoader();
+			String elasticsearchDNS = loader.getProperty("irods.dataone.events.elasticsearch.dns");
+			int elasticsearchport = Integer.parseInt(loader.getProperty("irods.dataone.events.elasticsearch.dns"));
+			String searchIndex = loader.getProperty("irods.dataone.events.elasticsearch.searchindex");
+			String searchType = loader.getProperty("irods.dataone.events.elasticsearch.searchtype");
 			String rangeField = "created";
 
 			BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()

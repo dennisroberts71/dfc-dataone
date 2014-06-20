@@ -2,9 +2,12 @@ package org.irods.jargon.dataone.domain;
 
 import java.util.Date;
 
+import javax.xml.bind.annotation.XmlType;
+
 import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.ObjectInfo;
 
+@XmlType(propOrder={"identifier","formatId","checksum","dateSysMetadataModified","size"})
 public class MNObjectInfo {
 	
 	private String identifier;

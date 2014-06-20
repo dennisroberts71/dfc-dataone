@@ -1,10 +1,14 @@
 package org.irods.jargon.dataone.id;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.security.PrivateKey;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
@@ -34,42 +38,57 @@ public class HandleListerRunnable implements Runnable, ResponseMessageCallback {
 	private final String privateKey;
 	private final String namingAuthority;
 	boolean showValues = true;
-	private final Queue<List<String>> results;
+	//private Queue<List<String>> results;
+	private LinkedList<List<String>> results;
 	private final List<String> handles;
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	public HandleListerRunnable(
-			Queue<List<String>> queue,
+			//Queue<List<String>> queue,
+			LinkedList<List<String>> queue,
 			String authHandle,
 			String authIndex,
 			String privateKey,
 			String namingAuthority) {
 		  		
 		// TODO: check for valid args here
-		
+		log.info("in HandleListerRunnable");
 		this.results = queue;
 		this.authHandle = authHandle;
 		this.authIndex = authIndex;
 		this.privateKey = privateKey;
 		this.namingAuthority = namingAuthority;
-		handles = new ArrayList<String>();
+		this.handles = new ArrayList<String>();
 		      
-		byte[] key = null;
-		FileInputStream fs = null;
-		  try {
-			  File f = new File(this.privateKey);
-			  fs = new FileInputStream(f);
-			  key = new byte[(int)f.length()];
-			  int n=0;
-			  while(n<key.length) key[n++] = (byte)fs.read();
-			  fs.read(key);
+//		byte[] key = null;
+//		FileInputStream fs = null;
+//		//InputStream fs = null;
+//		  try {
+//			  //fs = getClass().getClassLoader().getResourceAsStream(this.privateKey);
+//			  File f = new File(this.privateKey);
+//			  fs = new FileInputStream(f);
+//			  key = new byte[(int)f.length()];
+//			  int n=0;
+//			  while(n<key.length) key[n++] = (byte)fs.read();
+//			  fs.read(key);
+//		  }
+		  InputStream fis = getClass().getClassLoader().getResourceAsStream(this.privateKey);
+		  ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		  byte[] key = null;
+		  try{
+			  byte[] buf = new byte[1024];
+			  for (int readNum; (readNum = fis.read(buf)) != -1;) {
+				  bos.write(buf, 0, readNum);
+			  }
+			  key = bos.toByteArray();
 		  }
 		  catch (Throwable t){
-			  System.err.println("Cannot read private key " + this.privateKey + ": " + t);
+			  log.info("Cannot read private key: {} " + this.privateKey + ": " + t);
 			  System.exit(-1);
 		  } finally {
 			  try {
-				fs.close();
+				fis.close();
+				bos.close();
 			} catch (IOException e) {
 				// not much to do - just log this
 				log.warn("HandleLister: cannot close private key file: {}", e.getMessage());
@@ -94,7 +113,7 @@ public class HandleListerRunnable implements Runnable, ResponseMessageCallback {
 		  ResolutionRequest resReq =
 				  new ResolutionRequest(Util.encodeString(this.namingAuthority), null, 
 		                                  null, null);
-		  log.debug("finding local sites for {}", resReq);
+		  log.info("finding local sites for {}", resReq);
 		  SiteInfo sites[] = null;
 		  try {
 			  sites = resolver.findLocalSites(resReq);
@@ -125,18 +144,21 @@ public class HandleListerRunnable implements Runnable, ResponseMessageCallback {
 	  public void handleResponse(AbstractResponse response) {
 
 		  resolver.traceMessages = false;
+		  
+		  log.info("got callback, response: {}", response.toString());
 
 		  if(response instanceof ListHandlesResponse) {
 			  try {
 				  ListHandlesResponse lhResp = (ListHandlesResponse)response;
-				  byte handles[][] = lhResp.handles;
-				  for(int i=0; i<handles.length; i++) {
-					  String sHandle = Util.decodeString(handles[i]);
+				  byte handleArray[][] = lhResp.handles;
+				  for(int i=0; i<handleArray.length; i++) {
+					  String sHandle = Util.decodeString(handleArray[i]);
+					  log.info("extracted handle: {}", sHandle);
 					  this.handles.add(sHandle);
 				  }
 			  } catch (Exception e) {
-				  System.err.println("Error: "+e);
-				  e.printStackTrace(System.err);
+				  log.error("Error: {}", e.getMessage());
+				  //e.printStackTrace(System.err);
 			  }
 
 		  }
@@ -146,8 +168,16 @@ public class HandleListerRunnable implements Runnable, ResponseMessageCallback {
 	  }
 	  
 	  @Override
-	    public void run() {
-	        results.add(handles);
-	    }
+	  public void run() {
+		  log.info("in HandleListerRunnable run, handles: {}", handles.toString());
+		  synchronized (results) {
+			  results.add(handles);
+			  results.notify();
+		  }
+	  }
+	  
+//	  public List<String> getHandles() {
+//		  return this.handles;
+//	  }
 
 }

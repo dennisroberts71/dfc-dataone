@@ -7,6 +7,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.dataone.service.types.v1.AccessRule;
 import org.dataone.service.types.v1.Permission;
@@ -15,6 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @XmlRootElement(name = "systemMetadata")
+@XmlType(propOrder={"serialVersion","identifier","formatId","size",
+				"checksum","submitter","rightsHolder","accessPolicy",
+				"replicationPolicy","obsoletes","obsoletedBy","archived",
+				"dateUploaded","dateSysMetadataModified","originMemberNode",
+				"authoritativeMemberNode"})
 
 public class MNSystemMetadata {
 
@@ -36,8 +42,6 @@ public class MNSystemMetadata {
 	private Date dateSysMetadataModified;
 	private String originMemberNode;
 	private String authoritativeMemberNode;
-	
-	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	public MNSystemMetadata() {
 		
@@ -204,15 +208,6 @@ public class MNSystemMetadata {
 		this.authoritativeMemberNode = authoritativeMemberNode;
 	}
 
-
-	public Logger getLog() {
-		return log;
-	}
-
-
-	public void setLog(Logger log) {
-		this.log = log;
-	}
 	
 	public void copy(SystemMetadata metadata) {
 		if (metadata == null) {
@@ -255,9 +250,9 @@ public class MNSystemMetadata {
 			for (AccessRule rule : metadata.getAccessPolicy().getAllowList()) {
 				MNAccessPolicy policy = new MNAccessPolicy();
 				policy.setSubject(rule.getSubject(0).getValue());
-				List<MNPermissionEnum> permissions = new ArrayList<MNPermissionEnum>();
+				List<String> permissions = new ArrayList<String>();
 				for (Permission p : rule.getPermissionList()) {
-					permissions.add(MNPermissionEnum.valueForWeb(p));
+					permissions.add(p.toString());
 				}
 				policy.setPermission(permissions);
 				accessPolicies.add(policy);
@@ -266,6 +261,7 @@ public class MNSystemMetadata {
 		}
 		
 		if (metadata.getReplicationPolicy() != null) {
+			this.replicationPolicy = new MNReplicationPolicy();
 			this.replicationPolicy.setReplicationAllowed(metadata.getReplicationPolicy().getReplicationAllowed());
 		}
 		
@@ -277,7 +273,9 @@ public class MNSystemMetadata {
 			this.obsoletedBy = metadata.getObsoletedBy().getValue();
 		}
 
-		this.archived = metadata.getArchived();
+		if (metadata.getArchived() != null) {
+			this.archived = metadata.getArchived();
+		}
 		
 		this.dateUploaded = metadata.getDateUploaded();
 		this.dateSysMetadataModified = metadata.getDateSysMetadataModified();

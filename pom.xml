@@ -314,7 +314,7 @@
 				<artifactId>handle</artifactId>
 				<version>7.3.1</version>
 				<scope>system</scope>
-    				<systemPath>${project.basedir}/lib/handle.jar</systemPath>
+    				<systemPath>${project.basedir}/src/main/lib/handle.jar</systemPath>
    			</dependency>
 			<dependency>
 				<groupId>org.elasticsearch</groupId>
@@ -446,7 +446,7 @@
 				<artifactId>handle</artifactId>
 				<groupId>org.handle</groupId>
 				<scope>system</scope>
-    				<systemPath>${project.basedir}/lib/handle.jar</systemPath>
+    				<systemPath>${project.basedir}/src/main/lib/handle.jar</systemPath>
    			</dependency>
 			<dependency>
 				<groupId>org.elasticsearch</groupId>
@@ -507,6 +507,9 @@
 									test.irods.scratch.subdir=${jargon.test.irods.scratch.subdir}
 									test.rest.port=${test.rest.port}
 								</echo>
+            							<copy todir="${project.build.directory}/${name}-${version}/WEB-INF/lib">
+              								<fileset dir="src/main/lib"/>
+            							</copy>
 							</tasks>
 						</configuration>
 						<goals>

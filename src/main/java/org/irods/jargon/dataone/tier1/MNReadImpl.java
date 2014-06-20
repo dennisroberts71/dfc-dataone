@@ -359,13 +359,13 @@ public class MNReadImpl implements MNRead {
 			rightsHolder.setValue(dataOwner);
 			metadata.setRightsHolder(rightsHolder);
 			
-			AccessPolicy accessPolicy = new AccessPolicy();
 			List<UserFilePermission> permissions = dataObjectAO.listPermissionsForDataObject(dataObject.getAbsolutePath());
 			if (permissions != null) {
+				AccessPolicy accessPolicy = new AccessPolicy();
 				for (UserFilePermission permission : permissions) {
 					AccessRule rule = new AccessRule();
 					Subject subject = new Subject();
-					subject.setValue("uid=" + permission.getUserId());
+					subject.setValue("uid=" + permission.getUserName());
 					rule.addSubject(subject);
 					List<Permission> d1Premissions = getD1Permission(permission);
 					for(Permission d1Premission : d1Premissions) {
@@ -373,6 +373,7 @@ public class MNReadImpl implements MNRead {
 					}
 					accessPolicy.addAllow(rule);
 				}
+				metadata.setAccessPolicy(accessPolicy);
 			}
 			
 			ReplicationPolicy replicationPolicy = new ReplicationPolicy();
@@ -435,6 +436,7 @@ public class MNReadImpl implements MNRead {
 						start,
 						count);
 		} catch(Exception ex) {
+			log.info("{}", ex.toString());
 			throw new ServiceFailure("1580", "Could not retrieve list of data objects");
 		}
 		
@@ -470,8 +472,12 @@ public class MNReadImpl implements MNRead {
 			
 			objectInfoList.add(oInfo);
 		}
-		
+
 		objectList.setObjectInfoList(objectInfoList);
+		objectList.setTotal(objectInfoList.size());
+		objectList.setCount(count);
+		objectList.setStart(start);
+		
 		return objectList;
 	}
 
@@ -555,6 +561,7 @@ public class MNReadImpl implements MNRead {
 	
 	private void loadProperties() {
 		
+		this.properties = new Properties();
 		InputStream input = null;
 		input = getClass().getClassLoader().getResourceAsStream(this.propertiesFilename);
 

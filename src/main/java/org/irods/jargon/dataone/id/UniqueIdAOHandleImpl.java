@@ -3,11 +3,14 @@ package org.irods.jargon.dataone.id;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import net.handle.hdllib.HandleValue;
 
@@ -43,7 +46,9 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 	public DataObject getDataObjectFromIdentifier(Identifier identifier) throws JargonException {
 		
 		DataObject dataObject = null;
+		log.info("retrieving irods data object id from identifier: {}", identifier.getValue());
 		long dataObjectId = getDataObjectIdFromDataOneIdentifier(identifier);
+		log.info("got id: {}", dataObjectId);
 	
 		try {	
 			IRODSAccount irodsAccount = RestAuthUtils
@@ -53,11 +58,16 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 			log.info("got dataObjectAO: {}", dataObjectAO.toString());
 			// Find iRODS object here from Identifier
 			dataObject = dataObjectAO.findById(new Long(dataObjectId).intValue());
-			log.info("found iRODS file: {}", dataObject.getAbsolutePath());
+			if (dataObject != null) {
+				log.info("found iRODS file: {}", dataObject.getAbsolutePath());
+			} 
+			else {
+				log.warn("did not find data object for id={}", dataObjectId);
+			}
 			
 		} catch (Exception e) {
-			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
-			throw new JargonException(e.getMessage());
+			log.warn("Cannot access iRODS object for id={}", dataObjectId);
+			// throw new JargonException(e.getMessage()); just return null
 		} finally {	  
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
@@ -105,7 +115,14 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 		String privateKey = properties.getProperty("irods.dataone.handle.privateKeyPath");
 		String namingAuthority = properties.getProperty("irods.dataone.handle.prefix");
 		
-		Queue<List<String>> queue = new PriorityQueue<List<String>>();
+		log.info("config params for handle lister:");
+		log.info("authHandle: {}", authHandle);
+		log.info("authIndex:{}", authIndex);
+		log.info("privateKey: {}", privateKey);
+		log.info("namingAuthority: {}", namingAuthority);
+		
+		//LinkedBlockingQueue<List<String>> queue = new LinkedBlockingQueue<List<String>>();
+		LinkedList<List<String>> queue = new LinkedList<List<String>>();
 
         HandleListerRunnable hlThread = new HandleListerRunnable(
         										queue,
@@ -114,26 +131,36 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
         										privateKey,
         										namingAuthority);
         hlThread.run();
-        int totalSleep = 0;
-        while ((queue.isEmpty()) && (totalSleep <= timeout)) {
-        	try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				log.warn("listObjects: thread interrupted while waiting for list of abjects");
-			}
-        	totalSleep+=100;
-        }
+        log.info("continuing after call to run");
         
+        synchronized (queue) {
+        	while (queue.isEmpty()) {
+        		try {
+					queue.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        }
+         
+        List<String> handles = null;
         if (! queue.isEmpty()) {
         	log.debug("listObjects: got list of Handle values");
-        	List<String> handles = queue.element();
+        	handles = queue.element();
+        }
+            
+        if (handles != null) {        	
+        	log.info("listObjects: got list of Handle values: {}", handles.toString());
         	
         	for (String h : handles) {
         		Identifier id = new Identifier();
         		id.setValue(h);
+        		identifiers.add(id);
         	}
         }
-        
+    
+        log.info("returning identifiers: {}", identifiers);
 		return identifiers;
 	}
 
@@ -154,33 +181,42 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 		List<DataObject> dataObjectListFinal = new ArrayList<DataObject>();
 		List<Identifier> ids = getListOfDataoneExposedIdentifiers();
 		
+		log.info("finding list of data objects with list of {} identifiers", ids.size());
+		
 		for (Identifier id : ids) {
 			DataObject dataObject = getDataObjectFromIdentifier(id);
-			Date modifiedDate = dataObject.getUpdatedAt();
 			
-			if (matchesFromDate(fromDate, modifiedDate) &&
-				matchesToDate(toDate, modifiedDate) &&
-				matchesFormatId(formatId, dataObject) &&
-				matchesReplicaStatus(replicaStatus)) {
-				dataObjectListTmp.add(dataObject);
-			}
+			if (dataObject != null) {
+				Date modifiedDate = dataObject.getUpdatedAt();
 				
+				if (matchesFromDate(fromDate, modifiedDate) &&
+					matchesToDate(toDate, modifiedDate) &&
+					matchesFormatId(formatId, dataObject) &&
+					matchesReplicaStatus(replicaStatus)) {
+					dataObjectListTmp.add(dataObject);
+				}
+			}		
 		}
 		
 		// now filter this list according to start and count
-		DataObject[] dataObjectArray = (DataObject[]) dataObjectListTmp.toArray();
-		int end = start + count;
-		for (int i=start; i<dataObjectArray.length && i<end; i++) {
-				dataObjectListFinal.add(dataObjectArray[i]);
+		if (dataObjectListTmp.size() > 0) {
+			DataObject[] dataObjectArray =
+						dataObjectListTmp.toArray(new DataObject[dataObjectListTmp.size()]);
+			int end = start + count;
+			for (int i=start; i<dataObjectArray.length && i<end; i++) {
+					dataObjectListFinal.add(dataObjectArray[i]);
+			}
 		}
 		
+		log.info("returning list of dataObjects: {}", dataObjectListFinal.toString());
+			
 		return dataObjectListFinal;
 	}
 	
 	public long getDataObjectIdFromDataOneIdentifier(
 			Identifier pid) throws JargonException {
 		
-		int idIdx = pid.getValue().indexOf("/");
+		int idIdx = pid.getValue().indexOf("/") + 1;
 		long dataObjectId = Long.parseLong(pid.getValue().substring(idIdx));
 		
 		log.info("getDataObjectIdFromDataOneIdentifier: returning data object id: {}", dataObjectId);
@@ -190,13 +226,13 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 	public String getHandlePrefix() throws JargonException {
 		String prefix = null;
 			
-		prefix = properties.getProperty("irods.dataone.handle");
+		prefix = properties.getProperty("irods.dataone.handle.prefix");
 	 
 		return prefix;
 	}
 	
 	private void loadProperties() {
-		
+		this.properties = new Properties();
 		InputStream input = null;
 		input = getClass().getClassLoader().getResourceAsStream(this.propertiesFilename);
 
@@ -220,27 +256,34 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 	
 	private boolean matchesFromDate(Date fromDate, Date dataObjectModDate) {
 		
+
 		if (fromDate == null || fromDate.getTime() <= 0) {
+			log.info("fromDate : returning matches");
 			return true;
 		}
 		
 		if (fromDate.getTime() <= dataObjectModDate.getTime()) {
+			log.info("fromDate : returning matches");
 			return true;
 		}
 		
+		log.info("fromDate : returning no match");
 		return false;
 	}
 	
 	private boolean matchesToDate(Date toDate, Date dataObjectModDate) {
 		
 		if (toDate == null || toDate.getTime() <= 0) {
+			log.info("toDate : returning matches");
 			return true;
 		}
 		
 		if (toDate.getTime() >= dataObjectModDate.getTime()) {
+			log.info("toDate : returning matches");
 			return true;
 		}
 		
+		log.info("toDate : returning no match");
 		return false;
 	}
 	
@@ -253,9 +296,11 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 		
 		// replication is always set to false for now
 		if (replicaStatus == null || replicaStatus == false) {
+			log.info("replicastatus : returning matches");
 			return true;
 		}
 		
+		log.info("toDate : returning no match");
 		return false;
 	}
 

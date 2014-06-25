@@ -28,6 +28,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
 import org.irods.jargon.dataone.tier1.MNReadImpl;
+import org.irods.jargon.dataone.utils.ISO8601;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNLog;
@@ -61,10 +62,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * User: Lisa Stillwell - RENCI, UNC @ Chapel Hill
@@ -139,8 +144,10 @@ public class MemberNodeService {
     @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public MNLog handleGetLogRecords(
-    							@QueryParam("fromDate") Date fromDate,
-    							@QueryParam("toDate") Date toDate,
+//    							@QueryParam("fromDate") Date fromDate,
+//    							@QueryParam("toDate") Date toDate,
+    							@QueryParam("fromDate") String fromDateStr,
+    							@QueryParam("toDate") String toDateStr,
     							@QueryParam("event") Event event,
     							@QueryParam("pidFilter") String pidFilter,
     							@DefaultValue("0") @QueryParam("start") int start,
@@ -152,13 +159,27 @@ public class MemberNodeService {
     								   InvalidRequest,
     								   InvalidToken {
 
-		log.info("/log request: fromData={} toDate={}", fromDate, toDate);
+		log.info("/log request: fromData={} toDate={}", fromDateStr, toDateStr);
 		log.info("/log request: event={} pidFilter={}", event, pidFilter);
 		log.info("/log request: start={} count={}", start, count);
 		
 		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
     	
 		// TODO: make sure dates are converted to UTC?
+		// parse date strings
+		Date fromDate = null;
+		Date toDate = null;
+		try {
+			if (fromDateStr != null) {
+				fromDate = ISO8601.toCalendar(fromDateStr).getTime();
+			}
+			if (fromDateStr != null) {
+				toDate = ISO8601.toCalendar(toDateStr).getTime();
+			}
+		} catch (ParseException e) {
+			log.error("handleListObjects: unable to parse query dates");
+			throw new InvalidRequest("1480", e.getMessage());
+		}
 		
 		Log log = mnCoreImpl.getLogRecords(
 									fromDate,
@@ -187,10 +208,9 @@ public class MemberNodeService {
 										  NotImplemented,
 										  InsufficientResources {
 
-
-		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("1020", "invalid iRODS data object id");
-		}
+//		if (pid == null || pid.isEmpty()) {
+//			throw new NotFound("1020", "invalid iRODS data object id");
+//		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		
@@ -228,9 +248,9 @@ public class MemberNodeService {
 			throw new InvalidRequest("1402", "invalid checksum algorithm requested - only MD5 supported");
 		}
 
-		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("1420", "invalid iRODS data object id");
-		}
+//		if (pid == null || pid.isEmpty()) {
+//			throw new NotFound("1420", "invalid iRODS data object id");
+//		}
 		
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -256,9 +276,9 @@ public class MemberNodeService {
 										  InsufficientResources {
 
 
-		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("2185", "invalid iRODS data object id");
-		}
+//		if (pid == null || pid.isEmpty()) {
+//			throw new NotFound("2185", "invalid iRODS data object id");
+//		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		
@@ -293,9 +313,9 @@ public class MemberNodeService {
 		
 		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
 
-		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("1420", "invalid iRODS data object id");
-		}
+//		if (pid == null || pid.isEmpty()) {
+//			throw new NotFound("1420", "invalid iRODS data object id");
+//		}
 		
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -316,27 +336,48 @@ public class MemberNodeService {
 			  //@Context final HttpServletResponse response)
     		throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
 
-		if (pid == null || pid.isEmpty()) {
-			throw new NotFound("1420", "invalid iRODS data object id");
-		}
+//		if (pid == null || pid.isEmpty()) {
+//			throw new NotFound("1420", "invalid iRODS data object id");
+//		}
 		
 		Identifier id = new Identifier();
 		id.setValue(pid);
+		
+		DescribeResponse describeResponse;
 
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
-    	DescribeResponse describeResponse = mnReadImpl.describe(id);
+		try {	
+			describeResponse = mnReadImpl.describe(id);
+		} catch (NotFound ex) {
+			
+			Response.ResponseBuilder builder = Response.ok();
+			builder.status(Status.NOT_FOUND);
+//	        builder.header("Last-Modified", dateStr);
+//	        builder.header("Content-Length", describeResponse.getContent_Length().toString());
+	        builder.type(MediaType.TEXT_XML);
+	        builder.header("DataONE-Exception-Name", "NotFound");
+	        builder.header("DataONE-Exception-DetailCode", ex.getDetail_code());
+	        builder.header("DataONE-Exception-Description", ex.getDescription());
+	        builder.header("DataONE-Exception-PID", pid);
+	        
+	        return builder.build();
+		}
     	
     	Checksum checksum = describeResponse.getDataONE_Checksum();
     	String checksumStr = checksum.getAlgorithm() + "," + checksum.getValue();
     	
-    	SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-		String dateStr = df.format(describeResponse.getLast_Modified());
+    	//TODO: test this!
+//    	SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+//		String dateStr = df.format(describeResponse.getLast_Modified());
+    	Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+    	cal.setTime(describeResponse.getLast_Modified());
+    	String dateStr = ISO8601.fromCalendar(cal);
 		
 		Response.ResponseBuilder builder = Response.ok();
         builder.header("Last-Modified", dateStr);
         builder.header("Content-Length", describeResponse.getContent_Length().toString());
         builder.type(MediaType.APPLICATION_OCTET_STREAM);
-        builder.header("DataONE-ObjectFormat", describeResponse.getDataONE_ObjectFormatIdentifier().getValue().toString());
+        builder.header("DataONE-formatId", describeResponse.getDataONE_ObjectFormatIdentifier().getValue().toString());
         builder.header("DataONE-Checksum", checksumStr);
         builder.header("DataONE-SerialVersion", describeResponse.getSerialVersion().toString());
         
@@ -373,8 +414,10 @@ public class MemberNodeService {
 	@Path("/object")
 	@Produces(MediaType.TEXT_XML)
 	public MNObjectList handleListObjects( 
-					@QueryParam("fromDate") final Date fromDate,
-					@QueryParam("toDate") final Date toDate,
+//					@QueryParam("fromDate") final Date fromDate,
+//					@QueryParam("toDate") final Date toDate,
+					@QueryParam("fromDate") final String fromDateStr,
+					@QueryParam("toDate") final String toDateStr,
 					@QueryParam("formatId") final String formatIdStr,
 					@QueryParam("replicaStatus") final Boolean replicaStatus,
 					@DefaultValue("0") @QueryParam("start") final Integer start,
@@ -391,6 +434,20 @@ public class MemberNodeService {
 		// if not handled by data type constructors
 		ObjectFormatIdentifier formatId = new ObjectFormatIdentifier();
 		formatId.setValue(formatIdStr);
+		
+		Date fromDate = null;
+		Date toDate = null;
+		try {
+			if (fromDateStr != null) {
+				fromDate = ISO8601.toCalendar(fromDateStr).getTime();
+			}
+			if (toDateStr != null) {
+				toDate = ISO8601.toCalendar(toDateStr).getTime();
+			}
+		} catch (ParseException e) {
+			log.error("handleListObjects: unable to parse query dates");
+			throw new InvalidRequest("1540", e.getMessage());
+		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		ObjectList objectList = mnReadImpl.listObjects(fromDate, toDate, formatId, replicaStatus, start, count);

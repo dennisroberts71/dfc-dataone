@@ -3,7 +3,9 @@ package org.irods.jargon.dataone.domain;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
+@XmlType(propOrder={"subject","permission"})
 public class MNAccessPolicy {
 	
 	private String subject; // MNSubject type?

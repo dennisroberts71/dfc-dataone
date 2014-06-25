@@ -11,7 +11,7 @@
 	<url>https://code.renci.org/gf/project/irods-dataone/</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jargon.version>3.3.2-SNAPSHOT</jargon.version>
+		<jargon.version>3.3.6-SNAPSHOT</jargon.version>
 		<resteasy.version>2.3.6.Final</resteasy.version>
 		<spring.core.version>3.1.0.RELEASE</spring.core.version>
 		<spring.security.version>3.1.0.RELEASE</spring.security.version>
@@ -57,9 +57,22 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>renci.repository</id>
-			<name>renci.repository</name>
-			<url>http://ci-dev.renci.org/nexus/content/repositories/public</url>
+			<id>dice.repository snaps</id>
+			<name>dice.repository.snapshots</name>
+			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/snapshots</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>dice.repository</id>
+			<name>dice.repository</name>
+			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -226,6 +239,11 @@
 				<version>${jargon.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>data-profile</artifactId>
+				<version>${jargon.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.8.2</version>
@@ -375,6 +393,10 @@
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-core</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>data-profile</artifactId>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>

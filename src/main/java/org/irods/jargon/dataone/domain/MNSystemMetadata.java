@@ -252,7 +252,7 @@ public class MNSystemMetadata {
 				policy.setSubject(rule.getSubject(0).getValue());
 				List<String> permissions = new ArrayList<String>();
 				for (Permission p : rule.getPermissionList()) {
-					permissions.add(p.toString());
+					permissions.add(p.xmlValue());
 				}
 				policy.setPermission(permissions);
 				accessPolicies.add(policy);

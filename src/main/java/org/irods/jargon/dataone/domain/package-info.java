@@ -7,7 +7,7 @@
  */
 @XmlSchema(
     namespace = "http://ns.dataone.org/service/types/v1",
-    elementFormDefault = XmlNsForm.QUALIFIED,
+    elementFormDefault = XmlNsForm.UNQUALIFIED,
     xmlns = {
         @XmlNs(namespaceURI = "http://ns.dataone.org/service/types/v1", prefix = "d1")
     }

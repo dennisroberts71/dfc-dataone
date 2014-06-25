@@ -23,6 +23,11 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
+import org.irods.jargon.dataprofile.DataProfile;
+import org.irods.jargon.dataprofile.DataProfileService;
+import org.irods.jargon.dataprofile.DataProfileServiceImpl;
+import org.irods.jargon.dataprofile.DataTypeResolutionService;
+import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +72,7 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 			
 		} catch (Exception e) {
 			log.warn("Cannot access iRODS object for id={}", dataObjectId);
-			// throw new JargonException(e.getMessage()); just return null
+			throw new JargonException(e.getMessage());
 		} finally {	  
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
@@ -101,8 +106,6 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 			throws JargonException {
 		
 		List<Identifier> identifiers = new ArrayList<Identifier>();
-		
-		int timeout = 5 * 1000; // 5 second timeout
 		
 		// retrieve properties to get list of current handles from 
 		// handle server
@@ -138,8 +141,7 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
         		try {
 					queue.wait();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.warn("getListOfDataoneExposedIdentifiers: caught InterruptedException while waiting for queue");
 				}
         	}
         }
@@ -165,7 +167,7 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 	}
 
 	@Override
-	public List<DataObject> getListOfDataoneExposedDataObjects(
+	public DataObjectListResponse getListOfDataoneExposedDataObjects(
 			Date fromDate,
 			Date toDate,
 			ObjectFormatIdentifier formatId,
@@ -177,6 +179,7 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 		//get complete list of exposed data objects
 		// TODO: see if this can be done differently to just request list
 		// using filter items
+		DataObjectListResponse dataObjectListResponse = new DataObjectListResponse();
 		List<DataObject> dataObjectListTmp = new ArrayList<DataObject>();
 		List<DataObject> dataObjectListFinal = new ArrayList<DataObject>();
 		List<Identifier> ids = getListOfDataoneExposedIdentifiers();
@@ -184,7 +187,13 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 		log.info("finding list of data objects with list of {} identifiers", ids.size());
 		
 		for (Identifier id : ids) {
-			DataObject dataObject = getDataObjectFromIdentifier(id);
+			DataObject dataObject;
+			try {
+				dataObject = getDataObjectFromIdentifier(id);
+			} catch (JargonException ex) {
+				// just ignore this id
+				dataObject = null;
+			}
 			
 			if (dataObject != null) {
 				Date modifiedDate = dataObject.getUpdatedAt();
@@ -197,6 +206,8 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 				}
 			}		
 		}
+		//save total before filtering with start and count
+		dataObjectListResponse.setTotal(dataObjectListTmp.size());
 		
 		// now filter this list according to start and count
 		if (dataObjectListTmp.size() > 0) {
@@ -208,15 +219,17 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 			}
 		}
 		
+		dataObjectListResponse.setCount(dataObjectListFinal.size());
+		dataObjectListResponse.setDataObjects(dataObjectListFinal);
+		
 		log.info("returning list of dataObjects: {}", dataObjectListFinal.toString());
-			
-		return dataObjectListFinal;
+		return dataObjectListResponse;
 	}
 	
 	public long getDataObjectIdFromDataOneIdentifier(
 			Identifier pid) throws JargonException {
-		
-		int idIdx = pid.getValue().indexOf("/") + 1;
+
+		int idIdx = pid.getValue().indexOf("/")+1;
 		long dataObjectId = Long.parseLong(pid.getValue().substring(idIdx));
 		
 		log.info("getDataObjectIdFromDataOneIdentifier: returning data object id: {}", dataObjectId);
@@ -287,9 +300,24 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 		return false;
 	}
 	
-	private boolean matchesFormatId(ObjectFormatIdentifier formatId, DataObject dataObject) {
-		//TODO: need to use new Tika based jargon object that Mike wrote
-		return true;
+	private boolean matchesFormatId(ObjectFormatIdentifier formatId, DataObject dataObject) 
+				throws JargonException {
+		
+		IRODSAccount irodsAccount = RestAuthUtils
+				.getIRODSAccountFromBasicAuthValues(this.restConfiguration);
+		DataTypeResolutionService resolutionService = new DataTypeResolutionServiceImpl(
+				irodsAccessObjectFactory, irodsAccount);
+		DataProfileService dataProfileService = new DataProfileServiceImpl(
+				irodsAccessObjectFactory, irodsAccount, resolutionService);
+		
+		@SuppressWarnings("unchecked")
+		DataProfile<DataObject> dataProfile = dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
+		String mimeType = dataProfile.getMimeType();
+		
+		if ((formatId.getValue() == null) || (formatId.equals(mimeType))) {
+			return true;
+		}
+		return false;
 	}
 	
 	private boolean matchesReplicaStatus(Boolean replicaStatus) {

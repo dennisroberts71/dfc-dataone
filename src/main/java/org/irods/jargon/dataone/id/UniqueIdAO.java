@@ -60,7 +60,7 @@ public interface UniqueIdAO {
 	 * @return <code>List<<code>DataObject</code>></code> 
 	 * @throws JargonException
 	 */
-	public List<DataObject> getListOfDataoneExposedDataObjects(
+	public DataObjectListResponse getListOfDataoneExposedDataObjects(
 				Date fromDate,
 				Date toDate,
 				ObjectFormatIdentifier formatId,

@@ -142,6 +142,12 @@ public class MNCoreImpl implements MNCore {
     	node.setSubjectList(subjects);
     	node.setContactSubjectList(contactSubjects);
     	
+    	Synchronization sync = new Synchronization();
+    	// TODO: put correct dates here
+    	sync.setLastCompleteHarvest(new Date());
+    	sync.setLastHarvested(new Date());
+    	node.setSynchronization(sync);
+    	
     	log.info("returning node: {}", node.toString());
     	
         return node;

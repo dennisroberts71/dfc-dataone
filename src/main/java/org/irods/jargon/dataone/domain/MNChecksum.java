@@ -1,28 +1,33 @@
 package org.irods.jargon.dataone.domain;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlValue;
 
 import org.dataone.service.types.v1.Checksum;
 
 @XmlRootElement(name = "checksum")
 public class MNChecksum {
 	
-	private String value;
+	@XmlAttribute
 	private String algorithm;
+	
+	@XmlValue
+	private String value;
 	
 	public MNChecksum() {
 		
 	}	
 	
-	public String getValue() {
-		return value;
-	}
+//	public String getValue() {
+//		return value;
+//	}
 	public void setValue(String value) {
 		this.value = value;
 	}
-	public String getAlgorithm() {
-		return algorithm;
-	}
+//	public String getAlgorithm() {
+//		return algorithm;
+//	}
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 	}

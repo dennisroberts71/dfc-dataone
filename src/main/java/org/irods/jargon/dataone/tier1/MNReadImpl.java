@@ -37,10 +37,16 @@ import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.dataprofile.DataProfileService;
+import org.irods.jargon.dataprofile.DataTypeResolutionService;
+import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
+import org.irods.jargon.dataprofile.DataProfileServiceImpl;
+import org.irods.jargon.dataprofile.DataProfile;
 //import org.irods.jargon.core.pub.Stream2StreamAO;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFile;
@@ -49,6 +55,7 @@ import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
+import org.irods.jargon.dataone.id.DataObjectListResponse;
 import org.irods.jargon.dataone.id.UniqueIdAOHandleImpl;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.slf4j.Logger;
@@ -91,19 +98,23 @@ public class MNReadImpl implements MNRead {
 		BigInteger serialVersion;
 		
 		try {
-			// need last modified, content length, Content-Type: application/octet-stream, object format (mime), checksum, serial version
-			
+			// need last modified, content length, Content-Type: application/octet-stream, object format (mime), checksum, serial version	
 			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
 			dataObject = handleImpl.getDataObjectFromIdentifier(id);
+		} catch (Exception e) {
+			throw new NotFound("1380", "The specified object does not exist on this node.");
+		}
 			
+		try {
 			lastModified = dataObject.getUpdatedAt();
 			
 			Long contentLengthLong = dataObject.getDataSize();
 			String contentLengthStr = contentLengthLong.toString();
 			contentLength =  new BigInteger(contentLengthStr);
 			
-			// TODO: needs to be updated with correct data type from AVU
-			String format = "application/zip";
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+			String format = getDataObjectMimeType(irodsAccount, dataObject);
 			formatIdentifier.setValue(format);
 			
 			String csum = dataObject.getChecksum();
@@ -141,24 +152,31 @@ public class MNReadImpl implements MNRead {
 		int contentLength = 0;
 		String path = new String();
 		DataObject dataObject = new DataObject();
+		IRODSAccount irodsAccount;
+		IRODSFile irodsFile;
 		
+		// first try and find data object for this id
 		try {
-			// Find iRODS object
-			IRODSAccount irodsAccount = RestAuthUtils
+			irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
 			
 			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
 			dataObject = handleImpl.getDataObjectFromIdentifier(id);
-			path = dataObject.getAbsolutePath();
-			//String path = "/dfcmain/home/DFC-public/DFC-slide.pptx";
-			//String path = "/dfcmain/home/lisa/test_this.txt";	
-			IRODSFile irodsFile = irodsAccessObjectFactory
+			path = dataObject.getAbsolutePath();	
+			irodsFile = irodsAccessObjectFactory
 									.getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
 
 			if (!irodsFile.exists()) {
 				log.info("file does not exist");
-				throw new NotFound("1020", "data object id provided doest not exist");
+				throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
 			}
+		} catch(Exception ex) {
+			log.info("file does not exist");
+			throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
+		}
+		
+		// now try and stream it
+		try {
 
 			stream = irodsAccessObjectFactory
 					.getIRODSFileFactory(irodsAccount)
@@ -170,8 +188,9 @@ public class MNReadImpl implements MNRead {
 			log.info("contentLength={}", contentLength);
 			
 			response.setContentType("application/octet-stream");
-			response.setHeader("Content-Disposition","attachment;filename=" + "DFC-slide.pptx");
+			response.setHeader("Content-Disposition","attachment;filename=" + dataObject.getDataName());
 			response.setContentLength(contentLength);
+			response.addHeader("Vary", "Accept-Encoding");
 			log.info("reponse: {}", response.toString());
 			
 			output = new BufferedOutputStream(response.getOutputStream());
@@ -319,20 +338,36 @@ public class MNReadImpl implements MNRead {
 
 		DataObject dataObject = new DataObject();
 		SystemMetadata metadata = new SystemMetadata();
+		IRODSAccount irodsAccount;
+		DataObjectAO dataObjectAO;
 		
 		// TODO: hardcode version to 1 for now
 		metadata.setSerialVersion(getSerialVersion());
 		
 		Checksum checksum = new Checksum();
 		
+		// first try and find data object for this id
 		try {
-			
-			IRODSAccount irodsAccount = RestAuthUtils
+			irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
 			
-			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
+			dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
 			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
 			dataObject = handleImpl.getDataObjectFromIdentifier(id);
+
+		} catch(Exception ex) {
+			log.info("file does not exist");
+			throw new NotFound("1060", "No metadata could be found for given PID:" + id.getValue());
+		}
+		
+		try {
+			
+//			IRODSAccount irodsAccount = RestAuthUtils
+//					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+//			
+//			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
+//			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+//			dataObject = handleImpl.getDataObjectFromIdentifier(id);
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
 				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
@@ -343,8 +378,12 @@ public class MNReadImpl implements MNRead {
 				checksum.setAlgorithm("MD5");
 			}
 			
+			String mimeType = getDataObjectMimeType(irodsAccount, dataObject);
 			metadata.setIdentifier(id);
-//			metadata.setFormatId(formatId); TODO: use Jargon's data-profile here
+			ObjectFormatIdentifier formatId = new ObjectFormatIdentifier();
+			formatId.setValue(mimeType);
+			metadata.setFormatId(formatId);
+			
 			Long dataSizeLong = new Long(dataObject.getDataSize());
 			String dataSizeStr = dataSizeLong.toString();
 			metadata.setSize(new BigInteger(dataSizeStr));
@@ -420,6 +459,7 @@ public class MNReadImpl implements MNRead {
 				NotAuthorized,
 				NotImplemented,
 				ServiceFailure {
+		DataObjectListResponse dataObjectListResponse = new DataObjectListResponse();
 		List<DataObject> dataObjectList = new ArrayList<DataObject>();
 		List<ObjectInfo> objectInfoList = new ArrayList<ObjectInfo>();
 		ObjectList objectList = new ObjectList();
@@ -428,7 +468,7 @@ public class MNReadImpl implements MNRead {
 		try {
 			handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
 
-			dataObjectList = handleImpl.getListOfDataoneExposedDataObjects(
+			dataObjectListResponse = handleImpl.getListOfDataoneExposedDataObjects(
 						fromDate,
 						toDate,
 						formatId,
@@ -439,6 +479,8 @@ public class MNReadImpl implements MNRead {
 			log.info("{}", ex.toString());
 			throw new ServiceFailure("1580", "Could not retrieve list of data objects");
 		}
+		
+		dataObjectList = dataObjectListResponse.getDataObjects();
 		
 		for (DataObject dObject : dataObjectList) {
 			
@@ -452,11 +494,22 @@ public class MNReadImpl implements MNRead {
 			}
 			
 			oInfo.setDateSysMetadataModified(dObject.getUpdatedAt());
+			
+			IRODSAccount irodsAccount;
+			String mimeType = null;
+			try {
+				irodsAccount = RestAuthUtils
+						.getIRODSAccountFromBasicAuthValues(restConfiguration);
+				mimeType = getDataObjectMimeType(irodsAccount, dObject);
+			} catch (Exception e1) {
+				log.error("cannot retrieve mime type for object:{} setting to application/octet-stream",
+						dObject.getAbsolutePath());
+				mimeType = "application/octet-stream";
+			}
 			ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
-			
-			fId.setValue("application/zip"); // TODO: fix this
-			
+			fId.setValue(mimeType);
 			oInfo.setFormatId(fId);
+			
 			Identifier id;
 			try {
 				id = handleImpl.getIdentifierFromDataObject(dObject);
@@ -474,8 +527,8 @@ public class MNReadImpl implements MNRead {
 		}
 
 		objectList.setObjectInfoList(objectInfoList);
-		objectList.setTotal(objectInfoList.size());
-		objectList.setCount(count);
+		objectList.setTotal(dataObjectListResponse.getTotal());
+		objectList.setCount(objectInfoList.size());
 		objectList.setStart(start);
 		
 		return objectList;
@@ -588,6 +641,23 @@ public class MNReadImpl implements MNRead {
 		Long verLong = new Long(1);
 		String verStr = verLong.toString();
 		return new BigInteger(verStr);
+	}
+	
+	private String getDataObjectMimeType(IRODSAccount irodsAccount, DataObject dataObject)
+				throws FileNotFoundException, JargonException {
+		String mimeType = null;
+		
+		DataTypeResolutionService resolutionService = new DataTypeResolutionServiceImpl(
+				irodsAccessObjectFactory, irodsAccount);
+		DataProfileService dataProfileService = new DataProfileServiceImpl(
+				irodsAccessObjectFactory, irodsAccount, resolutionService);
+		
+		@SuppressWarnings("unchecked")
+		DataProfile<DataObject> dataProfile = dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
+		mimeType = dataProfile.getMimeType();
+		
+		return mimeType;
+		
 	}
 
 }

@@ -138,6 +138,18 @@ public class MemberNodeService {
     	return nodeCapabilities;
     }
     
+    @GET
+    @Path("/")
+    @Produces(MediaType.TEXT_XML)
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    public MNNode handleDeafaultGetCapabilities()
+    		throws NotImplemented, ServiceFailure {
+    	
+    	MNNode nodeCapabilities = handleGetCapabilities();
+    	  	  		
+    	return nodeCapabilities;
+    }
+    
     //log?[fromDate={fromDate}][&toDate={toDate}][&event={event}][&pidFilter={pidFilter}][&start={start}][&count={count}]
 	@GET
     @Path("/log")

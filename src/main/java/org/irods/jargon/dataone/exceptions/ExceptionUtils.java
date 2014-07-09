@@ -22,7 +22,7 @@ public class ExceptionUtils {
 	
 	public static String getNotFoundXmlForObjectId(String pid, String detailCode, String description) {
 				
-		final String name = "Not Found";
+		final String name = "NotFound";
 		final String errorCode = "404";
 		
 		DocumentBuilder documentBuilder;

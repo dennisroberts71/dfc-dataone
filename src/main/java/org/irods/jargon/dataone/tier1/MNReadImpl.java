@@ -190,7 +190,7 @@ public class MNReadImpl implements MNRead {
 			response.setContentType("application/octet-stream");
 			response.setHeader("Content-Disposition","attachment;filename=" + dataObject.getDataName());
 			response.setContentLength(contentLength);
-			response.addHeader("Vary", "Accept-Encoding");
+			//response.addHeader("Vary", "Accept-Encoding");
 			log.info("reponse: {}", response.toString());
 			
 			output = new BufferedOutputStream(response.getOutputStream());
@@ -292,14 +292,17 @@ public class MNReadImpl implements MNRead {
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
 				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
-				throw new NotFound("1410", "checksum does not exist for data object id provided");
+				throw new NotFound("1410", "Checksum does not exist for data object id provided");
 			}
 			checksum.setValue(csum);
 			checksum.setAlgorithm("MD5");
 			
-		} catch (Exception e) {
+		} catch (FileNotFoundException nf) {
 			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
-			throw new ServiceFailure("1410", e.getMessage());
+			throw new NotFound("1410", "No data object could be found for given PID:");
+		} catch (JargonException je) {
+			log.error("cannot access iRODS object: {}", dataObject.getAbsolutePath());
+			throw new ServiceFailure("1410", je.getMessage());
 		} finally {	  
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}	
@@ -404,7 +407,15 @@ public class MNReadImpl implements MNRead {
 				for (UserFilePermission permission : permissions) {
 					AccessRule rule = new AccessRule();
 					Subject subject = new Subject();
-					subject.setValue("uid=" + permission.getUserName());
+					
+					// in DataONE - anonymous translates to public
+					// TODO: also may need to make translation for "public" to "authenticatedUser"
+					if (permission.getUserName().equals("anonymous")) {
+						subject.setValue("public");
+					}
+					else {
+						subject.setValue("uid=" + permission.getUserName());
+					}
 					rule.addSubject(subject);
 					List<Permission> d1Premissions = getD1Permission(permission);
 					for(Permission d1Premission : d1Premissions) {

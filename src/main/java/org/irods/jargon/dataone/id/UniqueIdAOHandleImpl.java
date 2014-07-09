@@ -17,6 +17,7 @@ import net.handle.hdllib.HandleValue;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
@@ -48,12 +49,17 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 	}
 	
 	@Override
-	public DataObject getDataObjectFromIdentifier(Identifier identifier) throws JargonException {
+	public DataObject getDataObjectFromIdentifier(Identifier identifier)
+			throws JargonException, FileNotFoundException {
 		
 		DataObject dataObject = null;
 		log.info("retrieving irods data object id from identifier: {}", identifier.getValue());
 		long dataObjectId = getDataObjectIdFromDataOneIdentifier(identifier);
 		log.info("got id: {}", dataObjectId);
+		
+		if (dataObjectId < 0) {
+			throw new FileNotFoundException("");
+		}
 	
 		try {	
 			IRODSAccount irodsAccount = RestAuthUtils
@@ -70,9 +76,9 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 				log.warn("did not find data object for id={}", dataObjectId);
 			}
 			
-		} catch (Exception e) {
-			log.warn("Cannot access iRODS object for id={}", dataObjectId);
-			throw new JargonException(e.getMessage());
+//		} catch (Exception e) {
+//			log.warn("Cannot access iRODS object for id={}", dataObjectId);
+//			throw e;
 		} finally {	  
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
@@ -226,11 +232,16 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 		return dataObjectListResponse;
 	}
 	
-	public long getDataObjectIdFromDataOneIdentifier(
-			Identifier pid) throws JargonException {
+	public long getDataObjectIdFromDataOneIdentifier(Identifier pid) {
 
 		int idIdx = pid.getValue().indexOf("/")+1;
-		long dataObjectId = Long.parseLong(pid.getValue().substring(idIdx));
+		long dataObjectId;
+		try {
+			dataObjectId = Long.parseLong(pid.getValue().substring(idIdx));
+		} catch (NumberFormatException e) {
+			// set to catch illegal object identifiers for iRODS MN
+			dataObjectId = -1;
+		}
 		
 		log.info("getDataObjectIdFromDataOneIdentifier: returning data object id: {}", dataObjectId);
 		return dataObjectId;	

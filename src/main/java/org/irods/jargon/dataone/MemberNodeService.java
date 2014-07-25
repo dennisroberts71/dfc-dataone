@@ -378,12 +378,10 @@ public class MemberNodeService {
     	Checksum checksum = describeResponse.getDataONE_Checksum();
     	String checksumStr = checksum.getAlgorithm() + "," + checksum.getValue();
     	
-    	//TODO: test this!
-//    	SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-//		String dateStr = df.format(describeResponse.getLast_Modified());
+    	Date gmtDate = ISO8601.convertToGMT(describeResponse.getLast_Modified());
     	Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-    	cal.setTime(describeResponse.getLast_Modified());
-    	String dateStr = ISO8601.fromCalendar(cal);
+    	cal.setTime(gmtDate);
+    	String dateStr = ISO8601.fromCalendar(cal);    	
 		
 		Response.ResponseBuilder builder = Response.ok();
         builder.header("Last-Modified", dateStr);

@@ -3,9 +3,11 @@ package org.irods.jargon.dataone.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 public final class ISO8601 {
     /** Transform Calendar to ISO 8601 string. */
@@ -13,7 +15,8 @@ public final class ISO8601 {
         Date date = calendar.getTime();
         String formatted = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
             .format(date);
-        return formatted.substring(0, 26) + ":" + formatted.substring(22);
+        // add ":" to timezone offset, like this 2013-10-10T13:13:23.000-04:00
+        return formatted.substring(0, 26) + ":" + formatted.substring(26);
     }
 
     /** Get current date and time formatted as ISO 8601 string. */
@@ -34,5 +37,23 @@ public final class ISO8601 {
         Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(s);
         calendar.setTime(date);
         return calendar;
+    }
+    
+    public static Date convertToGMT(Date date) {
+    	Date gmtDate = null;
+    	
+    	DateFormat gmtFormat = new SimpleDateFormat();
+    	TimeZone gmtTime = TimeZone.getTimeZone("GMT");
+    	gmtFormat.setTimeZone(gmtTime);
+    	//System.out.println("Current DateTime in GMT : " + gmtFormat.format(new Date()));
+    	String gmtStr = gmtFormat.format(date);
+    	try {
+			gmtDate = gmtFormat.parse(gmtStr);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return gmtDate;
     }
 }

@@ -32,3 +32,7 @@ src/**/RestVersion.java
 
 #removed files
 test-certs/public.pem
+test-certs/private.pem
+test-certs/cakey.pem
+test-certs/cacert.pem
+src/main/resources/admpriv.bin

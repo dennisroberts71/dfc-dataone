@@ -131,11 +131,11 @@ public class MNCoreImpl implements MNCore {
     // TODO: need to figure out correct format for these and implement properly
     	List<Subject> subjects = new ArrayList<Subject>();
     	Subject subject = new Subject();
-    	subject.setValue("CN=urn:node:DEMO2, DC=dataone, DC=org");
+    	subject.setValue("CN=urn:node:mnTestDFC,DC=dataone,DC=org");
     	subjects.add(subject);
     	List<Subject> contactSubjects =  new ArrayList<Subject>();
     	Subject contactSubject = new Subject();
-    	contactSubject.setValue("CN=METACAT1, DC=dataone, DC=org");
+    	contactSubject.setValue("CN=Lisa Stillwell A15851,O=University of North Carolina at Chapel Hill,C=US,DC=cilogon,DC=org");
     	contactSubjects.add(contactSubject);
 
     	node.setPing(ping);

@@ -71,7 +71,7 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			// get elasticsearch properties
 			PropertiesLoader loader = new PropertiesLoader();
 			String elasticsearchDNS = loader.getProperty("irods.dataone.events.elasticsearch.dns");
-			int elasticsearchport = Integer.parseInt(loader.getProperty("irods.dataone.events.elasticsearch.dns"));
+			int elasticsearchport = Integer.parseInt(loader.getProperty("irods.dataone.events.elasticsearch.port"));
 			String searchIndex = loader.getProperty("irods.dataone.events.elasticsearch.searchindex");
 			String searchType = loader.getProperty("irods.dataone.events.elasticsearch.searchtype");
 			String rangeField = "created";

@@ -29,3 +29,6 @@ local.properties
 
 #Version file
 src/**/RestVersion.java
+
+#removed files
+test-certs/public.pem

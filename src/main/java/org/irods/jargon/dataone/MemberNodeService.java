@@ -16,14 +16,7 @@ import org.dataone.service.types.v1.Log;
 import org.dataone.service.types.v1.Node;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.dataone.service.types.v1.ObjectList;
-import org.dataone.service.types.v1.Schedule;
-import org.dataone.service.types.v1.Services;
-import org.dataone.service.types.v1.Service;
-import org.dataone.service.types.v1.Session;
-import org.dataone.service.types.v1.Subject;
-import org.dataone.service.types.v1.Synchronization;
 import org.dataone.service.types.v1.SystemMetadata;
-import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
@@ -33,10 +26,6 @@ import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNLog;
 import org.irods.jargon.dataone.domain.MNObjectList;
-import org.irods.jargon.dataone.domain.MNSchedule;
-import org.irods.jargon.dataone.domain.MNService;
-import org.irods.jargon.dataone.domain.MNSynchronization;
-import org.irods.jargon.dataone.domain.MNPing;
 import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.domain.MNSystemMetadata;
 import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
@@ -53,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -65,10 +53,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -81,7 +67,7 @@ import java.util.TimeZone;
 @Path("/mn/v1")
 public class MemberNodeService {
 	
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Inject
 	IRODSAccessObjectFactory irodsAccessObjectFactory;
@@ -156,11 +142,9 @@ public class MemberNodeService {
     @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public MNLog handleGetLogRecords(
-//    							@QueryParam("fromDate") Date fromDate,
-//    							@QueryParam("toDate") Date toDate,
     							@QueryParam("fromDate") String fromDateStr,
     							@QueryParam("toDate") String toDateStr,
-    							@QueryParam("event") Event event,
+    							@QueryParam("event") String event,
     							@QueryParam("pidFilter") String pidFilter,
     							@DefaultValue("0") @QueryParam("start") int start,
     							@DefaultValue("1000") @QueryParam("count") int count
@@ -171,9 +155,9 @@ public class MemberNodeService {
     								   InvalidRequest,
     								   InvalidToken {
 
-		log.info("/log request: fromData={} toDate={}", fromDateStr, toDateStr);
-		log.info("/log request: event={} pidFilter={}", event, pidFilter);
-		log.info("/log request: start={} count={}", start, count);
+		logger.info("/log request: fromData={} toDate={}", fromDateStr, toDateStr);
+		logger.info("/log request: event={} pidFilter={}", event, pidFilter);
+		logger.info("/log request: start={} count={}", start, count);
 		
 		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
     	
@@ -189,17 +173,21 @@ public class MemberNodeService {
 				toDate = ISO8601.toCalendar(toDateStr).getTime();
 			}
 		} catch (ParseException e) {
-			log.error("handleListObjects: unable to parse query dates");
+			logger.error("handleListObjects: unable to parse query dates");
 			throw new InvalidRequest("1480", e.getMessage());
 		}
+		
+		Event e = Event.convert(event);
 		
 		Log log = mnCoreImpl.getLogRecords(
 									fromDate,
 									toDate,
-									event,
+									e,
 									pidFilter,
 									start,
 									count);
+		logger.info("returned log={}", log.toString());
+		
 		
 		// set Log attributes in MNLog
 		MNLog mnLog = new MNLog();
@@ -237,7 +225,7 @@ public class MemberNodeService {
 		try {
 			eventLog.recordEvent(Event.READ, id, "DataONE replication");
 		} catch (Exception e) {
-			log.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
+			logger.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
 		}
 		
 	}
@@ -306,7 +294,7 @@ public class MemberNodeService {
 		try {
 			eventLog.recordEvent(Event.REPLICATE, id, "DataONE replication");
 		} catch (Exception e) {
-			log.error("Unable to log EVENT: {} for data object id: {}", Event.REPLICATE, pid);
+			logger.error("Unable to log EVENT: {} for data object id: {}", Event.REPLICATE, pid);
 		}
 		
 	}
@@ -455,7 +443,7 @@ public class MemberNodeService {
 				toDate = ISO8601.toCalendar(toDateStr).getTime();
 			}
 		} catch (ParseException e) {
-			log.error("handleListObjects: unable to parse query dates");
+			logger.error("handleListObjects: unable to parse query dates");
 			throw new InvalidRequest("1540", e.getMessage());
 		}
 		

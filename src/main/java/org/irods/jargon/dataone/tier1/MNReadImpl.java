@@ -1,14 +1,12 @@
 package org.irods.jargon.dataone.tier1;
 
 import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -57,6 +55,7 @@ import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
 import org.irods.jargon.dataone.id.DataObjectListResponse;
 import org.irods.jargon.dataone.id.UniqueIdAOHandleImpl;
+import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,8 +68,7 @@ public class MNReadImpl implements MNRead {
 	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
 	private final RestConfiguration restConfiguration;
 	
-	private Properties properties;
-	private String propertiesFilename = "d1client.properties";
+	private PropertiesLoader properties = new PropertiesLoader();
     
     public MNReadImpl(
     			IRODSAccessObjectFactory irodsAccessObjectFactory,
@@ -78,8 +76,6 @@ public class MNReadImpl implements MNRead {
     	
     	this.irodsAccessObjectFactory = irodsAccessObjectFactory;
     	this.restConfiguration = restConfiguration;
-    	
-    	loadProperties();
     }
 
 	@Override
@@ -364,13 +360,6 @@ public class MNReadImpl implements MNRead {
 		}
 		
 		try {
-			
-//			IRODSAccount irodsAccount = RestAuthUtils
-//					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-//			
-//			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-//			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
-//			dataObject = handleImpl.getDataObjectFromIdentifier(id);
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
 				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
@@ -622,30 +611,7 @@ public class MNReadImpl implements MNRead {
 		}
 		return permissions;
 	}
-	
-	private void loadProperties() {
-		
-		this.properties = new Properties();
-		InputStream input = null;
-		input = getClass().getClassLoader().getResourceAsStream(this.propertiesFilename);
 
-		// load a properties file
-		try {
-			this.properties.load(input);
-		} catch (IOException e) {
-			log.error("Cannot load Member Node properties file: {}", this.propertiesFilename);
-			log.error("IOException: {}", e.getStackTrace());
-			this.properties = new Properties();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					// do nothing
-				}
-			}
-		}
-	}
 	
 	private BigInteger getSerialVersion() {
 		// TODO: hardcode version to 1 for now

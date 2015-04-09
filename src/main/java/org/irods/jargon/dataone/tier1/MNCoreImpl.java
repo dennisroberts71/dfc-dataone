@@ -5,25 +5,20 @@ import org.dataone.service.mn.tier1.v1.MNCore;
 import org.dataone.service.types.v1.Event;
 import org.dataone.service.types.v1.Log;
 import org.dataone.service.types.v1.Node;
-import org.dataone.service.types.v1.NodeReference;
 import org.dataone.service.types.v1.Ping;
-import org.dataone.service.types.v1.Schedule;
-import org.dataone.service.types.v1.Service;
-import org.dataone.service.types.v1.Services;
 import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.Synchronization;
 import org.dataone.service.types.v1.NodeState;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.pub.EnvironmentalInfoAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
-import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
 import org.irods.jargon.dataone.events.EventsEnum;
+import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,14 +123,20 @@ public class MNCoreImpl implements MNCore {
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
     	
-    // TODO: need to figure out correct format for these and implement properly
+    	// get properties
+    	PropertiesLoader pl = new PropertiesLoader();
+    	String subjectString = new String();
+    	subjectString += pl.getProperty("irods.dataone.subject-string");
+    	String contactSubjectString = new String();
+    	contactSubjectString += pl.getProperty("irods.dataone.contact-subject-string");
+    	
     	List<Subject> subjects = new ArrayList<Subject>();
     	Subject subject = new Subject();
-    	subject.setValue("CN=urn:node:mnTestDFC,DC=dataone,DC=org");
+    	subject.setValue(subjectString);
     	subjects.add(subject);
     	List<Subject> contactSubjects =  new ArrayList<Subject>();
     	Subject contactSubject = new Subject();
-    	contactSubject.setValue("CN=Lisa Stillwell A15851,O=University of North Carolina at Chapel Hill,C=US,DC=cilogon,DC=org");
+    	contactSubject.setValue(contactSubjectString);
     	contactSubjects.add(contactSubject);
 
     	node.setPing(ping);

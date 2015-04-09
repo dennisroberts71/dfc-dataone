@@ -4,10 +4,12 @@ import java.util.Date;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 
 import org.dataone.service.types.v1.LogEntry;
 
-@XmlAccessorType(XmlAccessType.NONE)
+//@XmlAccessorType(XmlAccessType.NONE)
+@XmlType(propOrder={"entryId","identifier","ipAddress","userAgent","subject","event","dateLogged","nodeIdentifier"})
 public class MNLogEntry {
 	
 	private String entryId;

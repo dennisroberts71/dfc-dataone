@@ -29,9 +29,9 @@
  </beans:bean>
 
  <beans:bean id="restConfiguration" class="org.irods.jargon.dataone.configuration.RestConfiguration"> 
-    <beans:property name="irodsHost" value="iren2.renci.org" />
-    <beans:property name="irodsPort" value="1237" />
-    <beans:property name="irodsZone" value="dfcmain" />
+    <beans:property name="irodsHost" value="dfc-test-irods3.edc.renci.org" />
+    <beans:property name="irodsPort" value="1247" />
+    <beans:property name="irodsZone" value="dfc3" />
     <beans:property name="defaultStorageResource" value="demoResc" />
     <beans:property name="webInterfaceURL" value="https://geni-gimi.renci.org:8443/idrop-web2" />
  </beans:bean>

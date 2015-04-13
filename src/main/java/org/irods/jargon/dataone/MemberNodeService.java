@@ -39,6 +39,7 @@ import com.ibm.icu.text.SimpleDateFormat;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -169,7 +170,7 @@ public class MemberNodeService {
 			if (fromDateStr != null) {
 				fromDate = ISO8601.toCalendar(fromDateStr).getTime();
 			}
-			if (fromDateStr != null) {
+			if (toDateStr != null) {
 				toDate = ISO8601.toCalendar(toDateStr).getTime();
 			}
 		} catch (ParseException e) {
@@ -384,6 +385,7 @@ public class MemberNodeService {
 	
 	@POST
     @Path("/error")
+	@Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.TEXT_XML)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public Response handleSynchronizationFailed(
@@ -412,8 +414,6 @@ public class MemberNodeService {
 	@Path("/object")
 	@Produces(MediaType.TEXT_XML)
 	public MNObjectList handleListObjects( 
-//					@QueryParam("fromDate") final Date fromDate,
-//					@QueryParam("toDate") final Date toDate,
 					@QueryParam("fromDate") final String fromDateStr,
 					@QueryParam("toDate") final String toDateStr,
 					@QueryParam("formatId") final String formatIdStr,

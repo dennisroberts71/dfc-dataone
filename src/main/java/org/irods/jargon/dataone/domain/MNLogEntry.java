@@ -92,7 +92,7 @@ public class MNLogEntry {
 		}
 		
 		if (logEntry.getEvent() != null) {
-			this.event = logEntry.getEvent().name();
+			this.event = logEntry.getEvent().xmlValue();
 		}
 		
 		if (logEntry.getIdentifier() != null) {
@@ -107,8 +107,17 @@ public class MNLogEntry {
 			this.ipAddress = logEntry.getIpAddress();
 		}
 		
+		else {
+			// need to use empty string to make this tag show up
+			this.ipAddress = new String();
+		}
+		
 		if (logEntry.getUserAgent() != null) {
 			this.userAgent = logEntry.getUserAgent();
+		}
+		else {
+			// need to use empty string to make this tag show up
+			this.userAgent = new String();
 		}
 		
 		if (logEntry.getSubject() != null) {

@@ -40,11 +40,11 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.dataprofile.DataProfileService;
-import org.irods.jargon.dataprofile.DataTypeResolutionService;
-import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
-import org.irods.jargon.dataprofile.DataProfileServiceImpl;
-import org.irods.jargon.dataprofile.DataProfile;
+//import org.irods.jargon.dataprofile.DataProfileService;
+//import org.irods.jargon.dataprofile.DataTypeResolutionService;
+//import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
+//import org.irods.jargon.dataprofile.DataProfileServiceImpl;
+//import org.irods.jargon.dataprofile.DataProfile;
 //import org.irods.jargon.core.pub.Stream2StreamAO;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFile;
@@ -83,6 +83,7 @@ public class MNReadImpl implements MNRead {
 			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 		
 		if (id == null || id.getValue().isEmpty()) {
+			log.error("id is null or empty");
 			throw new NotFound("1402", "invalid iRODS data object id");
 		}
 
@@ -98,6 +99,7 @@ public class MNReadImpl implements MNRead {
 			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
 			dataObject = handleImpl.getDataObjectFromIdentifier(id);
 		} catch (Exception e) {
+			log.info("cannot find id: {}", id.getValue());
 			throw new NotFound("1380", "The specified object does not exist on this node.");
 		}
 			
@@ -120,7 +122,8 @@ public class MNReadImpl implements MNRead {
 			}
 			else {
 				checksum.setValue(csum);
-				checksum.setAlgorithm("MD5");
+				// SHA-2?
+				checksum.setAlgorithm("SHA-2");
 			}
 			
 			serialVersion = getSerialVersion();
@@ -622,16 +625,19 @@ public class MNReadImpl implements MNRead {
 	
 	private String getDataObjectMimeType(IRODSAccount irodsAccount, DataObject dataObject)
 				throws FileNotFoundException, JargonException {
-		String mimeType = null;
+		//String mimeType = null;
+		String mimeType = "application/x-netcdf4";
 		
-		DataTypeResolutionService resolutionService = new DataTypeResolutionServiceImpl(
-				irodsAccessObjectFactory, irodsAccount);
-		DataProfileService dataProfileService = new DataProfileServiceImpl(
-				irodsAccessObjectFactory, irodsAccount, resolutionService);
+		// TODO: MUST FIX THIS - data-profile stuff removed from jargon!!!!!!!
 		
-		@SuppressWarnings("unchecked")
-		DataProfile<DataObject> dataProfile = dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
-		mimeType = dataProfile.getMimeType();
+//		DataTypeResolutionService resolutionService = new DataTypeResolutionServiceImpl(
+//				irodsAccessObjectFactory, irodsAccount);
+//		DataProfileService dataProfileService = new DataProfileServiceImpl(
+//				irodsAccessObjectFactory, irodsAccount, resolutionService);
+//		
+//		@SuppressWarnings("unchecked")
+//		DataProfile<DataObject> dataProfile = dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
+//		mimeType = dataProfile.getMimeType();
 		
 		return mimeType;
 		

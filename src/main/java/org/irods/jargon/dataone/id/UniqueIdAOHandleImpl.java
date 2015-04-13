@@ -24,11 +24,11 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
-import org.irods.jargon.dataprofile.DataProfile;
-import org.irods.jargon.dataprofile.DataProfileService;
-import org.irods.jargon.dataprofile.DataProfileServiceImpl;
-import org.irods.jargon.dataprofile.DataTypeResolutionService;
-import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
+//import org.irods.jargon.dataprofile.DataProfile;
+//import org.irods.jargon.dataprofile.DataProfileService;
+//import org.irods.jargon.dataprofile.DataProfileServiceImpl;
+//import org.irods.jargon.dataprofile.DataTypeResolutionService;
+//import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,16 +314,18 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 	private boolean matchesFormatId(ObjectFormatIdentifier formatId, DataObject dataObject) 
 				throws JargonException {
 		
-		IRODSAccount irodsAccount = RestAuthUtils
-				.getIRODSAccountFromBasicAuthValues(this.restConfiguration);
-		DataTypeResolutionService resolutionService = new DataTypeResolutionServiceImpl(
-				irodsAccessObjectFactory, irodsAccount);
-		DataProfileService dataProfileService = new DataProfileServiceImpl(
-				irodsAccessObjectFactory, irodsAccount, resolutionService);
-		
-		@SuppressWarnings("unchecked")
-		DataProfile<DataObject> dataProfile = dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
-		String mimeType = dataProfile.getMimeType();
+//		IRODSAccount irodsAccount = RestAuthUtils
+//				.getIRODSAccountFromBasicAuthValues(this.restConfiguration);
+//		DataTypeResolutionService resolutionService = new DataTypeResolutionServiceImpl(
+//				irodsAccessObjectFactory, irodsAccount);
+//		DataProfileService dataProfileService = new DataProfileServiceImpl(
+//				irodsAccessObjectFactory, irodsAccount, resolutionService);
+//		
+//		@SuppressWarnings("unchecked")
+//		DataProfile<DataObject> dataProfile = dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
+		//String mimeType = dataProfile.getMimeType();
+		// TODO: MUST FIX THIS - data-profile stuff removed from jargon!!!!!!!
+		String mimeType = "application/x-netcdf4";
 		
 		if ((formatId.getValue() == null) || (formatId.equals(mimeType))) {
 			return true;

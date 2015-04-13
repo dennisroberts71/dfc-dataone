@@ -11,7 +11,8 @@
 	<url>https://code.renci.org/gf/project/irods-dataone/</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jargon.version>3.3.6-SNAPSHOT</jargon.version>
+		<!-- <jargon.version>3.3.6-SNAPSHOT</jargon.version> -->
+		<jargon.version>4.0.2.1-SNAPSHOT</jargon.version>
 		<resteasy.version>2.3.6.Final</resteasy.version>
 		<spring.core.version>3.1.0.RELEASE</spring.core.version>
 		<spring.security.version>3.1.0.RELEASE</spring.security.version>
@@ -238,11 +239,13 @@
 				<artifactId>jargon-core</artifactId>
 				<version>${jargon.version}</version>
 			</dependency>
+			<!--
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>data-profile</artifactId>
 				<version>${jargon.version}</version>
 			</dependency>
+			-->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
@@ -394,10 +397,12 @@
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-core</artifactId>
 			</dependency>
+			<!--
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>data-profile</artifactId>
 			</dependency>
+			  -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>

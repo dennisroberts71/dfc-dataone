@@ -187,7 +187,7 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			// set header values
 			int total = 0;
 			log.setStart(start);
-			log.setCount(count);
+			log.setCount(searchHits.length);
 			if ( totalHits > (long)Integer.MAX_VALUE ) {
 				total = Integer.MAX_VALUE;
 			}

@@ -123,16 +123,28 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			// TODO: If no timezone information is provided UTC will be assumed.
 			RangeFilterBuilder filterBuilder = FilterBuilders
 				.rangeFilter(rangeField);
-
-			if (fromDate != null) {
-				filterBuilder
-					.from(fromDate.getTime()/1000)
+			if (datesExist) {
+				if (fromDate != null) {
+					filterBuilder
+						.from(fromDate.getTime())
+						//.from(fromDate.getTime()/1000)
+						.includeLower(true);
+				}
+				else {
+					filterBuilder
+					.from(0)
 					.includeLower(true);
-			}
-			if (toDate != null) {
-				filterBuilder
-				.to(toDate.getTime()/1000)
-				.includeUpper(false);
+				}
+				if (toDate != null) {
+					filterBuilder
+					.to(toDate.getTime())
+					.includeUpper(false);
+				}
+				else {
+					filterBuilder
+					.to(System.currentTimeMillis())
+					.includeUpper(false);
+				}
 			}
 
 			logger.info("creating elastic search transport client: dns={}, port={}", elasticsearchDNS, elasticsearchport);

@@ -24,6 +24,7 @@ import org.irods.jargon.dataone.tier1.MNReadImpl;
 import org.irods.jargon.dataone.utils.ISO8601;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNChecksum;
+import org.irods.jargon.dataone.domain.MNError;
 import org.irods.jargon.dataone.domain.MNLog;
 import org.irods.jargon.dataone.domain.MNObjectList;
 import org.irods.jargon.dataone.domain.MNNode;
@@ -31,6 +32,8 @@ import org.irods.jargon.dataone.domain.MNSystemMetadata;
 import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
 import org.jboss.resteasy.annotations.providers.jaxb.json.Mapped;
 import org.jboss.resteasy.annotations.providers.jaxb.json.XmlNsMap;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,10 +55,15 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.xml.bind.JAXB;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -84,7 +92,7 @@ public class MemberNodeService {
     public Response handlePing()
     //public void handlePing(@Context final HttpServletResponse response)
     		throws NotImplemented, ServiceFailure, InsufficientResources, JargonException {
-    	
+
 //    	if (authorization == null || authorization.isEmpty()) {
 //			throw new IllegalArgumentException("null or empty authorization");
 //		}
@@ -114,7 +122,7 @@ public class MemberNodeService {
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public MNNode handleGetCapabilities()
     		throws NotImplemented, ServiceFailure {
-    	
+
     	MNNode nodeCapabilities = new MNNode();
     	    	
     	MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
@@ -131,7 +139,7 @@ public class MemberNodeService {
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public MNNode handleDeafaultGetCapabilities()
     		throws NotImplemented, ServiceFailure {
-    	
+
     	MNNode nodeCapabilities = handleGetCapabilities();
     	  	  		
     	return nodeCapabilities;
@@ -242,7 +250,7 @@ public class MemberNodeService {
 										  NotFound,
 										  NotImplemented,
 										  InvalidRequest {
-		
+
 		MNChecksum mnChecksum = new MNChecksum();
 		
 		if (!algorithm.toUpperCase().equals("MD5")) {
@@ -275,7 +283,6 @@ public class MemberNodeService {
 										  NotFound,
 										  NotImplemented,
 										  InsufficientResources {
-
 
 //		if (pid == null || pid.isEmpty()) {
 //			throw new NotFound("2185", "invalid iRODS data object id");
@@ -311,7 +318,7 @@ public class MemberNodeService {
 										  NotFound,
 										  NotImplemented,
 										  InvalidRequest {
-		
+
 		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
 
 //		if (pid == null || pid.isEmpty()) {
@@ -385,20 +392,35 @@ public class MemberNodeService {
 	
 	@POST
     @Path("/error")
-	@Consumes(MediaType.TEXT_XML)
-    @Produces(MediaType.TEXT_XML)
+	@Produces(MediaType.TEXT_XML)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
     public Response handleSynchronizationFailed(
-				final SynchronizationFailed message)
+			MultipartFormDataInput input)
     		throws NotAuthorized, NotImplemented, ServiceFailure, InvalidToken {
 
+		Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
+		List<InputPart> inputParts = uploadForm.get("message");
+		if (inputParts == null || inputParts.size() == 0) {
+			throw new ServiceFailure("2161", "Synch Failure Exception cannot parse message");
+		}
+		String str_xml = null;
+		try {
+			str_xml = inputParts.get(0).getBodyAsString();
+		} catch (IOException e) {
+			throw new ServiceFailure("2161", "Synch Failure Exception cannot extract message xml");
+		}
+
+		MNError error = JAXB.unmarshal(new StringReader(str_xml), MNError.class);
+		SynchronizationFailed message = error.copyToSynchronizationFailed();
+
 		if (message == null) {
-			throw new ServiceFailure("2161", "Synch Failure Exception object is null");
+			throw new ServiceFailure("2161", "Synch Failure Exception message is null");
 		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		boolean success = mnReadImpl.synchronizationFailed(message);
-		
+
 		if (!success) {
 			throw new ServiceFailure("2161", "Failed to log Synchronization Failure event");
 		}
@@ -426,6 +448,7 @@ public class MemberNodeService {
 					NotAuthorized,
 					InvalidRequest,
 					NotImplemented {
+
 		MNObjectList mnObjectList = new MNObjectList();
 		
 		// parse any query arguments to convert into correct formats,

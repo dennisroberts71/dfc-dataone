@@ -33,6 +33,8 @@
     <beans:property name="irodsPort" value="1247" />
     <beans:property name="irodsZone" value="dfc3" />
     <beans:property name="defaultStorageResource" value="demoResc" />
+    <beans:property name="irodsUserName" value="dataone" />
+    <beans:property name="irodsUserPswd" value="password" />
     <beans:property name="webInterfaceURL" value="https://geni-gimi.renci.org:8443/idrop-web2" />
  </beans:bean>
 

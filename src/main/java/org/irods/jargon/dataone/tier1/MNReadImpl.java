@@ -626,7 +626,7 @@ public class MNReadImpl implements MNRead {
 	private String getDataObjectMimeType(IRODSAccount irodsAccount, DataObject dataObject)
 				throws FileNotFoundException, JargonException {
 		//String mimeType = null;
-		String mimeType = "application/x-netcdf4";
+		String mimeType = "netCDF-4";
 		
 		// TODO: MUST FIX THIS - data-profile stuff removed from jargon!!!!!!!
 		

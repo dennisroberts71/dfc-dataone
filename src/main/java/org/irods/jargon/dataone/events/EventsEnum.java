@@ -67,7 +67,7 @@ public enum EventsEnum {
 			return DELETE;
 		else if (e.equals("replicate") || e.equals("data object replicate"))
 			return REPLICATE;
-		else if (e.equals("synch_failure"))
+		else if (e.equals("synch_failure")  || e.equals("data object synch_failure"))
 			return SYNCHRONIZATION_FAILED;
 		//else if (e.equals("?"))
 			//return REPLICATION_FAILED; not supported yet

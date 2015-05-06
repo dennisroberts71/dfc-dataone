@@ -19,6 +19,7 @@ import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.RuleProcessingAO;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.rule.IRODSRuleExecResult;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
@@ -43,7 +44,7 @@ import org.elasticsearch.search.SearchHit;
 public class EventLogAOElasticSearchImpl implements EventLogAO {
 	
 		// Hard-code subject for now
-		private final String SUBJECT_USER = "anonymous";
+		private final String SUBJECT_USER = "dataone";
 		final IRODSAccessObjectFactory irodsAccessObjectFactory;
 		final RestConfiguration restConfiguration;
 		
@@ -212,7 +213,9 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			if (count > searchHits.length) count = searchHits.length;
 			for (int c = 0; c < count; c++) {
 				LogEntry logEntry = new LogEntry();
-				logEntry.setEntryId(String.valueOf(start++));
+				// DataONE's Mark Servilla siad this entry id should be an object id.
+				// now set below, near setIdentifier
+				//logEntry.setEntryId(String.valueOf(start++));
 				
 				Map<String, Object> hit = searchHits[c].sourceAsMap();
 				
@@ -229,6 +232,8 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 				String objectUri = new String((String)dataEntity.get("uri"));
 				int end = objectUri.indexOf('@');
 				String objectPath = objectUri.substring(0, end);
+				String objectId = getDataObjectEntryId(objectPath);
+				logEntry.setEntryId(objectId);
 				Identifier identifier = getDataObjectIdentifier(objectPath);
 				logEntry.setIdentifier(identifier);
 				
@@ -290,7 +295,7 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 
 
 		// execute rule to add event to databook event log
-		// sendAccess("synch_failure", user name, data object identifier, timestamp in seconds, short description);
+		// sendAccess("synch_failure", user name, data object uri, object type, timestamp in seconds, short description);
 		@Override
 		public void recordEvent(Event event, Identifier id, String description) 
 									throws InvalidArgumentException, JargonException, ServiceFailure {
@@ -305,17 +310,28 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			
 			EventsEnum e = EventsEnum.valueOfFromDataOne(event);
 			String databookEvent = e.getDatabookEvent();
-			Long timeNow = new Long(java.lang.System.currentTimeMillis()/1000);
+			//Long timeNow = new Long(java.lang.System.currentTimeMillis()/1000);
+			Long timeNow = new Long(java.lang.System.currentTimeMillis());
 			String timeNowStr = timeNow.toString();
 			
 			UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
-			long dataObjectId = handleImpl.getDataObjectIdFromDataOneIdentifier(id);
-			String dataObjIdStr = new Long(dataObjectId).toString();
+			DataObject dataObject = handleImpl.getDataObjectFromIdentifier(id);
+			// going to use dataObject path for description - as suggested by Hao 5/1/15
+			// this is required in order to be able to query event logs by path later
+			String pathDescription = dataObject.getAbsolutePath();
+			int dataObjectId = dataObject.getId();
+			String dataObjIdStr = new Integer(dataObjectId).toString();
+//			long dataObjectId = handleImpl.getDataObjectIdFromDataOneIdentifier(id);
+//			String dataObjIdStr = new Long(dataObjectId).toString(); 
 				
 			IRODSAccount irodsAccount = RestAuthUtils
 				.getIRODSAccountFromBasicAuthValues(this.restConfiguration);
 			RuleProcessingAO ruleProcessingAO = irodsAccessObjectFactory
 				.getRuleProcessingAO(irodsAccount);
+			IRODSFile irodsFile = irodsAccessObjectFactory
+					.getIRODSFileFactory(irodsAccount).instanceIRODSFile(pathDescription);
+			Long createTime = new Long(irodsFile.lastModified());
+			String createTimeStr = createTime.toString();
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append("addEventRule {\n");
@@ -324,9 +340,14 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			sb.append("\", \"");
 			sb.append(SUBJECT_USER);
 			sb.append("\", \"");
-			sb.append(dataObjIdStr);
+			sb.append(pathDescription);
+			sb.append("@");
+			sb.append(createTimeStr);
+			sb.append("\", \"");
+			sb.append("DataObject");
 			sb.append("\", \"");
 			sb.append(timeNowStr);
+			
 			if (description != null) {
 				sb.append("\", \"");
 				sb.append(description);
@@ -336,6 +357,20 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			String ruleString = sb.toString();
 
 			IRODSRuleExecResult result = ruleProcessingAO.executeRule(ruleString);
+		}
+		
+		private String getDataObjectEntryId(String dataObjectPath) throws JargonException {
+			String dataObjectId = null;
+			
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+	
+			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
+			DataObject dataObject = dataObjectAO.findByAbsolutePath(dataObjectPath);
+			int id = dataObject.getId();
+			dataObjectId = String.valueOf(id);	
+			
+			return dataObjectId;		
 		}
 		
 		private Identifier getDataObjectIdentifier(String dataObjectPath) throws JargonException {

@@ -16,6 +16,8 @@ public class RestConfiguration {
 	private boolean smimeEncryptAdminFunctions = false;
 	private String privateCertAbsPath = "";
 	private String publicKeyAbsPath = "";
+	private String irodsUserName;
+	private String irodsUserPswd;
 	
 	private String handlePrefix = "11333/";
 
@@ -153,5 +155,22 @@ public class RestConfiguration {
 		this.webInterfaceURL = webInterfaceURL;
 	}
 
+	public String getIrodsUserName() {
+		return irodsUserName;
+	}
+
+	public void setIrodsUserName(String irodsUserName) {
+		this.irodsUserName = irodsUserName;
+	}
+
+	public String getIrodsUserPswd() {
+		return irodsUserPswd;
+	}
+
+	public void setIrodsUserPswd(String irodsUserPswd) {
+		this.irodsUserPswd = irodsUserPswd;
+	}
+
+	
 }
 

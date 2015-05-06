@@ -200,6 +200,11 @@
 				<artifactId>resteasy-crypto</artifactId>
 				<version>${resteasy.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.jboss.resteasy</groupId>
+				<artifactId>resteasy-multipart-provider</artifactId>
+				<version>${resteasy.version}</version>
+			</dependency>
 
 
 			<!-- Ruby YAML support <dependency> <groupId>org.jboss.resteasy</groupId> 
@@ -371,6 +376,10 @@
 				<groupId>org.jboss.resteasy</groupId>
 				<artifactId>tjws</artifactId>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.resteasy</groupId>
+				<artifactId>resteasy-multipart-provider</artifactId>
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>

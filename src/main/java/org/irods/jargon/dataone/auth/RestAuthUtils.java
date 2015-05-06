@@ -49,12 +49,20 @@ public class RestAuthUtils {
 			throw new IllegalArgumentException("null restConfiguration");
 		}
 
-		return IRODSAccount.instanceForAnonymous(
-								restConfiguration.getIrodsHost(),
-								restConfiguration.getIrodsPort(),
-								"",
-								restConfiguration.getIrodsZone(),
-								restConfiguration.getDefaultStorageResource());
+//		return IRODSAccount.instanceForAnonymous(
+//								restConfiguration.getIrodsHost(),
+//								restConfiguration.getIrodsPort(),
+//								"",
+//								restConfiguration.getIrodsZone(),
+//								restConfiguration.getDefaultStorageResource());
+		return IRODSAccount.instance(
+				restConfiguration.getIrodsHost(),
+				restConfiguration.getIrodsPort(),
+				restConfiguration.getIrodsUserName(),
+				restConfiguration.getIrodsUserPswd(),
+				"",
+				restConfiguration.getIrodsZone(),
+				restConfiguration.getDefaultStorageResource());
 
 	}
 

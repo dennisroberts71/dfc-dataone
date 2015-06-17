@@ -1,6 +1,8 @@
 package org.irods.jargon.dataone.tier1;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -10,6 +12,10 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tika.detect.DefaultDetector;
+import org.apache.tika.detect.TypeDetector;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
 import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
 import org.dataone.service.exceptions.InvalidToken;
@@ -505,6 +511,7 @@ public class MNReadImpl implements MNRead {
 						.getIRODSAccountFromBasicAuthValues(restConfiguration);
 				mimeType = getDataObjectMimeType(irodsAccount, dObject);
 			} catch (Exception e1) {
+				log.error(e1.toString());
 				log.error("cannot retrieve mime type for object:{} setting to application/octet-stream",
 						dObject.getAbsolutePath());
 				mimeType = "application/octet-stream";
@@ -625,10 +632,38 @@ public class MNReadImpl implements MNRead {
 	
 	private String getDataObjectMimeType(IRODSAccount irodsAccount, DataObject dataObject)
 				throws FileNotFoundException, JargonException {
-		//String mimeType = null;
-		String mimeType = "netCDF-4";
+		String mimeType = null;
+		String filename = dataObject.getAbsolutePath();
+		log.info("file name is: {}", filename);
 		
-		// TODO: MUST FIX THIS - data-profile stuff removed from jargon!!!!!!!
+		DefaultDetector typeDetector = new DefaultDetector();
+		IRODSFile irodsFile = irodsAccessObjectFactory
+								.getIRODSFileFactory(irodsAccount)
+									.instanceIRODSFile(filename);
+		IRODSFileInputStream irodsStream = irodsAccessObjectFactory
+										.getIRODSFileFactory(irodsAccount)
+										.instanceIRODSFileInputStream(irodsFile);
+		InputStream stream = new BufferedInputStream(irodsStream);
+		Metadata metadata = new Metadata();
+		metadata.add(Metadata.RESOURCE_NAME_KEY, filename);
+
+		MediaType type;
+		try {
+			type = typeDetector.detect(stream, metadata);
+		} catch (IOException e) {
+			log.error("detect failed: {}", e.toString());
+			throw new FileNotFoundException("Cannot stream file in order to detect file type");
+		}
+		
+		// if mime type is returned as "application/x-netcdf" change to 
+		// DataONE accepted name: "netCDF-4"
+		mimeType = type.toString();
+		if (mimeType.equals("application/x-netcdf")) {
+			mimeType = "netCDF-4";
+		}
+				
+		
+		// data-profile stuff removed from jargon!!!!!!!
 		
 //		DataTypeResolutionService resolutionService = new DataTypeResolutionServiceImpl(
 //				irodsAccessObjectFactory, irodsAccount);
@@ -639,6 +674,8 @@ public class MNReadImpl implements MNRead {
 //		DataProfile<DataObject> dataProfile = dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
 //		mimeType = dataProfile.getMimeType();
 		
+
+		log.info("mime type is: {}", mimeType);
 		return mimeType;
 		
 	}

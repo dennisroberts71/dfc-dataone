@@ -12,7 +12,7 @@ public class RestConfiguration {
 	private int irodsPort = 1247;
 	private String irodsZone = "dfcmain";
 	private String defaultStorageResource = "";
-	private String realm = "irods-dataone";
+	private String realm = "dfc-dataone";
 	private boolean smimeEncryptAdminFunctions = false;
 	private String privateCertAbsPath = "";
 	private String publicKeyAbsPath = "";

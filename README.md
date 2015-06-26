@@ -1,4 +1,4 @@
-# irods-dataone
+# dfc-dataone
 DataONE Member Node Implementation for iRODS
 ============================================
 

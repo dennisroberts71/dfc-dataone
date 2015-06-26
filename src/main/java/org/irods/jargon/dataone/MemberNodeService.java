@@ -87,7 +87,7 @@ public class MemberNodeService {
     @GET
     @Path("/monitor/ping")
     @Produces(MediaType.TEXT_XML)
-    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 //    public Response handlePing(@HeaderParam("Authorization") final String authorization)
     public Response handlePing()
     //public void handlePing(@Context final HttpServletResponse response)
@@ -119,7 +119,7 @@ public class MemberNodeService {
     @GET
     @Path("/node")
     @Produces(MediaType.TEXT_XML)
-    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
     public MNNode handleGetCapabilities()
     		throws NotImplemented, ServiceFailure {
 
@@ -136,7 +136,7 @@ public class MemberNodeService {
     @GET
     @Path("/")
     @Produces(MediaType.TEXT_XML)
-    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
     public MNNode handleDeafaultGetCapabilities()
     		throws NotImplemented, ServiceFailure {
 
@@ -149,7 +149,7 @@ public class MemberNodeService {
 	@GET
     @Path("/log")
     @Produces(MediaType.TEXT_XML)
-    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
     public MNLog handleGetLogRecords(
     							@QueryParam("fromDate") String fromDateStr,
     							@QueryParam("toDate") String toDateStr,
@@ -339,7 +339,7 @@ public class MemberNodeService {
 	@HEAD
     @Path("/object/{id}")
     @Produces(MediaType.TEXT_XML)
-    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
     public Response handleDescribe(@PathParam("id") final String pid)
 			  //@Context final HttpServletResponse response)
     		throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
@@ -394,7 +394,7 @@ public class MemberNodeService {
     @Path("/error")
 	@Produces(MediaType.TEXT_XML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/irods-dataone", jsonName = "irods-dataone") })
+    @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
     public Response handleSynchronizationFailed(
 			MultipartFormDataInput input)
     		throws NotAuthorized, NotImplemented, ServiceFailure, InvalidToken {

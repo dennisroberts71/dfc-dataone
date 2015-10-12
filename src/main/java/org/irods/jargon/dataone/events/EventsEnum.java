@@ -4,7 +4,7 @@ import org.dataone.service.types.v1.Event;
 
 // Use this class to convert iRODS/Databook type events to DataONE events
 public enum EventsEnum {
-	
+	FAILED(Event.REPLICATION_FAILED, "failed"),
 	CREATE(Event.CREATE, "put"),
 	READ(Event.READ, "get"),
 	UPDATE(Event.UPDATE, "overwrite"),
@@ -72,7 +72,7 @@ public enum EventsEnum {
 		//else if (e.equals("?"))
 			//return REPLICATION_FAILED; not supported yet
 		else
-			return READ;
+			return FAILED;
 	}
 
 }

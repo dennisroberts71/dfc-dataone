@@ -15,10 +15,12 @@ import org.dataone.service.types.v1.Subject;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.CollectionAndDataObjectListAndSearchAO;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.RuleProcessingAO;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.core.pub.domain.ObjStat;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.rule.IRODSRuleExecResult;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
@@ -59,6 +61,7 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 		
 		
 		// retrieve list of logEntry (events)
+		@SuppressWarnings("resource")
 		// log?[fromDate={fromDate}][&toDate={toDate}][&event={event}][&pidFilter={pidFilter}][&start={start}][&count={count}]
 		// TODO: The response MUST contain only records for which the requester has permission to read. This is
 		// always okay because access is anonymous and read only?
@@ -90,14 +93,19 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			// restrict search to DataONE exposed data objects
 			// get this list from the Handle server
 			// should return something like this:
+			// 10/9/15 - worked with how to change databook rules so messages only get
+			// created for objects under a certain dir: i.e. /eesZone/home/nexrad/NEXRAD_LEVEL_2/*.nc
+			// so just assume we can query all elastic search messages, since they are only created
+			// for the nexrad data
 			String uriRegex = null;
+			/* so don't need this anymore
 			try {
 				// "\"/dfc3/home/rods/fabfile.py2\".*|\"/dfc3/home/rods/fabfile.py3\".*"
 				uriRegex = getDataOneDataObjectsRegex();
 			} catch (JargonException e) {
 				logger.error("error getting DataOne uids and converting to regex");
 				throw new NoNodeAvailableException(e.getMessage());
-			}
+			} */
 			
 			// maybe implement spring bean for these settings?
 			// get elasticsearch properties
@@ -182,10 +190,12 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 				try {
 					log = copyHitsToLog(startIdx, count, response.getHits().getTotalHits(), searchHits);
 				} catch (JargonException e) {
+					client.close();
 					logger.error("error copying elastic search hits into Log entries");
 					throw new NoNodeAvailableException(e.getMessage());
 				}
 			}
+			client.close();
 
 			return log;
 		}
@@ -193,21 +203,10 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 		
 		private Log copyHitsToLog(int start, int count, long totalHits, SearchHit[] searchHits) throws JargonException {
 			
+			int skipped = 0;
 			Log log = new Log();
 			// load properties for some log entries
 			PropertiesLoader props = new PropertiesLoader();
-			
-			// set header values
-			int total = 0;
-			log.setStart(start);
-			log.setCount(searchHits.length);
-			if ( totalHits > (long)Integer.MAX_VALUE ) {
-				total = Integer.MAX_VALUE;
-			}
-			else {
-			    total = (int)totalHits;
-			}
-			log.setTotal(total);
 
 			// go through search hits and populate log entries
 			if (count > searchHits.length) count = searchHits.length;
@@ -219,11 +218,18 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 				
 				Map<String, Object> hit = searchHits[c].sourceAsMap();
 				
-				Date createdDate = new Date((Long)hit.get("created"));
-				logEntry.setDateLogged(createdDate);
-				
+				// If this is not a databook event that we recognize, just skip this record
+				String eventTitle = (String)hit.get("title");
+				if ( EventsEnum.valueOfFromDatabook(eventTitle) == EventsEnum.FAILED) {
+					skipped++;
+					logger.info("Unrecognized event '{}' when parsing databook events - event skipped", eventTitle);
+					continue;
+				}
 				Event event = EventsEnum.valueOfFromDatabook((String)hit.get("title")).getDataoneEvent();
 				logEntry.setEvent(event);
+				
+				Date createdDate = new Date((Long)hit.get("created"));
+				logEntry.setDateLogged(createdDate);
 				
 				ArrayList<Object> linkingDataEntity = (ArrayList<Object>)hit.get("linkingDataEntity");
 				Map<String, Object> linkingDataEntity0 = (Map<String, Object>)linkingDataEntity.get(0);
@@ -233,7 +239,18 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 				int end = objectUri.indexOf('@');
 				String objectPath = objectUri.substring(0, end);
 				String objectId = getDataObjectEntryId(objectPath);
+				// check to make sure we can find this data object
+				// if not just abandon this log entry
+				if (objectId == null) {
+					skipped++;
+					logger.info("Cannot find dataObject id for : {} - may have been removed - event skipped", objectPath);
+					continue;
+				}
+				logger.info("found data object id: {}",objectId);
 				logEntry.setEntryId(objectId);
+				
+				// check to make sure we can find this data object in handle server
+				// if not just abandon this log entry
 				Identifier identifier = getDataObjectIdentifier(objectPath);
 				logEntry.setIdentifier(identifier);
 				
@@ -262,6 +279,18 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 				logger.info("  subject: {}", logEntry.getSubject().getValue());
 				log.addLogEntry(logEntry);
 			}
+			
+			// finally - set header values
+			int total = 0;
+			log.setStart(start);
+			log.setCount(searchHits.length - skipped);
+			if ( totalHits > (long)Integer.MAX_VALUE ) {
+				total = Integer.MAX_VALUE - skipped;
+			}
+			else {
+			    total = (int)totalHits - skipped;
+			}
+			log.setTotal(total);
 
 			return log;
 		}
@@ -364,10 +393,13 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-	
-			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-			DataObject dataObject = dataObjectAO.findByAbsolutePath(dataObjectPath);
-			int id = dataObject.getId();
+			
+			CollectionAndDataObjectListAndSearchAO collectionAndDataObjectListAndSearchAO =
+					irodsAccessObjectFactory.getCollectionAndDataObjectListAndSearchAO(irodsAccount);
+			logger.info("getting object records associated with path: {}", dataObjectPath);
+			ObjStat objStat = collectionAndDataObjectListAndSearchAO
+					.retrieveObjectStatForPath(dataObjectPath);
+			int id = objStat.getDataId();
 			dataObjectId = String.valueOf(id);	
 			
 			return dataObjectId;		

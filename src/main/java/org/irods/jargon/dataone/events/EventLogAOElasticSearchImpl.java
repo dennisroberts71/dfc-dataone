@@ -123,6 +123,8 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			if (event  != null) {
 				boolQuery.must(QueryBuilders.matchQuery("title", event.getDatabookEvent()));
 			}
+			// skip any events of no interest to DataONE
+			boolQuery.mustNot(QueryBuilders.matchQuery("title", "metadata add"));
 			
 			if (uriRegex != null && !uriRegex.isEmpty()) {
 				boolQuery.must(QueryBuilders.regexpQuery("uri", uriRegex));

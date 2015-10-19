@@ -61,6 +61,7 @@ import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
 import org.irods.jargon.dataone.id.DataObjectListResponse;
 import org.irods.jargon.dataone.id.UniqueIdAOHandleImpl;
+import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.slf4j.Logger;
@@ -118,7 +119,11 @@ public class MNReadImpl implements MNRead {
 			
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-			String format = getDataObjectMimeType(irodsAccount, dataObject);
+			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory, dataObject);
+			// use back up if no format stores in dataObject AVU
+			if (format == null ) {
+				format = getDataObjectMimeType(irodsAccount, dataObject);
+			}
 			formatIdentifier.setValue(format);
 			
 			String csum = dataObject.getChecksum();
@@ -128,8 +133,7 @@ public class MNReadImpl implements MNRead {
 			}
 			else {
 				checksum.setValue(csum);
-				// SHA-2?
-				checksum.setAlgorithm("SHA-2");
+				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
 			}
 			
 			serialVersion = getSerialVersion();
@@ -300,7 +304,7 @@ public class MNReadImpl implements MNRead {
 				throw new NotFound("1410", "Checksum does not exist for data object id provided");
 			}
 			checksum.setValue(csum);
-			checksum.setAlgorithm("MD5");
+			checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
 			
 		} catch (FileNotFoundException nf) {
 			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
@@ -376,13 +380,16 @@ public class MNReadImpl implements MNRead {
 			}
 			else {
 				checksum.setValue(csum);
-				checksum.setAlgorithm("MD5");
+				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
 			}
 			
-			String mimeType = getDataObjectMimeType(irodsAccount, dataObject);
+			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory, dataObject);
+			if (format == null) {
+				format = getDataObjectMimeType(irodsAccount, dataObject);
+			}
 			metadata.setIdentifier(id);
 			ObjectFormatIdentifier formatId = new ObjectFormatIdentifier();
-			formatId.setValue(mimeType);
+			formatId.setValue(format);
 			metadata.setFormatId(formatId);
 			
 			Long dataSizeLong = new Long(dataObject.getDataSize());
@@ -498,26 +505,30 @@ public class MNReadImpl implements MNRead {
 			if (dObject.getChecksum() != null) {
 				Checksum checksum = new Checksum();
 				checksum.setValue(dObject.getChecksum());
-				checksum.setAlgorithm("MD5"); //TODO: put this in properties file?
+				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
 				oInfo.setChecksum(checksum);
 			}
 			
 			oInfo.setDateSysMetadataModified(dObject.getUpdatedAt());
 			
 			IRODSAccount irodsAccount;
-			String mimeType = null;
+			String format = null;
 			try {
 				irodsAccount = RestAuthUtils
 						.getIRODSAccountFromBasicAuthValues(restConfiguration);
-				mimeType = getDataObjectMimeType(irodsAccount, dObject);
+				format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory, dObject);
+				// use back up if no format stores in dataObject AVU
+				if (format == null) {
+					format = getDataObjectMimeType(irodsAccount, dObject);
+				}
 			} catch (Exception e1) {
 				log.error(e1.toString());
 				log.error("cannot retrieve mime type for object:{} setting to application/octet-stream",
 						dObject.getAbsolutePath());
-				mimeType = "application/octet-stream";
+				format = "application/octet-stream";
 			}
 			ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
-			fId.setValue(mimeType);
+			fId.setValue(format);
 			oInfo.setFormatId(fId);
 			
 			Identifier id;

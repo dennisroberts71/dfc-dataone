@@ -61,9 +61,12 @@ import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.EventLogAOElasticSearchImpl;
 import org.irods.jargon.dataone.id.DataObjectListResponse;
 import org.irods.jargon.dataone.id.UniqueIdAOHandleImpl;
+import org.irods.jargon.dataone.id.UniqueIdAOHandleInMetadataImpl;
+import org.irods.jargon.dataone.utils.DataObjectMetadataUtils;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
+import org.irods.jargon.core.query.JargonQueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,14 +114,16 @@ public class MNReadImpl implements MNRead {
 		}
 			
 		try {
-			lastModified = dataObject.getUpdatedAt();
-			
 			Long contentLengthLong = dataObject.getDataSize();
 			String contentLengthStr = contentLengthLong.toString();
 			contentLength =  new BigInteger(contentLengthStr);
 			
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+			
+			//lastModified = dataObject.getUpdatedAt();
+			lastModified = DataObjectMetadataUtils.getStartDateTime(irodsAccessObjectFactory, irodsAccount, dataObject);
+			
 			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory, dataObject);
 			// use back up if no format stores in dataObject AVU
 			if (format == null ) {
@@ -212,7 +217,7 @@ public class MNReadImpl implements MNRead {
 		    byte [] buffer = new byte [4096];  
 		        
 		    while ((readBytes = stream.read (buffer,0,4096)) != -1) { 
-		    	log.info("readBytes={}", readBytes);
+		    	//log.info("readBytes={}", readBytes);
 		        output.write (buffer,0,readBytes);  
 		    }
 		    output.flush();
@@ -437,9 +442,12 @@ public class MNReadImpl implements MNRead {
 			
 			// Add support for obsoletes or obsoletedBy?
 			
-			// TODO: May eventually want do add support for dateUploaded and dateSysMetadataModified
-			// use data object modified date for now
-			metadata.setDateSysMetadataModified(dataObject.getUpdatedAt());
+			// Use AVU epoch date
+			//metadata.setDateUploaded(dataObject.getCreatedAt());
+			//metadata.setDateSysMetadataModified(dataObject.getUpdatedAt());
+			Date startDate = DataObjectMetadataUtils.getStartDateTime(irodsAccessObjectFactory, irodsAccount, dataObject);
+			metadata.setDateSysMetadataModified(startDate);
+			metadata.setDateUploaded(startDate);
 			
 			NodeReference nodeReference = new NodeReference();
 			nodeReference.setValue(properties.getProperty("irods.dataone.identifier"));
@@ -479,11 +487,14 @@ public class MNReadImpl implements MNRead {
 		List<DataObject> dataObjectList = new ArrayList<DataObject>();
 		List<ObjectInfo> objectInfoList = new ArrayList<ObjectInfo>();
 		ObjectList objectList = new ObjectList();
-		UniqueIdAOHandleImpl handleImpl;
+		//UniqueIdAOHandleImpl handleImpl;
+		UniqueIdAOHandleInMetadataImpl handleImpl;
 		
 		try {
-			handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+			//handleImpl = new UniqueIdAOHandleImpl(restConfiguration, irodsAccessObjectFactory);
+			handleImpl = new UniqueIdAOHandleInMetadataImpl(restConfiguration, irodsAccessObjectFactory);
 
+			//dataObjectListResponse = handleImpl.getListOfDataoneExposedDataObjects(
 			dataObjectListResponse = handleImpl.getListOfDataoneExposedDataObjects(
 						fromDate,
 						toDate,
@@ -509,9 +520,8 @@ public class MNReadImpl implements MNRead {
 				oInfo.setChecksum(checksum);
 			}
 			
-			oInfo.setDateSysMetadataModified(dObject.getUpdatedAt());
-			
-			IRODSAccount irodsAccount;
+			// probably should combine query for format and start date at some future refactor
+			IRODSAccount irodsAccount = null;;
 			String format = null;
 			try {
 				irodsAccount = RestAuthUtils
@@ -530,6 +540,16 @@ public class MNReadImpl implements MNRead {
 			ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
 			fId.setValue(format);
 			oInfo.setFormatId(fId);
+			
+			//oInfo.setDateSysMetadataModified(dObject.getUpdatedAt());
+			Date startDate = new Date();
+			try {
+				startDate = DataObjectMetadataUtils.getStartDateTime(irodsAccessObjectFactory, irodsAccount, dObject);
+			} catch (Exception e1) {
+				log.error(e1.toString());
+				log.error("cannot retrieve start date for object: {}", dObject.getAbsolutePath());
+			} 
+			oInfo.setDateSysMetadataModified(startDate);
 			
 			Identifier id;
 			try {

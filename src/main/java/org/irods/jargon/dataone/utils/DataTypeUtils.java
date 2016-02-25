@@ -3,6 +3,7 @@ package org.irods.jargon.dataone.utils;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.tika.detect.DefaultDetector;
@@ -16,7 +17,11 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
+import org.irods.jargon.core.query.AVUQueryElement;
+import org.irods.jargon.core.query.AVUQueryOperatorEnum;
+import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 
 public class DataTypeUtils {
 	
@@ -59,12 +64,25 @@ public class DataTypeUtils {
 	public static String getDataObjectFormatFromMetadata(IRODSAccount irodsAccount,
 										IRODSAccessObjectFactory irodsAccessObjectFactory,
 										DataObject dataObject)
-										throws FileNotFoundException, JargonException {
+										throws FileNotFoundException, JargonException, JargonQueryException {
 		
 		String dataFormat = null;
+		String formatAttr = "Format";
+		List<AVUQueryElement> avuQueryList = new ArrayList<AVUQueryElement>();
+		
+		AVUQueryElement avuQuery = AVUQueryElement.instanceForValueQuery(
+				AVUQueryPart.ATTRIBUTE,
+				AVUQueryOperatorEnum.EQUAL,
+				formatAttr);
+		avuQueryList.add(avuQuery);
+	
 		
 		DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-		List<MetaDataAndDomainData> result = dataObjectAO.findMetadataValuesForDataObject(dataObject.getAbsolutePath());
+		//List<MetaDataAndDomainData> result = dataObjectAO.findMetadataValuesForDataObject(dataObject.getAbsolutePath());
+		List<MetaDataAndDomainData> result = 
+				dataObjectAO.findMetadataValuesForDataObjectUsingAVUQuery(
+						avuQueryList,
+						dataObject.getAbsolutePath());
 		
 		for (MetaDataAndDomainData metadata : result) {
 			if (metadata.getAvuAttribute().equals("Format")) {

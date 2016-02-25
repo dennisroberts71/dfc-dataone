@@ -441,7 +441,7 @@ public class MemberNodeService {
 					@QueryParam("formatId") final String formatIdStr,
 					@QueryParam("replicaStatus") final Boolean replicaStatus,
 					@DefaultValue("0") @QueryParam("start") final Integer start,
-					@DefaultValue("1000") @QueryParam("count") final Integer count
+					@DefaultValue("500") @QueryParam("count") final Integer count
 				) throws 
 					InvalidToken,
 					ServiceFailure,

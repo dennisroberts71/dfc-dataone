@@ -22,6 +22,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
@@ -207,7 +208,7 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 				
 				if (matchesFromDate(fromDate, modifiedDate) &&
 					matchesToDate(toDate, modifiedDate) &&
-					matchesFormatId(formatId, dataObject) &&
+					//matchesFormatId(formatId, dataObject) && support not required
 					matchesReplicaStatus(replicaStatus)) {
 					dataObjectListTmp.add(dataObject);
 				}
@@ -313,7 +314,7 @@ public class UniqueIdAOHandleImpl implements UniqueIdAO {
 	}
 	
 	private boolean matchesFormatId(ObjectFormatIdentifier formatId, DataObject dataObject) 
-				throws JargonException {
+				throws JargonException, JargonQueryException {
 		
 		IRODSAccount irodsAccount = RestAuthUtils
 				.getIRODSAccountFromBasicAuthValues(this.restConfiguration);

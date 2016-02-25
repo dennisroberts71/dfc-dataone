@@ -194,7 +194,7 @@ public class UniqueIdAOHandleInMetadataImpl implements UniqueIdAO {
 			
 		// truncate list if count is specified and it is less than the total
 		List<DataObject> finalDataObjects = new ArrayList<DataObject>();
-		if ((count > 0) && (count < total)) {
+		if ((count >= 0) && (count < total)) {
 			finalDataObjects = dataObjects.subList(0, count);
 		}
 		else {

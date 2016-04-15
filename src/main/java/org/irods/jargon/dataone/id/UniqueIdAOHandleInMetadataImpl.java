@@ -284,13 +284,15 @@ public class UniqueIdAOHandleInMetadataImpl implements UniqueIdAO {
 			avuQueryList.add(avuQuery);
 			
 			// handle any date queries
-			// restrict start date for now to 2/17/16 00:00:01
+			// restrict start date for now to 2/17/16 00:00:01 : 1455667201
+			// 3-23-16 Update - now changed earliest data to 3/23/16 00:00:01 : 1458691201
+			// 3-31-16 Update - now changed earliest data to 3/28/16 00:00:01 GMT : 1459123201
 			long newFromDate;
 			if(fromDate != null) {
-				newFromDate = java.lang.Math.max(fromDate.getTime()/1000, Long.parseLong("1455667201"));
+				newFromDate = java.lang.Math.max(fromDate.getTime()/1000, Long.parseLong("1459123201"));
 			}
 			else {
-				newFromDate = Long.parseLong("1455667201");
+				newFromDate = Long.parseLong("1459123201");
 			}
 			
 			// fromDate query

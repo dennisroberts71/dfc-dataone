@@ -7,13 +7,14 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.dataone.service.types.v1.LogEntry;
+import org.irods.jargon.dataone.utils.ISO8601;
 
 //@XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder={"entryId","identifier","ipAddress","userAgent","subject","event","dateLogged","nodeIdentifier"})
 public class MNLogEntry {
 	
 	private String entryId;
-	private Date dateLogged;
+	private String dateLogged;
 	private String event;
 	private String identifier;
 	private String nodeIdentifier;
@@ -28,10 +29,10 @@ public class MNLogEntry {
 		this.entryId = entryId;
 	}
 	
-	public Date getDateLogged() {
+	public String getDateLogged() {
 		return dateLogged;
 	}
-	public void setDateLogged(Date dateLogged) {
+	public void setDateLogged(String dateLogged) {
 		this.dateLogged = dateLogged;
 	}
 	
@@ -88,7 +89,7 @@ public class MNLogEntry {
 		}
 		
 		if (logEntry.getDateLogged() != null) {
-			this.dateLogged = logEntry.getDateLogged();
+			this.dateLogged = ISO8601.convertToGMTString(logEntry.getDateLogged());
 		}
 		
 		if (logEntry.getEvent() != null) {

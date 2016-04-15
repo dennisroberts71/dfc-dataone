@@ -37,8 +37,6 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ibm.icu.text.SimpleDateFormat;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
@@ -59,9 +57,12 @@ import javax.xml.bind.JAXB;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -90,7 +91,6 @@ public class MemberNodeService {
     @Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 //    public Response handlePing(@HeaderParam("Authorization") final String authorization)
     public Response handlePing()
-    //public void handlePing(@Context final HttpServletResponse response)
     		throws NotImplemented, ServiceFailure, InsufficientResources, JargonException {
 
 //    	if (authorization == null || authorization.isEmpty()) {
@@ -156,7 +156,7 @@ public class MemberNodeService {
     							@QueryParam("event") String event,
     							@QueryParam("pidFilter") String pidFilter,
     							@DefaultValue("0") @QueryParam("start") int start,
-    							@DefaultValue("1000") @QueryParam("count") int count
+    							@DefaultValue("500") @QueryParam("count") int count
     							)
     							throws NotImplemented,
     								   ServiceFailure,
@@ -170,7 +170,6 @@ public class MemberNodeService {
 		
 		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory, restConfiguration);
     	
-		// TODO: make sure dates are converted to UTC?
 		// parse date strings
 		Date fromDate = null;
 		Date toDate = null;
@@ -216,10 +215,6 @@ public class MemberNodeService {
 										  NotFound,
 										  NotImplemented,
 										  InsufficientResources {
-
-//		if (pid == null || pid.isEmpty()) {
-//			throw new NotFound("1020", "invalid iRODS data object id");
-//		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		
@@ -257,10 +252,6 @@ public class MemberNodeService {
 			throw new InvalidRequest("1402", "invalid checksum algorithm requested - only MD5 supported");
 		}
 
-//		if (pid == null || pid.isEmpty()) {
-//			throw new NotFound("1420", "invalid iRODS data object id");
-//		}
-		
 		Identifier id = new Identifier();
 		id.setValue(pid);
 		
@@ -283,10 +274,6 @@ public class MemberNodeService {
 										  NotFound,
 										  NotImplemented,
 										  InsufficientResources {
-
-//		if (pid == null || pid.isEmpty()) {
-//			throw new NotFound("2185", "invalid iRODS data object id");
-//		}
 		
 		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory, restConfiguration);
 		
@@ -320,10 +307,6 @@ public class MemberNodeService {
 										  InvalidRequest {
 
 		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
-
-//		if (pid == null || pid.isEmpty()) {
-//			throw new NotFound("1420", "invalid iRODS data object id");
-//		}
 		
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -343,10 +326,6 @@ public class MemberNodeService {
     public Response handleDescribe(@PathParam("id") final String pid)
 			  //@Context final HttpServletResponse response)
     		throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
-
-//		if (pid == null || pid.isEmpty()) {
-//			throw new NotFound("1420", "invalid iRODS data object id");
-//		}
 		
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -360,8 +339,6 @@ public class MemberNodeService {
 			
 			Response.ResponseBuilder builder = Response.ok();
 			builder.status(Status.NOT_FOUND);
-//	        builder.header("Last-Modified", dateStr);
-//	        builder.header("Content-Length", describeResponse.getContent_Length().toString());
 	        builder.type(MediaType.TEXT_XML);
 	        builder.header("DataONE-Exception-Name", "NotFound");
 	        builder.header("DataONE-Exception-DetailCode", ex.getDetail_code());
@@ -374,10 +351,15 @@ public class MemberNodeService {
     	Checksum checksum = describeResponse.getDataONE_Checksum();
     	String checksumStr = checksum.getAlgorithm() + "," + checksum.getValue();
     	
-    	Date gmtDate = ISO8601.convertToGMT(describeResponse.getLast_Modified());
-    	Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-    	cal.setTime(gmtDate);
-    	String dateStr = ISO8601.fromCalendar(cal);    	
+    	// Convert data to GMT and format for HTTP header
+    	DateFormat gmtFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ");
+    	TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
+    	gmtFormat.setTimeZone(gmtTimeZone);
+    	Calendar calendar = new GregorianCalendar();
+		calendar.setTime(describeResponse.getLast_Modified());
+		calendar.setTimeZone(gmtTimeZone);
+    	String dateStr = gmtFormat.format(calendar.getTime());
+    	dateStr += "GMT";
 		
 		Response.ResponseBuilder builder = Response.ok();
         builder.header("Last-Modified", dateStr);

@@ -9,7 +9,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class ISO8601 {
+	
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
     /** Transform Calendar to ISO 8601 string. */
     public static String fromCalendar(final Calendar calendar) {
         Date date = calendar.getTime();
@@ -25,16 +31,43 @@ public final class ISO8601 {
     }
 
     /** Transform ISO 8601 string to Calendar. */
+    // have to handle this: 2016-04-12T18:18:00+00:00
+    // and this 2016-04-12T18:18:00.000+00:00
+    // and this 2016-04-12T18:18:00.001
+    // and this 2016-04-12T18:18:00
+    // and this 2016-04-12T18:18:00+00:00
+    // etc
     public static Calendar toCalendar(final String iso8601string)
             throws ParseException {
         Calendar calendar = GregorianCalendar.getInstance();
-        String s = iso8601string.replace("Z", "+00:00");
-        try {
-            s = s.substring(0, 26) + s.substring(27);  // to get rid of the ":"
-        } catch (IndexOutOfBoundsException e) {
-            throw new ParseException("Invalid length", 0);
+        String s = iso8601string;
+        
+        // add the GMT timezone default, if it is not explicitly specified
+        if ((!iso8601string.contains("+")) && (!iso8601string.contains("-"))) {
+        	// GMT is default
+        	s = s + "+0000";
         }
-        Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(s);
+        else { 
+        	// need to remove ":" from timezone, if there
+        	int len = s.length();
+        	if (s.charAt(len-3) == ':') {
+        		try {
+            		s = s.substring(0, len-3) + s.substring(len-2);  // to get rid of the ":"
+            	} catch (IndexOutOfBoundsException e) {
+            		throw new ParseException("Invalid length", 0);
+            	}
+        	}
+        }
+
+        Date date;
+        // check for milliseconds extension
+        if (s.contains(".")) {
+        	date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(s);
+        }
+        else {
+        	date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(s);
+        }
+         
         calendar.setTime(date);
         return calendar;
     }
@@ -42,10 +75,9 @@ public final class ISO8601 {
     public static Date convertToGMT(Date date) {
     	Date gmtDate = null;
     	
-    	DateFormat gmtFormat = new SimpleDateFormat();
+    	DateFormat gmtFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     	TimeZone gmtTime = TimeZone.getTimeZone("GMT");
     	gmtFormat.setTimeZone(gmtTime);
-    	//System.out.println("Current DateTime in GMT : " + gmtFormat.format(new Date()));
     	String gmtStr = gmtFormat.format(date);
     	try {
 			gmtDate = gmtFormat.parse(gmtStr);
@@ -55,5 +87,19 @@ public final class ISO8601 {
 		}
     	
     	return gmtDate;
+    }
+    
+    public static String convertToGMTString(Date date) {
+    	
+    	DateFormat gmtFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+");
+    	TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
+    	gmtFormat.setTimeZone(gmtTimeZone);
+    	Calendar calendar = new GregorianCalendar();
+		calendar.setTime(date);
+		calendar.setTimeZone(gmtTimeZone);
+    	String dateStr = gmtFormat.format(calendar.getTime());
+    	dateStr += "00:00";
+    	
+    	return dateStr;
     }
 }

@@ -10,31 +10,32 @@ import org.dataone.service.types.v1.Schedule;
 import org.dataone.service.types.v1.Service;
 import org.dataone.service.types.v1.Services;
 import org.dataone.service.types.v1.Synchronization;
+import org.irods.jargon.dataone.utils.ISO8601;
 
 @XmlType(propOrder={"schedule","lastHarvested","lastCompleteHarvest"})
 public class MNSynchronization {
 	
-	private Date lastHarvested;
-	private Date lastCompleteHarvest;
+	private String lastHarvested;
+	private String lastCompleteHarvest;
 	private MNSchedule schedule;
 	
 	public MNSynchronization() {
 		this.schedule = new MNSchedule();
 	}
 	
-	public Date getLastHarvested() {
+	public String getLastHarvested() {
 		return lastHarvested;
 	}
 
-	public void setLastHarvested(Date lastHarvested) {
+	public void setLastHarvested(String lastHarvested) {
 		this.lastHarvested = lastHarvested;
 	}
 
-	public Date getLastCompleteHarvest() {
+	public String getLastCompleteHarvest() {
 		return lastCompleteHarvest;
 	}
 
-	public void setLastCompleteHarvest(Date lastCompleteHarvest) {
+	public void setLastCompleteHarvest(String lastCompleteHarvest) {
 		this.lastCompleteHarvest = lastCompleteHarvest;
 	}
 
@@ -53,11 +54,11 @@ public class MNSynchronization {
 		}
 		
 		if (synch.getLastHarvested() != null) {
-			this.lastHarvested = synch.getLastHarvested();
+			this.lastHarvested = ISO8601.convertToGMTString(synch.getLastHarvested());
 		}
 		
 		if (synch.getLastCompleteHarvest() != null) {
-			this.lastCompleteHarvest = synch.getLastCompleteHarvest();
+			this.lastCompleteHarvest = ISO8601.convertToGMTString(synch.getLastCompleteHarvest());
 		}
 		
 		if (synch.getSchedule() != null) {

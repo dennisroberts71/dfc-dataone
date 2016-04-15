@@ -13,6 +13,7 @@ import org.dataone.service.types.v1.LogEntry;
 import org.dataone.service.types.v1.NodeReference;
 import org.dataone.service.types.v1.Subject;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.CollectionAndDataObjectListAndSearchAO;
@@ -214,12 +215,11 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 			if (count > searchHits.length) count = searchHits.length;
 			for (int c = 0; c < count; c++) {
 				LogEntry logEntry = new LogEntry();
-				// DataONE's Mark Servilla siad this entry id should be an object id.
+				// DataONE's Mark Servilla said this entry id should be an object id.
 				// now set below, near setIdentifier
 				//logEntry.setEntryId(String.valueOf(start++));
 				
 				Map<String, Object> hit = searchHits[c].sourceAsMap();
-				
 				// If this is not a databook event that we recognize, just skip this record
 				String eventTitle = (String)hit.get("title");
 				if ( EventsEnum.valueOfFromDatabook(eventTitle) == EventsEnum.FAILED) {
@@ -227,27 +227,31 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 					logger.info("Unrecognized event '{}' when parsing databook events - event skipped", eventTitle);
 					continue;
 				}
+
 				Event event = EventsEnum.valueOfFromDatabook((String)hit.get("title")).getDataoneEvent();
 				logEntry.setEvent(event);
-				
 				Date createdDate = new Date((Long)hit.get("created"));
 				logEntry.setDateLogged(createdDate);
-				
+
 				ArrayList<Object> linkingDataEntity = (ArrayList<Object>)hit.get("linkingDataEntity");
 				Map<String, Object> linkingDataEntity0 = (Map<String, Object>)linkingDataEntity.get(0);
 				Map<String, Object> dataEntity = (Map<String, Object>)linkingDataEntity0.get("dataEntity");
-								
+			
 				String objectUri = new String((String)dataEntity.get("uri"));
 				int end = objectUri.indexOf('@');
 				String objectPath = objectUri.substring(0, end);
-				String objectId = getDataObjectEntryId(objectPath);
+				
 				// check to make sure we can find this data object
 				// if not just abandon this log entry
-				if (objectId == null) {
+				String objectId = null;
+				try {
+					objectId = getDataObjectEntryId(objectPath);
+				} catch (FileNotFoundException fnf) {
 					skipped++;
 					logger.info("Cannot find dataObject id for : {} - may have been removed - event skipped", objectPath);
 					continue;
 				}
+
 				logger.info("found data object id: {}",objectId);
 				logEntry.setEntryId(objectId);
 				
@@ -255,7 +259,6 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 				// if not just abandon this log entry
 				Identifier identifier = getDataObjectIdentifier(objectPath);
 				logEntry.setIdentifier(identifier);
-				
 				NodeReference nodeReference = new NodeReference();
 				String nodeIdentifierProp = props.getProperty("irods.dataone.identifier");
 				if (nodeIdentifierProp != null) {
@@ -266,12 +269,12 @@ public class EventLogAOElasticSearchImpl implements EventLogAO {
 				// ipAddress? not included in elastic search response
 				
 				// userAgent not set
-				
+
 				Subject subject = new Subject();
 				String subjectString = new String();
 				subjectString += props.getProperty("irods.dataone.subject-string");
 				subject.setValue(subjectString);
-				logEntry.setSubject(subject);		
+				logEntry.setSubject(subject);	
 				
 				logger.info("adding new log entry: {}", logEntry.getEntryId());
 				logger.info("  date logged: {}", logEntry.getDateLogged());

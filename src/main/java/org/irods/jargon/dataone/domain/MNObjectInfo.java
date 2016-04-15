@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.ObjectInfo;
+import org.irods.jargon.dataone.utils.ISO8601;
 
 @XmlType(propOrder={"identifier","formatId","checksum","dateSysMetadataModified","size"})
 public class MNObjectInfo {
@@ -13,7 +14,7 @@ public class MNObjectInfo {
 	private String identifier;
 	private String formatId;
 	private MNChecksum checksum;
-	private Date dateSysMetadataModified;
+	private String dateSysMetadataModified;
 	private long size;
 	
 	public String getIdentifier() {
@@ -34,10 +35,10 @@ public class MNObjectInfo {
 	public void setChecksum(MNChecksum checksum) {
 		this.checksum = checksum;
 	}
-	public Date getDateSysMetadataModified() {
+	public String getDateSysMetadataModified() {
 		return dateSysMetadataModified;
 	}
-	public void setDateSysMetadataModified(Date dateSysMetadataModified) {
+	public void setDateSysMetadataModified(String dateSysMetadataModified) {
 		this.dateSysMetadataModified = dateSysMetadataModified;
 	}
 	public long getSize() {
@@ -68,7 +69,7 @@ public class MNObjectInfo {
 		}
 		
 		if (objectInfo.getDateSysMetadataModified() != null) {
-			this.dateSysMetadataModified = objectInfo.getDateSysMetadataModified();
+			this.dateSysMetadataModified = ISO8601.convertToGMTString(objectInfo.getDateSysMetadataModified());
 		}
 		
 		if (objectInfo.getSize() != null) {

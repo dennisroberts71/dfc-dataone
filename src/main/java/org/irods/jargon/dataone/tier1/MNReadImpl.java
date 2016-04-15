@@ -120,17 +120,17 @@ public class MNReadImpl implements MNRead {
 			
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-			
+
 			//lastModified = dataObject.getUpdatedAt();
 			lastModified = DataObjectMetadataUtils.getStartDateTime(irodsAccessObjectFactory, irodsAccount, dataObject);
-			
+
 			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory, dataObject);
 			// use back up if no format stores in dataObject AVU
 			if (format == null ) {
 				format = getDataObjectMimeType(irodsAccount, dataObject);
 			}
 			formatIdentifier.setValue(format);
-			
+
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
 				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
@@ -140,9 +140,9 @@ public class MNReadImpl implements MNRead {
 				checksum.setValue(csum);
 				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
 			}
-			
+
 			serialVersion = getSerialVersion();
-			
+
 		} catch (Exception e) {
 			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
 			throw new ServiceFailure("1390", e.getMessage());

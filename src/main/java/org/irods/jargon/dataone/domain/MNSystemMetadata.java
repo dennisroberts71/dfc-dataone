@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.dataone.service.types.v1.AccessRule;
 import org.dataone.service.types.v1.Permission;
 import org.dataone.service.types.v1.SystemMetadata;
+import org.irods.jargon.dataone.utils.ISO8601;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +39,8 @@ public class MNSystemMetadata {
 	private String obsoletes;
 	private String obsoletedBy;
 	private boolean archived;
-	private Date dateUploaded;
-	private Date dateSysMetadataModified;
+	private String dateUploaded;
+	private String dateSysMetadataModified;
 	private String originMemberNode;
 	private String authoritativeMemberNode;
 	
@@ -169,22 +170,22 @@ public class MNSystemMetadata {
 	}
 
 
-	public Date getDateUploaded() {
+	public String getDateUploaded() {
 		return dateUploaded;
 	}
 
 
-	public void setDateUploaded(Date dateUploaded) {
+	public void setDateUploaded(String dateUploaded) {
 		this.dateUploaded = dateUploaded;
 	}
 
 
-	public Date getDateSysMetadataModified() {
+	public String getDateSysMetadataModified() {
 		return dateSysMetadataModified;
 	}
 
 
-	public void setDateSysMetadataModified(Date dateSysMetadataModified) {
+	public void setDateSysMetadataModified(String dateSysMetadataModified) {
 		this.dateSysMetadataModified = dateSysMetadataModified;
 	}
 
@@ -277,8 +278,8 @@ public class MNSystemMetadata {
 			this.archived = metadata.getArchived();
 		}
 		
-		this.dateUploaded = metadata.getDateUploaded();
-		this.dateSysMetadataModified = metadata.getDateSysMetadataModified();
+		this.dateUploaded = ISO8601.convertToGMTString(metadata.getDateUploaded());
+		this.dateSysMetadataModified = ISO8601.convertToGMTString(metadata.getDateSysMetadataModified());
 		
 		if (metadata.getOriginMemberNode() != null) {
 			this.originMemberNode = metadata.getOriginMemberNode().getValue();

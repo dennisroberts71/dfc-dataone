@@ -2,52 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>irods-dataone</artifactId>
+	<artifactId>dataone-node</artifactId>
 	<parent>
 		<groupId>org.irods</groupId>
-		<artifactId>jargon-pom</artifactId>
+		<artifactId>dfc-dataone</artifactId>
 		<version>4.1.10.0-SNAPSHOT</version>
 	</parent>
 	<packaging>war</packaging>
-	<name>dfc-dataone</name>
-	<description>REST API for iRODS DataONE Member Node Implementation</description>
-	<url>https://code.renci.org/gf/project/dfc-dataone/</url>
-	<issueManagement>
-		<system>gForge</system>
-		<url>https://code.renci.org/gf/project/dfc-dataone/tracker/</url>
-	</issueManagement>
-	<scm>
-		<connection>scm:git:ssh://developername@code.renci.org/gitroot/dfc-dataone</connection>
-		<developerConnection>scm:git:ssh://${user.name}@code.renci.org/gitroot/dfc-dataone</developerConnection>
-	</scm>
-	<organization>
-		<name>RENCI</name>
-		<url>http://www.renci.org</url>
-	</organization>
-	<developers>
-		<developer>
-			<id>lisa</id>
-			<name>Lisa Stillwell</name>
-			<email>lisa@renci.org</email>
-			<url>http://www.renci.org</url>
-			<organization>RENCI</organization>
-			<organizationUrl>http://www.renci.org</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>michal-conway</id>
-			<name>Mike Conway</name>
-			<email>michael_conway@unc.edu</email>
-			<url>http://www.renci.org</url>
-			<organization>RENCI</organization>
-			<organizationUrl>http://www.renci.org</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-		</developer>
-	</developers>
+	<name>DataOne node</name>
 	<dependencies>
 		<dependency>
 			<groupId>javax.inject</groupId>
@@ -195,8 +157,6 @@
 		<dependency>
 			<groupId>org.dataone</groupId>
 			<artifactId>d1_libclient_java</artifactId>
-			<version>2.3.0</version>
-			<type>jar</type>
 		</dependency>
 	</dependencies>
 	<build>

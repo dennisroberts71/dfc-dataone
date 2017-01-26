@@ -60,5 +60,7 @@
 	</dependencyManagement>
 	<modules>
 		<module>dataone-node</module>
+		<module>pid-service-api</module>
+		<module>event-service-api</module>
 	</modules>
 </project>

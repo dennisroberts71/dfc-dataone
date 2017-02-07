@@ -2,14 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>pid-service-api</artifactId>
+	<artifactId>pid-service-handle-impl</artifactId>
 	<parent>
 		<groupId>org.irods</groupId>
 		<artifactId>dfc-dataone</artifactId>
 		<version>4.1.10.0-SNAPSHOT</version>
 	</parent>
 	<packaging>jar</packaging>
-	<name>PID service API</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
@@ -39,10 +38,14 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.dataone</groupId>
-			<artifactId>d1_libclient_java</artifactId>
+<dependency>
+			<artifactId>handle</artifactId>
+			<groupId>org.handle</groupId>
+			<scope>system</scope>
+			<version>1.0.0</version>
+			<systemPath>${project.basedir}/src/main/lib/handle.jar</systemPath>
 		</dependency>
 		
 	</dependencies>
+	<name>Handle PID server impl</name>
 </project>

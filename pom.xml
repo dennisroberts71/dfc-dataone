@@ -62,5 +62,6 @@
 		<module>dataone-node</module>
 		<module>pid-service-api</module>
 		<module>event-service-api</module>
+<module>pid-service-handle-impl</module>
 	</modules>
 </project>

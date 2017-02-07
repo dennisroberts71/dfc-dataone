@@ -139,7 +139,7 @@ public class MemberNodeService {
 	@Path("/")
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
-	public MNNode handleDeafaultGetCapabilities() throws NotImplemented,
+	public MNNode handleDefaultGetCapabilities() throws NotImplemented,
 			ServiceFailure {
 
 		MNNode nodeCapabilities = handleGetCapabilities();

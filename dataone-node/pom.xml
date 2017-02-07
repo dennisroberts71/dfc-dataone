@@ -139,13 +139,6 @@
 			<artifactId>spring-beans</artifactId>
 		</dependency>
 		<dependency>
-			<artifactId>handle</artifactId>
-			<groupId>org.handle</groupId>
-			<scope>system</scope>
-			<version>1.0.0</version>
-			<systemPath>${project.basedir}/src/main/lib/handle.jar</systemPath>
-		</dependency>
-		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>1.7.6</version>

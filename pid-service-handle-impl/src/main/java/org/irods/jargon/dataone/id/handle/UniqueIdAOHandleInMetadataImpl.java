@@ -1,4 +1,4 @@
-package org.irods.jargon.dataone.id;
+package org.irods.jargon.dataone.id.handle;
 
 import java.io.IOException;
 import java.io.InputStream;

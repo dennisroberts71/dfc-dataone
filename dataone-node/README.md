@@ -1,44 +1,24 @@
 
-# Project: Jargon-core API
+# Project: DataONE Node
 #### Date: 
 #### Release Version:
-#### git tag: 4.1.10.1-RC2
-#### Developer: Mike Conway - DICE
+#### git tag: 
+#### Developer: Lisa Stillwell - RENCI, Mike Conway - DFC/RENCI
 
 ## News
 
-4.1.10 Release compatability supporting issue 225: https://github.com/DICE-UNC/jargon/issues/225
-
-This includes support for pooling of iRODS connections targeting REST, WebDav, Cloud Browser
-
-=======
-
-Please go to [[https://github.com/DICE-UNC/jargon]] for the latest news and info.
-
-Jargon-core consists of the following libraries
-
-* jargon-core - base libraries, implementation of the iRODS protocol
-* jargon-data-utils - additional functionality for dealing with iRODS data, such as building trees, storing information in iRODS on behalf of applications, and doing diffs between local and iRODS
-* jargon-user-tagging - code for using free tagging and other metadata metaphors on top of iRODS
-* jargon-user-profile - allows management of user profile and related configuration data in a user home directory
-* jargon-ticket - support for ticket processing
-* jargon-httpstream - stream http content into iRODS via Jargon
-* jargon-ruleservice - support for running and managing rules from interfaces
 
 ## Requirements
 
-* Jargon depends on Java 1.8+
-* Jargon is built using Apache Maven2, see POM for dependencies
-* Jargon supports iRODS 3.0 through iRODS 3.3.1 community, as well as iRODS 4.2.0 consortium
+* Depends on Java 1.8+
+* Built using Apache Maven2, see POM for dependencies
+* Supports iRODS 3.0 through iRODS 3.3.1 community, as well as iRODS 4.2.0 consortium
 
-## Libraries
+## Running
 
-Jargon-core uses Maven for dependency management.  See the pom.xml file for references to various dependencies.
+```
+mvn spring-boot:run
 
-Note that the following bug and feature requests are logged in GForge with related commit information [[https://github.com/DICE-UNC/jargon/issues]]
+```
 
 ## Changes
-
-####  Add object pooling protocol manager #225 
-
-Test addition of commons-pool support for the protocol manager (this is considered experimental at this point)

@@ -52,8 +52,7 @@
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<scope>provided</scope>
+			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -153,9 +152,9 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<version>1.5.1.RELEASE</version>
+			<groupId>org.irods.jargon.springboot</groupId>
+			<artifactId>resteasy-spring-boot-starter</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	<build>

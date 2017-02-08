@@ -144,10 +144,6 @@
 			<version>1.7.6</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.dataone</groupId>
 			<artifactId>d1_libclient_java</artifactId>
 		</dependency>
@@ -158,6 +154,11 @@
 		<dependency>
 			<groupId>org.irods</groupId>
 			<artifactId>pid-service-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>dataone-utils</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

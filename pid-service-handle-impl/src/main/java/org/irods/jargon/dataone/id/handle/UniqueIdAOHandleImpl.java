@@ -8,13 +8,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import org.irods.jargon.core.connection.IRODSAccount;
+import org.dataone.service.types.v1.Identifier;
+import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.service.AbstractJargonService;
+import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.pid.pidservice.DataObjectListResponse;
 import org.irods.jargon.pid.pidservice.UniqueIdAO;
 //import org.irods.jargon.dataprofile.DataProfile;
@@ -302,8 +304,6 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 	private boolean matchesFormatId(ObjectFormatIdentifier formatId,
 			DataObject dataObject) throws JargonException, JargonQueryException {
 
-		IRODSAccount irodsAccount = RestAuthUtils
-				.getIRODSAccountFromBasicAuthValues(this.restConfiguration);
 		String dataFormat = DataTypeUtils.getDataObjectFormatFromMetadata(
 				irodsAccount, irodsAccessObjectFactory, dataObject);
 
@@ -324,23 +324,6 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 
 		log.info("toDate : returning no match");
 		return false;
-	}
-
-	@Override
-	public org.irods.jargon.pid.pidservice.Identifier getIdentifierFromDataObject(
-			DataObject dataObject) throws JargonException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DataObjectListResponse getListOfDataoneExposedDataObjects(
-			Date fromDate, Date toDate,
-			org.irods.jargon.pid.pidservice.ObjectFormatIdentifier formatId,
-			Boolean replicaStatus, Integer start, Integer count)
-			throws JargonException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

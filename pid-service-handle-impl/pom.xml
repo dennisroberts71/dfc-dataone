@@ -3,6 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>pid-service-handle-impl</artifactId>
+		<name>Handle PID server impl</name>
+	
 	<parent>
 		<groupId>org.irods</groupId>
 		<artifactId>dfc-dataone</artifactId>
@@ -38,14 +40,17 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 		</dependency>
-<dependency>
+		<dependency>
 			<artifactId>handle</artifactId>
 			<groupId>org.handle</groupId>
 			<scope>system</scope>
 			<version>1.0.0</version>
 			<systemPath>${project.basedir}/src/main/lib/handle.jar</systemPath>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>pid-service-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
-	<name>Handle PID server impl</name>
 </project>

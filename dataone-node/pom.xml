@@ -151,6 +151,15 @@
 			<groupId>org.dataone</groupId>
 			<artifactId>d1_libclient_java</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>pid-service-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

@@ -9,7 +9,7 @@
 		<version>4.1.10.0-SNAPSHOT</version>
 	</parent>
 	<packaging>war</packaging>
-	<name>DataOne node</name>
+	<name>DataONE Node</name>
 	<dependencies>
 		<dependency>
 			<groupId>javax.inject</groupId>
@@ -139,17 +139,8 @@
 			<artifactId>spring-beans</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>1.7.6</version>
-		</dependency>
-		<dependency>
 			<groupId>org.dataone</groupId>
 			<artifactId>d1_libclient_java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.irods</groupId>
@@ -160,6 +151,11 @@
 			<groupId>org.irods</groupId>
 			<artifactId>dataone-utils</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<version>1.5.1.RELEASE</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -224,6 +220,18 @@
 						</configuration>
 						<goals>
 							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>1.5.1.RELEASE</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
 						</goals>
 					</execution>
 				</executions>

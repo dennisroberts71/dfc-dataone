@@ -16,8 +16,8 @@ import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
-import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.JargonQueryException;
+import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.pid.pidservice.DataObjectListResponse;
 import org.irods.jargon.pid.pidservice.UniqueIdAO;
@@ -30,14 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
-		implements UniqueIdAO {
+implements UniqueIdAO {
 
 	private Properties properties;
 	private String propertiesFilename = "d1client.properties";
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Override
-	public DataObject getDataObjectFromIdentifier(Identifier identifier)
+	public DataObject getDataObjectFromIdentifier(final Identifier identifier)
 			throws JargonException, FileNotFoundException {
 
 		DataObject dataObject = null;
@@ -60,7 +60,7 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 			log.info("got dataObjectAO: {}", dataObjectAO.toString());
 			// Find iRODS object here from Identifier
 			dataObject = dataObjectAO.findById(new Long(dataObjectId)
-					.intValue());
+			.intValue());
 			if (dataObject != null) {
 				log.info("found iRODS file: {}", dataObject.getAbsolutePath());
 			} else {
@@ -78,7 +78,7 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 	}
 
 	@Override
-	public Identifier getIdentifierFromDataObject(DataObject dataObject)
+	public Identifier getIdentifierFromDataObject(final DataObject dataObject)
 			throws JargonException {
 
 		if (dataObject == null) {
@@ -115,12 +115,12 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 
 		try {
 			avuQuery1 = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL,
+					AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 					handleAttr);
 
-			avuQuery2 = AVUQueryElement
-					.instanceForValueQuery(AVUQueryPart.VALUE,
-							AVUQueryOperatorEnum.EQUAL, handleValue);
+			avuQuery2 = AVUQueryElement.instanceForValueQuery(
+					AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
+					handleValue);
 
 		} catch (JargonQueryException e) {
 			log.error("getListOfDataoneExposedIdentifiers: failed to create AVU query elements");
@@ -152,9 +152,9 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 
 	@Override
 	public DataObjectListResponse getListOfDataoneExposedDataObjects(
-			Date fromDate, Date toDate, ObjectFormatIdentifier formatId,
-			Boolean replicaStatus, Integer start, Integer count)
-			throws JargonException {
+			final Date fromDate, final Date toDate,
+			final ObjectFormatIdentifier formatId, final Boolean replicaStatus,
+			final Integer start, final Integer count) throws JargonException {
 
 		int total = 0;
 
@@ -192,7 +192,7 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 		return dataObjectListResponse;
 	}
 
-	public long getDataObjectIdFromDataOneIdentifier(Identifier pid) {
+	public long getDataObjectIdFromDataOneIdentifier(final Identifier pid) {
 
 		int idIdx = pid.getValue().indexOf("/") + 1;
 		long dataObjectId;
@@ -218,19 +218,19 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 	}
 
 	private void loadProperties() {
-		this.properties = new Properties();
+		properties = new Properties();
 		InputStream input = null;
 		input = getClass().getClassLoader().getResourceAsStream(
-				this.propertiesFilename);
+				propertiesFilename);
 
 		// load a properties file
 		try {
-			this.properties.load(input);
+			properties.load(input);
 		} catch (IOException e) {
 			log.error("Cannot load Member Node properties file: {}",
-					this.propertiesFilename);
+					propertiesFilename);
 			log.error("IOException: {}", e.getStackTrace());
-			this.properties = new Properties();
+			properties = new Properties();
 		} finally {
 			if (input != null) {
 				try {
@@ -242,8 +242,9 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 		}
 	}
 
-	private List<AVUQueryElement> createAVUQueryElementList(Date fromDate,
-			Date toDate, ObjectFormatIdentifier formatId) {
+	private List<AVUQueryElement> createAVUQueryElementList(
+			final Date fromDate, final Date toDate,
+			final ObjectFormatIdentifier formatId) {
 
 		// TODO: probably should move these to properties
 		String dateAttr = "StartDateTime";
@@ -258,13 +259,13 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 		try {
 			// DataOne exposed query
 			avuQuery = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL,
+					AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 					handleAttr);
 			avuQueryList.add(avuQuery);
 
-			avuQuery = AVUQueryElement
-					.instanceForValueQuery(AVUQueryPart.VALUE,
-							AVUQueryOperatorEnum.EQUAL, handleValue);
+			avuQuery = AVUQueryElement.instanceForValueQuery(
+					AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
+					handleValue);
 			avuQueryList.add(avuQuery);
 
 			// handle any date queries
@@ -283,24 +284,25 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 
 			// fromDate query
 			avuQuery = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL,
+					AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 					dateAttr);
 			avuQueryList.add(avuQuery);
 
 			avuQuery = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.VALUE, AVUQueryOperatorEnum.GREATER_OR_EQUAL,
+					AVUQueryPart.VALUE,
+					QueryConditionOperators.GREATER_THAN_OR_EQUAL_TO,
 					Long.toString(newFromDate));
 			avuQueryList.add(avuQuery);
 
 			// toDate query
 			if ((toDate != null) && ((toDate.getTime() / 1000) >= newFromDate)) {
 				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL,
+						AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 						dateAttr);
 				avuQueryList.add(avuQuery);
 
 				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.VALUE, AVUQueryOperatorEnum.LESS_THAN,
+						AVUQueryPart.VALUE, QueryConditionOperators.LESS_THAN,
 						Long.toString(toDate.getTime() / 1000));
 				avuQueryList.add(avuQuery);
 
@@ -338,12 +340,12 @@ public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
 			// handle data format query
 			if ((formatId != null) && (formatId.getValue() != null)) {
 				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.ATTRIBUTE, AVUQueryOperatorEnum.EQUAL,
+						AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 						formatAttr);
 				avuQueryList.add(avuQuery);
 
 				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.VALUE, AVUQueryOperatorEnum.EQUAL,
+						AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
 						formatId.getValue());
 				avuQueryList.add(avuQuery);
 

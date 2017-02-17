@@ -1,11 +1,10 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.auth;
 
 import java.util.Properties;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -26,16 +25,15 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Lisa Stillwell - RENCI (www.renci.org)
- * 
+ *
  */
 public class RestAuthUtils {
 
 	private static Logger log = LoggerFactory.getLogger(RestAuthUtils.class);
 
 	/**
-	 * from anonymous build an iRODS
-	 * account
-	 * 
+	 * from anonymous build an iRODS account
+	 *
 	 * @param restConfiguration
 	 * @return
 	 * @throws JargonException
@@ -49,18 +47,16 @@ public class RestAuthUtils {
 			throw new IllegalArgumentException("null restConfiguration");
 		}
 
-//		return IRODSAccount.instanceForAnonymous(
-//								restConfiguration.getIrodsHost(),
-//								restConfiguration.getIrodsPort(),
-//								"",
-//								restConfiguration.getIrodsZone(),
-//								restConfiguration.getDefaultStorageResource());
-		return IRODSAccount.instance(
-				restConfiguration.getIrodsHost(),
+		// return IRODSAccount.instanceForAnonymous(
+		// restConfiguration.getIrodsHost(),
+		// restConfiguration.getIrodsPort(),
+		// "",
+		// restConfiguration.getIrodsZone(),
+		// restConfiguration.getDefaultStorageResource());
+		return IRODSAccount.instance(restConfiguration.getIrodsHost(),
 				restConfiguration.getIrodsPort(),
 				restConfiguration.getIrodsUserName(),
-				restConfiguration.getIrodsUserPswd(),
-				"",
+				restConfiguration.getIrodsUserPswd(), "",
 				restConfiguration.getIrodsZone(),
 				restConfiguration.getDefaultStorageResource());
 
@@ -68,7 +64,7 @@ public class RestAuthUtils {
 
 	/**
 	 * Return boilerplate http client for testing that uses basic auth
-	 * 
+	 *
 	 * @param irodsAccount
 	 * @param testingProperties
 	 * @return
@@ -76,7 +72,7 @@ public class RestAuthUtils {
 	 */
 	public static DefaultHttpClientAndContext httpClientSetup(
 			final IRODSAccount irodsAccount, final Properties testingProperties)
-			throws TestingUtilsException {
+					throws TestingUtilsException {
 
 		if (irodsAccount == null) {
 			throw new IllegalArgumentException("null irodsAccount");

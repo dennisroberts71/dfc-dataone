@@ -28,14 +28,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class UniqueIdAOHandleImpl extends AbstractJargonService implements
-		UniqueIdAO {
+UniqueIdAO {
 
 	private Properties properties;
 	private String propertiesFilename = "d1client.properties";
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Override
-	public DataObject getDataObjectFromIdentifier(Identifier identifier)
+	public DataObject getDataObjectFromIdentifier(final Identifier identifier)
 			throws JargonException, FileNotFoundException {
 
 		DataObject dataObject = null;
@@ -55,7 +55,7 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 			log.info("got dataObjectAO: {}", dataObjectAO.toString());
 			// Find iRODS object here from Identifier
 			dataObject = dataObjectAO.findById(new Long(dataObjectId)
-					.intValue());
+			.intValue());
 			if (dataObject != null) {
 				log.info("found iRODS file: {}", dataObject.getAbsolutePath());
 			} else {
@@ -73,7 +73,7 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 	}
 
 	@Override
-	public Identifier getIdentifierFromDataObject(DataObject dataObject)
+	public Identifier getIdentifierFromDataObject(final DataObject dataObject)
 			throws JargonException {
 
 		if (dataObject == null) {
@@ -162,9 +162,9 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 
 	@Override
 	public DataObjectListResponse getListOfDataoneExposedDataObjects(
-			Date fromDate, Date toDate, ObjectFormatIdentifier formatId,
-			Boolean replicaStatus, Integer start, Integer count)
-			throws JargonException {
+			final Date fromDate, final Date toDate,
+			final ObjectFormatIdentifier formatId, final Boolean replicaStatus,
+			final Integer start, final Integer count) throws JargonException {
 
 		// get complete list of exposed data objects
 		// TODO: see if this can be done differently to just request list
@@ -219,7 +219,7 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 		return dataObjectListResponse;
 	}
 
-	public long getDataObjectIdFromDataOneIdentifier(Identifier pid) {
+	public long getDataObjectIdFromDataOneIdentifier(final Identifier pid) {
 
 		int idIdx = pid.getValue().indexOf("/") + 1;
 		long dataObjectId;
@@ -245,19 +245,19 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 	}
 
 	private void loadProperties() {
-		this.properties = new Properties();
+		properties = new Properties();
 		InputStream input = null;
 		input = getClass().getClassLoader().getResourceAsStream(
-				this.propertiesFilename);
+				propertiesFilename);
 
 		// load a properties file
 		try {
-			this.properties.load(input);
+			properties.load(input);
 		} catch (IOException e) {
 			log.error("Cannot load Member Node properties file: {}",
-					this.propertiesFilename);
+					propertiesFilename);
 			log.error("IOException: {}", e.getStackTrace());
-			this.properties = new Properties();
+			properties = new Properties();
 		} finally {
 			if (input != null) {
 				try {
@@ -269,7 +269,8 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 		}
 	}
 
-	private boolean matchesFromDate(Date fromDate, Date dataObjectModDate) {
+	private boolean matchesFromDate(final Date fromDate,
+			final Date dataObjectModDate) {
 
 		if (fromDate == null || fromDate.getTime() <= 0) {
 			log.info("fromDate : returning matches");
@@ -285,7 +286,8 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 		return false;
 	}
 
-	private boolean matchesToDate(Date toDate, Date dataObjectModDate) {
+	private boolean matchesToDate(final Date toDate,
+			final Date dataObjectModDate) {
 
 		if (toDate == null || toDate.getTime() <= 0) {
 			log.info("toDate : returning matches");
@@ -301,8 +303,9 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 		return false;
 	}
 
-	private boolean matchesFormatId(ObjectFormatIdentifier formatId,
-			DataObject dataObject) throws JargonException, JargonQueryException {
+	private boolean matchesFormatId(final ObjectFormatIdentifier formatId,
+			final DataObject dataObject) throws JargonException,
+			JargonQueryException {
 
 		String dataFormat = DataTypeUtils.getDataObjectFormatFromMetadata(
 				irodsAccount, irodsAccessObjectFactory, dataObject);
@@ -314,7 +317,7 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements
 		return false;
 	}
 
-	private boolean matchesReplicaStatus(Boolean replicaStatus) {
+	private boolean matchesReplicaStatus(final Boolean replicaStatus) {
 
 		// replication is always set to false for now
 		if (replicaStatus == null || replicaStatus == false) {

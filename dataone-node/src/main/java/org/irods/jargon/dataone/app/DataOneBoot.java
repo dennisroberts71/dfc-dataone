@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.app;
 
@@ -9,7 +9,7 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 
 /**
  * DataONE embedded container boot and app assemblies
- * 
+ *
  * @author mconway
  *
  */
@@ -17,7 +17,7 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 @SpringBootApplication
 public class DataOneBoot extends SpringBootServletInitializer {
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		SpringApplication.run(DataOneBoot.class, args);
 	}
 

@@ -37,8 +37,8 @@ public class MNCoreImpl implements MNCore {
 
 	// private final MNCoreModel mnCoreModel;
 
-	public MNCoreImpl(IRODSAccessObjectFactory irodsAccessObjectFactory,
-			RestConfiguration restConfiguration) {
+	public MNCoreImpl(final IRODSAccessObjectFactory irodsAccessObjectFactory,
+			final RestConfiguration restConfiguration) {
 
 		this.irodsAccessObjectFactory = irodsAccessObjectFactory;
 		this.restConfiguration = restConfiguration;
@@ -48,7 +48,7 @@ public class MNCoreImpl implements MNCore {
 
 	@Override
 	public Date ping() throws NotImplemented, ServiceFailure,
-			InsufficientResources {
+	InsufficientResources {
 
 		try {
 			IRODSAccount irodsAccount = RestAuthUtils
@@ -69,23 +69,21 @@ public class MNCoreImpl implements MNCore {
 	}
 
 	@Override
-	public Log getLogRecords(Date fromDate, Date toDate, Event event,
-			String pidFilter, Integer startIdx, Integer count)
-			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
-			ServiceFailure {
+	public Log getLogRecords(final Date fromDate, final Date toDate,
+			final Event event, final String pidFilter, final Integer startIdx,
+			final Integer count) throws InvalidRequest, InvalidToken,
+			NotAuthorized, NotImplemented, ServiceFailure {
 
 		Log d1log = new Log();
-		EventsEnum newEvent = null;
-
 		log.info("getLogRecords: elasticsearch implementation");
 		if (event != null) {
-			newEvent = EventsEnum.valueOfFromDataOne(event);
+			EventsEnum.valueOfFromDataOne(event);
 		}
 
 		// FIXME: add log stuff
 
 		/*
-		 * 
+		 *
 		 * EventLogAOElasticSearchImpl eventLogAO = new
 		 * EventLogAOElasticSearchImpl(irodsAccessObjectFactory,
 		 * restConfiguration); try { d1log = eventLogAO.getLogs(fromDate,
@@ -112,8 +110,7 @@ public class MNCoreImpl implements MNCore {
 			EnvironmentalInfoAO environmentalInfoAO = irodsAccessObjectFactory
 					.getEnvironmentalInfoAO(irodsAccount);
 
-			long bootTime = environmentalInfoAO.getIRODSServerProperties()
-					.getServerBootTime();
+			environmentalInfoAO.getIRODSServerProperties().getServerBootTime();
 
 		} catch (Exception e) {
 			log.error("getCapabilities: iRODS server is not running");
@@ -156,10 +153,11 @@ public class MNCoreImpl implements MNCore {
 	}
 
 	@Override
-	public Log getLogRecords(Session session, Date date1, Date date2,
-			Event event, String s, Integer integer1, Integer integer2)
-			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
-			ServiceFailure {
+	public Log getLogRecords(final Session session, final Date date1,
+			final Date date2, final Event event, final String s,
+			final Integer integer1, final Integer integer2)
+					throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
+					ServiceFailure {
 
 		throw new NotImplemented("1461",
 				"Authenticated getLogRecords not implemented");

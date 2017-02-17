@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.domain;
 
@@ -8,15 +8,14 @@ import java.util.Date;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.irods.jargon.core.connection.IRODSServerProperties.IcatEnabled;
-import org.jboss.resteasy.annotations.providers.jaxb.json.BadgerFish;
 
 /**
  * Information about the server for representation as XML or JSON
- * 
+ *
  * @author Mike Conway - DICE (www.irods.org)
  */
 @XmlRootElement(name = "serverInfo")
-//@BadgerFish
+// @BadgerFish
 public class ServerInfo {
 
 	private Date initializeDate = new Date();
@@ -26,7 +25,7 @@ public class ServerInfo {
 	private String apiVersion = "";
 	private String rodsZone = "";
 	/**
-	 * 
+	 *
 	 */
 	private long currentServerTime = 0;
 
@@ -34,7 +33,7 @@ public class ServerInfo {
 		return initializeDate;
 	}
 
-	public void setInitializeDate(Date initializeDate) {
+	public void setInitializeDate(final Date initializeDate) {
 		this.initializeDate = initializeDate;
 	}
 
@@ -42,7 +41,7 @@ public class ServerInfo {
 		return icatEnabled;
 	}
 
-	public void setIcatEnabled(IcatEnabled icatEnabled) {
+	public void setIcatEnabled(final IcatEnabled icatEnabled) {
 		this.icatEnabled = icatEnabled;
 	}
 
@@ -50,7 +49,7 @@ public class ServerInfo {
 		return serverBootTime;
 	}
 
-	public void setServerBootTime(int serverBootTime) {
+	public void setServerBootTime(final int serverBootTime) {
 		this.serverBootTime = serverBootTime;
 	}
 
@@ -58,7 +57,7 @@ public class ServerInfo {
 		return relVersion;
 	}
 
-	public void setRelVersion(String relVersion) {
+	public void setRelVersion(final String relVersion) {
 		this.relVersion = relVersion;
 	}
 
@@ -66,7 +65,7 @@ public class ServerInfo {
 		return apiVersion;
 	}
 
-	public void setApiVersion(String apiVersion) {
+	public void setApiVersion(final String apiVersion) {
 		this.apiVersion = apiVersion;
 	}
 
@@ -74,7 +73,7 @@ public class ServerInfo {
 		return rodsZone;
 	}
 
-	public void setRodsZone(String rodsZone) {
+	public void setRodsZone(final String rodsZone) {
 		this.rodsZone = rodsZone;
 	}
 
@@ -82,7 +81,7 @@ public class ServerInfo {
 		return currentServerTime;
 	}
 
-	public void setCurrentServerTime(long currentServerTime) {
+	public void setCurrentServerTime(final long currentServerTime) {
 		this.currentServerTime = currentServerTime;
 	}
 

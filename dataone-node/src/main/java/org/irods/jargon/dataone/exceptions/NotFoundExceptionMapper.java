@@ -11,13 +11,15 @@ import org.dataone.service.exceptions.NotFound;
 public class NotFoundExceptionMapper implements ExceptionMapper<NotFound> {
 
 	@Override
-	public Response toResponse(NotFound ex) {
+	public Response toResponse(final NotFound ex) {
 
-		return Response.status(Response.Status.NOT_FOUND)
-						.header("Vary", "Accept-Encoding")
-						.entity(ExceptionUtils.getNotFoundXmlForObjectId(ex.getPid(), ex.getDetail_code(), ex.getDescription()))
-						.type(MediaType.TEXT_XML).build();
-		
+		return Response
+				.status(Response.Status.NOT_FOUND)
+				.header("Vary", "Accept-Encoding")
+				.entity(ExceptionUtils.getNotFoundXmlForObjectId(ex.getPid(),
+						ex.getDetail_code(), ex.getDescription()))
+				.type(MediaType.TEXT_XML).build();
+
 	}
 
 }

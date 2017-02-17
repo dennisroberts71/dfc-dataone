@@ -1,18 +1,15 @@
 package org.irods.jargon.dataone.domain;
 
-import java.util.Date;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.dataone.service.types.v1.LogEntry;
 import org.irods.jargon.dataone.utils.ISO8601;
 
 //@XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder={"entryId","identifier","ipAddress","userAgent","subject","event","dateLogged","nodeIdentifier"})
+@XmlType(propOrder = { "entryId", "identifier", "ipAddress", "userAgent",
+		"subject", "event", "dateLogged", "nodeIdentifier" })
 public class MNLogEntry {
-	
+
 	private String entryId;
 	private String dateLogged;
 	private String event;
@@ -21,110 +18,118 @@ public class MNLogEntry {
 	private String ipAddress;
 	private String userAgent;
 	private String subject;
-	
+
 	public String getEntryId() {
 		return entryId;
 	}
-	public void setEntryId(String entryId) {
+
+	public void setEntryId(final String entryId) {
 		this.entryId = entryId;
 	}
-	
+
 	public String getDateLogged() {
 		return dateLogged;
 	}
-	public void setDateLogged(String dateLogged) {
+
+	public void setDateLogged(final String dateLogged) {
 		this.dateLogged = dateLogged;
 	}
-	
+
 	public String getEvent() {
 		return event;
 	}
-	public void setEvent(String event) {
+
+	public void setEvent(final String event) {
 		this.event = event;
 	}
-	
+
 	public String getIdentifier() {
 		return identifier;
 	}
-	public void setIdentifier(String identifier) {
+
+	public void setIdentifier(final String identifier) {
 		this.identifier = identifier;
 	}
-	
+
 	public String getNodeIdentifier() {
 		return nodeIdentifier;
 	}
-	public void setNodeIdentifier(String nodeIdentifier) {
+
+	public void setNodeIdentifier(final String nodeIdentifier) {
 		this.nodeIdentifier = nodeIdentifier;
 	}
-	
+
 	public String getIpAddress() {
 		return ipAddress;
 	}
-	public void setIpAddress(String ipAddress) {
+
+	public void setIpAddress(final String ipAddress) {
 		this.ipAddress = ipAddress;
 	}
-	
+
 	public String getUserAgent() {
 		return userAgent;
 	}
-	public void setUserAgent(String userAgent) {
+
+	public void setUserAgent(final String userAgent) {
 		this.userAgent = userAgent;
 	}
-	
+
 	public String getSubject() {
 		return subject;
 	}
-	public void setSubject(String subject) {
+
+	public void setSubject(final String subject) {
 		this.subject = subject;
 	}
-	
-	public void copy(LogEntry logEntry) {
-		
+
+	public void copy(final LogEntry logEntry) {
+
 		if (logEntry == null) {
-			throw new IllegalArgumentException("MNLogEntry::copy - LogEntry is null");
+			throw new IllegalArgumentException(
+					"MNLogEntry::copy - LogEntry is null");
 		}
-		
+
 		if (logEntry.getEntryId() != null) {
-			this.entryId = logEntry.getEntryId();
+			entryId = logEntry.getEntryId();
 		}
-		
+
 		if (logEntry.getDateLogged() != null) {
-			this.dateLogged = ISO8601.convertToGMTString(logEntry.getDateLogged());
+			dateLogged = ISO8601.convertToGMTString(logEntry.getDateLogged());
 		}
-		
+
 		if (logEntry.getEvent() != null) {
-			this.event = logEntry.getEvent().xmlValue();
+			event = logEntry.getEvent().xmlValue();
 		}
-		
+
 		if (logEntry.getIdentifier() != null) {
-			this.identifier = logEntry.getIdentifier().getValue();
+			identifier = logEntry.getIdentifier().getValue();
 		}
-		
+
 		if (logEntry.getNodeIdentifier() != null) {
-			this.nodeIdentifier = logEntry.getNodeIdentifier().getValue();
+			nodeIdentifier = logEntry.getNodeIdentifier().getValue();
 		}
-		
+
 		if (logEntry.getIpAddress() != null) {
-			this.ipAddress = logEntry.getIpAddress();
+			ipAddress = logEntry.getIpAddress();
 		}
-		
+
 		else {
 			// need to use empty string to make this tag show up
-			this.ipAddress = new String();
+			ipAddress = new String();
 		}
-		
+
 		if (logEntry.getUserAgent() != null) {
-			this.userAgent = logEntry.getUserAgent();
-		}
-		else {
+			userAgent = logEntry.getUserAgent();
+		} else {
 			// need to use empty string to make this tag show up
-			this.userAgent = new String();
+			userAgent = new String();
 		}
-		
+
 		if (logEntry.getSubject() != null) {
-			this.subject = logEntry.getSubject().getValue();
-		}	
-		
+			subject = logEntry.getSubject().getValue();
+		}
+
 	}
-		
+
 }

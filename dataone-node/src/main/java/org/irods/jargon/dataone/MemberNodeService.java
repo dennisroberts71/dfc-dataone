@@ -89,7 +89,7 @@ public class MemberNodeService {
 	// public Response handlePing(@HeaderParam("Authorization") final String
 	// authorization)
 	public Response handlePing() throws NotImplemented, ServiceFailure,
-			InsufficientResources, JargonException {
+	InsufficientResources, JargonException {
 
 		// if (authorization == null || authorization.isEmpty()) {
 		// throw new IllegalArgumentException("null or empty authorization");
@@ -139,7 +139,7 @@ public class MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	public MNNode handleDefaultGetCapabilities() throws NotImplemented,
-			ServiceFailure {
+	ServiceFailure {
 
 		MNNode nodeCapabilities = handleGetCapabilities();
 
@@ -152,14 +152,14 @@ public class MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	public MNLog handleGetLogRecords(
-			@QueryParam("fromDate") String fromDateStr,
-			@QueryParam("toDate") String toDateStr,
-			@QueryParam("event") String event,
-			@QueryParam("pidFilter") String pidFilter,
-			@DefaultValue("0") @QueryParam("start") int start,
-			@DefaultValue("500") @QueryParam("count") int count)
-			throws NotImplemented, ServiceFailure, NotAuthorized,
-			InvalidRequest, InvalidToken {
+			@QueryParam("fromDate") final String fromDateStr,
+			@QueryParam("toDate") final String toDateStr,
+			@QueryParam("event") final String event,
+			@QueryParam("pidFilter") final String pidFilter,
+			@DefaultValue("0") @QueryParam("start") final int start,
+			@DefaultValue("500") @QueryParam("count") final int count)
+					throws NotImplemented, ServiceFailure, NotAuthorized,
+					InvalidRequest, InvalidToken {
 
 		logger.info("/log request: fromData={} toDate={}", fromDateStr,
 				toDateStr);
@@ -232,8 +232,8 @@ public class MemberNodeService {
 	public MNChecksum handleGetChecksum(
 			@PathParam("id") final String pid,
 			@DefaultValue("MD5") @QueryParam("checksumAlgorithm") final String algorithm)
-			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
-			NotImplemented, InvalidRequest {
+					throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
+					NotImplemented, InvalidRequest {
 
 		MNChecksum mnChecksum = new MNChecksum();
 
@@ -275,7 +275,7 @@ public class MemberNodeService {
 		// FIXME: add log stuff
 
 		/*
-		 * 
+		 *
 		 * // now log the event EventLogAOElasticSearchImpl eventLog = new
 		 * EventLogAOElasticSearchImpl( irodsAccessObjectFactory,
 		 * restConfiguration); try { eventLog.recordEvent(Event.REPLICATE, id,
@@ -292,8 +292,8 @@ public class MemberNodeService {
 	public MNSystemMetadata handleGetSystemMetadata(
 			@PathParam("id") final String pid)
 			// @Context final HttpServletResponse response)
-			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
-			NotImplemented, InvalidRequest {
+					throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
+					NotImplemented, InvalidRequest {
 
 		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
 
@@ -314,7 +314,7 @@ public class MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	public Response handleDescribe(@PathParam("id") final String pid)
-			// @Context final HttpServletResponse response)
+	// @Context final HttpServletResponse response)
 			throws NotAuthorized, NotImplemented, ServiceFailure, NotFound,
 			InvalidToken {
 
@@ -374,8 +374,9 @@ public class MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
-	public Response handleSynchronizationFailed(MultipartFormDataInput input)
-			throws NotAuthorized, NotImplemented, ServiceFailure, InvalidToken {
+	public Response handleSynchronizationFailed(
+			final MultipartFormDataInput input) throws NotAuthorized,
+			NotImplemented, ServiceFailure, InvalidToken {
 
 		Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
 		List<InputPart> inputParts = uploadForm.get("message");
@@ -426,8 +427,8 @@ public class MemberNodeService {
 			@QueryParam("replicaStatus") final Boolean replicaStatus,
 			@DefaultValue("0") @QueryParam("start") final Integer start,
 			@DefaultValue("500") @QueryParam("count") final Integer count)
-			throws InvalidToken, ServiceFailure, NotAuthorized, InvalidRequest,
-			NotImplemented {
+					throws InvalidToken, ServiceFailure, NotAuthorized, InvalidRequest,
+					NotImplemented {
 
 		MNObjectList mnObjectList = new MNObjectList();
 

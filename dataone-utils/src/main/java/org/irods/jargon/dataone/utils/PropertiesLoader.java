@@ -8,25 +8,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PropertiesLoader {
-	
+
 	private Properties properties;
-	
+
 	private String propertiesFilename = "d1client.properties";
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
 	public PropertiesLoader() {
-			
-		this.properties = new Properties();
+
+		properties = new Properties();
 		InputStream input = null;
-		input = getClass().getClassLoader().getResourceAsStream(this.propertiesFilename);
+		input = getClass().getClassLoader().getResourceAsStream(
+				propertiesFilename);
 
 		// load a properties file
 		try {
-			this.properties.load(input);
+			properties.load(input);
 		} catch (IOException e) {
-			log.error("Cannot load Member Node properties file: {}", this.propertiesFilename);
+			log.error("Cannot load Member Node properties file: {}",
+					propertiesFilename);
 			log.error("IOException: {}", e.getStackTrace());
-			this.properties = new Properties();
+			properties = new Properties();
 		} finally {
 			if (input != null) {
 				try {
@@ -37,9 +39,8 @@ public class PropertiesLoader {
 			}
 		}
 	}
-	
-	
-	public String getProperty(String key) {
+
+	public String getProperty(final String key) {
 		return properties.getProperty(key);
 	}
 

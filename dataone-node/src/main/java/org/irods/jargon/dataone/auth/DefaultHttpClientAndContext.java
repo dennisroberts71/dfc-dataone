@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.auth;
 
@@ -8,7 +8,7 @@ import org.apache.http.protocol.BasicHttpContext;
 
 /**
  * @author Mike Conway - DICE (www.irods.org)
- * 
+ *
  */
 public class DefaultHttpClientAndContext {
 	private DefaultHttpClient httpClient;

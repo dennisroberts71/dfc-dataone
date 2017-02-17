@@ -3,7 +3,6 @@ package org.irods.jargon.dataone.tier1;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.mime.MediaType;
 import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
@@ -36,7 +36,6 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
-import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 //import org.irods.jargon.dataprofile.DataProfileService;
 //import org.irods.jargon.dataprofile.DataTypeResolutionService;
@@ -67,16 +66,16 @@ public class MNReadImpl implements MNRead {
 
 	private PropertiesLoader properties = new PropertiesLoader();
 
-	public MNReadImpl(IRODSAccessObjectFactory irodsAccessObjectFactory,
-			RestConfiguration restConfiguration) {
+	public MNReadImpl(final IRODSAccessObjectFactory irodsAccessObjectFactory,
+			final RestConfiguration restConfiguration) {
 
 		this.irodsAccessObjectFactory = irodsAccessObjectFactory;
 		this.restConfiguration = restConfiguration;
 	}
 
 	@Override
-	public DescribeResponse describe(Identifier id) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
+	public DescribeResponse describe(final Identifier id) throws InvalidToken,
+	NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 
 		if (id == null || id.getValue().isEmpty()) {
 			log.error("id is null or empty");
@@ -152,28 +151,21 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public DescribeResponse describe(Session arg0, Identifier arg1)
+	public DescribeResponse describe(final Session arg0, final Identifier arg1)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
 			NotFound {
 		throw new NotImplemented("1361",
 				"this service has not been implemented");
 	}
 
-	public void streamObject(HttpServletResponse response, Identifier id)
-			throws ServiceFailure, NotFound {
+	public void streamObject(final HttpServletResponse response,
+			final Identifier id) throws ServiceFailure, NotFound {
 
-		IRODSFileInputStream stream = null;
-		OutputStream output = null;
-		int contentLength = 0;
-		String path = new String();
-		DataObject dataObject = new DataObject();
-		IRODSAccount irodsAccount;
-		IRODSFile irodsFile;
-
+		new String();
+		new DataObject();
 		// first try and find data object for this id
 		try {
-			irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+			RestAuthUtils.getIRODSAccountFromBasicAuthValues(restConfiguration);
 
 			// FIXME: add handle factory and lookup
 
@@ -184,7 +176,7 @@ public class MNReadImpl implements MNRead {
 			 * dataObject.getAbsolutePath(); irodsFile =
 			 * irodsAccessObjectFactory.getIRODSFileFactory(
 			 * irodsAccount).instanceIRODSFile(path);
-			 * 
+			 *
 			 * if (!irodsFile.exists()) { log.info("file does not exist"); throw
 			 * new NotFound("1020",
 			 * "No data object could be found for given PID:" + id.getValue());
@@ -198,35 +190,35 @@ public class MNReadImpl implements MNRead {
 		}
 
 		/*
-		 * 
+		 *
 		 * // now try and stream it try {
-		 * 
+		 *
 		 * stream = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
 		 * .instanceIRODSFileInputStream(irodsFile); // TODO: need to catch and
 		 * return appropriate exceptions here for no // permission
-		 * 
+		 *
 		 * contentLength = (int) irodsFile.length();
 		 * log.info("contentLength={}", contentLength);
-		 * 
+		 *
 		 * response.setContentType("application/octet-stream");
 		 * response.setHeader("Content-Disposition", "attachment;filename=" +
 		 * dataObject.getDataName()); response.setContentLength(contentLength);
 		 * // response.addHeader("Vary", "Accept-Encoding");
 		 * log.info("reponse: {}", response.toString());
-		 * 
+		 *
 		 * output = new BufferedOutputStream(response.getOutputStream());
-		 * 
+		 *
 		 * // Stream2StreamAO stream2StreamAO = getIrodsAccessObjectFactory() //
 		 * .getStream2StreamAO(irodsAccount); //
 		 * stream2StreamAO.streamToStreamCopyUsingStandardIO(input, output);
-		 * 
+		 *
 		 * int readBytes = 0; byte[] buffer = new byte[4096];
-		 * 
+		 *
 		 * while ((readBytes = stream.read(buffer, 0, 4096)) != -1) { //
 		 * log.info("readBytes={}", readBytes); output.write(buffer, 0,
 		 * readBytes); } output.flush(); if (stream != null) stream.close(); if
 		 * (output != null) output.close();
-		 * 
+		 *
 		 * } catch (Exception e) { log.error("Cannot stream iRODS object: {}",
 		 * path); throw new ServiceFailure("1030",
 		 * "unable to stream iRODS data object"); } finally {
@@ -236,9 +228,9 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public IRODSFileInputStream get(Identifier id) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-			InsufficientResources {
+	public IRODSFileInputStream get(final Identifier id) throws InvalidToken,
+	NotAuthorized, NotImplemented, ServiceFailure, NotFound,
+	InsufficientResources {
 
 		// TODO: Not sure how to implement this properly - used streamObject
 		// method instead
@@ -280,15 +272,15 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public InputStream get(Session arg0, Identifier arg1) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-			InsufficientResources {
+	public InputStream get(final Session arg0, final Identifier arg1)
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
+			NotFound, InsufficientResources {
 		throw new NotImplemented("1001",
 				"this service has not been implemented");
 	}
 
 	@Override
-	public Checksum getChecksum(Identifier id, String algorithm)
+	public Checksum getChecksum(final Identifier id, final String algorithm)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
 			ServiceFailure, NotFound {
 
@@ -300,16 +292,16 @@ public class MNReadImpl implements MNRead {
 			throw new NotFound("1420", "invalid checksum algorithm provided");
 		}
 
-		DataObject dataObject = new DataObject();
+		new DataObject();
 		Checksum checksum = new Checksum();
 
 		/*
 		 * try {
-		 * 
+		 *
 		 * // FIXME: need to add handle stuff
-		 * 
-		 * 
-		 * 
+		 *
+		 *
+		 *
 		 * UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(
 		 * restConfiguration, irodsAccessObjectFactory); dataObject =
 		 * handleImpl.getDataObjectFromIdentifier(id); String csum =
@@ -319,7 +311,7 @@ public class MNReadImpl implements MNRead {
 		 * "Checksum does not exist for data object id provided"); }
 		 * checksum.setValue(csum); checksum.setAlgorithm(properties
 		 * .getProperty("irods.dataone.chksum-algorithm"));
-		 * 
+		 *
 		 * } catch (FileNotFoundException nf) {
 		 * log.error("Cannot access iRODS object: {}",
 		 * dataObject.getAbsolutePath()); throw new NotFound("1410",
@@ -333,23 +325,23 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public Checksum getChecksum(Session arg0, Identifier arg1, String arg2)
-			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
-			ServiceFailure, NotFound {
+	public Checksum getChecksum(final Session arg0, final Identifier arg1,
+			final String arg2) throws InvalidRequest, InvalidToken,
+			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 		throw new NotImplemented("1401",
 				"this service has not been implemented");
 	}
 
 	@Override
-	public InputStream getReplica(Identifier arg0) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-			InsufficientResources {
+	public InputStream getReplica(final Identifier arg0) throws InvalidToken,
+	NotAuthorized, NotImplemented, ServiceFailure, NotFound,
+	InsufficientResources {
 		// This is implemented in streamObject
 		return null;
 	}
 
 	@Override
-	public InputStream getReplica(Session arg0, Identifier arg1)
+	public InputStream getReplica(final Session arg0, final Identifier arg1)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
 			NotFound, InsufficientResources {
 		throw new NotImplemented("2180",
@@ -357,72 +349,70 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public SystemMetadata getSystemMetadata(Identifier id) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
+	public SystemMetadata getSystemMetadata(final Identifier id)
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
+			NotFound {
 		if (id == null || id.getValue().isEmpty()) {
 			throw new InvalidToken("1402", "invalid iRODS data object id");
 		}
 
-		DataObject dataObject = new DataObject();
+		new DataObject();
 		SystemMetadata metadata = new SystemMetadata();
-		IRODSAccount irodsAccount;
-		DataObjectAO dataObjectAO;
-
 		// TODO: hardcode version to 1 for now
 		metadata.setSerialVersion(getSerialVersion());
 
-		Checksum checksum = new Checksum();
+		new Checksum();
 
 		// first try and find data object for this id
 
 		// FIXME: add handle stuff
 
 		/*
-		 * 
+		 *
 		 * try { irodsAccount = RestAuthUtils
 		 * .getIRODSAccountFromBasicAuthValues(restConfiguration);
-		 * 
+		 *
 		 * dataObjectAO = irodsAccessObjectFactory
 		 * .getDataObjectAO(irodsAccount); UniqueIdAOHandleImpl handleImpl = new
 		 * UniqueIdAOHandleImpl( restConfiguration, irodsAccessObjectFactory);
 		 * dataObject = handleImpl.getDataObjectFromIdentifier(id);
-		 * 
+		 *
 		 * } catch (Exception ex) { log.info("file does not exist"); throw new
 		 * NotFound("1060", "No metadata could be found for given PID:" +
 		 * id.getValue()); }
-		 * 
-		 * 
+		 *
+		 *
 		 * try { String csum = dataObject.getChecksum(); if (csum == null) {
 		 * log.info("checksum does not exist for file: {}",
 		 * dataObject.getAbsolutePath()); // throw new NotFound("404", "1420");
 		 * } else { checksum.setValue(csum); checksum.setAlgorithm(properties
 		 * .getProperty("irods.dataone.chksum-algorithm")); }
-		 * 
+		 *
 		 * String format = DataTypeUtils.getDataObjectFormatFromMetadata(
 		 * irodsAccount, irodsAccessObjectFactory, dataObject); if (format ==
 		 * null) { format = getDataObjectMimeType(irodsAccount, dataObject); }
 		 * metadata.setIdentifier(id); ObjectFormatIdentifier formatId = new
 		 * ObjectFormatIdentifier(); formatId.setValue(format);
 		 * metadata.setFormatId(formatId);
-		 * 
+		 *
 		 * Long dataSizeLong = new Long(dataObject.getDataSize()); String
 		 * dataSizeStr = dataSizeLong.toString(); metadata.setSize(new
 		 * BigInteger(dataSizeStr)); metadata.setChecksum(checksum);
-		 * 
+		 *
 		 * String dataOwner = "uid=" + dataObject.getDataOwnerName(); Subject
 		 * submitter = new Subject(); submitter.setValue(dataOwner);
 		 * metadata.setSubmitter(submitter);
-		 * 
+		 *
 		 * Subject rightsHolder = new Subject();
 		 * rightsHolder.setValue(dataOwner);
 		 * metadata.setRightsHolder(rightsHolder);
-		 * 
+		 *
 		 * List<UserFilePermission> permissions = dataObjectAO
 		 * .listPermissionsForDataObject(dataObject.getAbsolutePath()); if
 		 * (permissions != null) { AccessPolicy accessPolicy = new
 		 * AccessPolicy(); for (UserFilePermission permission : permissions) {
 		 * AccessRule rule = new AccessRule(); Subject subject = new Subject();
-		 * 
+		 *
 		 * // in DataONE - anonymous translates to public // TODO: also may need
 		 * to make translation for "public" to // "authenticatedUser" if
 		 * (permission.getUserName().equals("anonymous")) {
@@ -432,13 +422,13 @@ public class MNReadImpl implements MNRead {
 		 * (Permission d1Premission : d1Premissions) {
 		 * rule.addPermission(d1Premission); } accessPolicy.addAllow(rule); }
 		 * metadata.setAccessPolicy(accessPolicy); }
-		 * 
+		 *
 		 * ReplicationPolicy replicationPolicy = new ReplicationPolicy();
 		 * replicationPolicy.setReplicationAllowed(false);
 		 * metadata.setReplicationPolicy(replicationPolicy);
-		 * 
+		 *
 		 * // Add support for obsoletes or obsoletedBy?
-		 * 
+		 *
 		 * // Use AVU epoch date //
 		 * metadata.setDateUploaded(dataObject.getCreatedAt()); //
 		 * metadata.setDateSysMetadataModified(dataObject.getUpdatedAt()); Date
@@ -446,13 +436,13 @@ public class MNReadImpl implements MNRead {
 		 * irodsAccessObjectFactory, irodsAccount, dataObject);
 		 * metadata.setDateSysMetadataModified(startDate);
 		 * metadata.setDateUploaded(startDate);
-		 * 
+		 *
 		 * NodeReference nodeReference = new NodeReference();
 		 * nodeReference.setValue(properties
 		 * .getProperty("irods.dataone.identifier"));
 		 * metadata.setOriginMemberNode(nodeReference);
 		 * metadata.setAuthoritativeMemberNode(nodeReference);
-		 * 
+		 *
 		 * } catch (Exception e) { log.error("Cannot access iRODS object: {}",
 		 * dataObject.getAbsolutePath()); throw new ServiceFailure("1090",
 		 * e.getMessage()); } finally {
@@ -462,54 +452,53 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public SystemMetadata getSystemMetadata(Session arg0, Identifier arg1)
-			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
-			NotFound {
+	public SystemMetadata getSystemMetadata(final Session arg0,
+			final Identifier arg1) throws InvalidToken, NotAuthorized,
+			NotImplemented, ServiceFailure, NotFound {
 		throw new NotImplemented("1041",
 				"this service has not been implemented");
 	}
 
 	@Override
-	public ObjectList listObjects(Date fromDate, Date toDate,
-			ObjectFormatIdentifier formatId, Boolean replicaStatus,
-			Integer start, Integer count) throws InvalidRequest, InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure {
-		DataObjectListResponse dataObjectListResponse = new DataObjectListResponse();
-		List<DataObject> dataObjectList = new ArrayList<DataObject>();
-		List<ObjectInfo> objectInfoList = new ArrayList<ObjectInfo>();
-		ObjectList objectList = new ObjectList();
-		// UniqueIdAOHandleImpl handleImpl;
+	public ObjectList listObjects(final Date fromDate, final Date toDate,
+			final ObjectFormatIdentifier formatId, final Boolean replicaStatus,
+			final Integer start, final Integer count) throws InvalidRequest,
+			InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
+		new DataObjectListResponse();
+		new ArrayList<DataObject>();
+		new ArrayList<ObjectInfo>();
+		new ObjectList();
 
 		// FIXME: handle stuff
 
 		/*
-		 * 
+		 *
 		 * UniqueIdAOHandleInMetadataImpl handleImpl;
-		 * 
+		 *
 		 * try { // handleImpl = new UniqueIdAOHandleImpl(restConfiguration, //
 		 * irodsAccessObjectFactory); handleImpl = new
 		 * UniqueIdAOHandleInMetadataImpl(restConfiguration,
 		 * irodsAccessObjectFactory);
-		 * 
+		 *
 		 * // dataObjectListResponse = //
 		 * handleImpl.getListOfDataoneExposedDataObjects( dataObjectListResponse
 		 * = handleImpl .getListOfDataoneExposedDataObjects(fromDate, toDate,
 		 * formatId, replicaStatus, start, count); } catch (Exception ex) {
 		 * log.info("{}", ex.toString()); throw new ServiceFailure("1580",
 		 * "Could not retrieve list of data objects"); }
-		 * 
+		 *
 		 * dataObjectList = dataObjectListResponse.getDataObjects();
-		 * 
+		 *
 		 * for (DataObject dObject : dataObjectList) {
-		 * 
+		 *
 		 * ObjectInfo oInfo = new ObjectInfo();
-		 * 
+		 *
 		 * if (dObject.getChecksum() != null) { Checksum checksum = new
 		 * Checksum(); checksum.setValue(dObject.getChecksum());
 		 * checksum.setAlgorithm(properties
 		 * .getProperty("irods.dataone.chksum-algorithm"));
 		 * oInfo.setChecksum(checksum); }
-		 * 
+		 *
 		 * // probably should combine query for format and start date at some //
 		 * future refactor IRODSAccount irodsAccount = null; ; String format =
 		 * null; try { irodsAccount = RestAuthUtils
@@ -523,7 +512,7 @@ public class MNReadImpl implements MNRead {
 		 * , dObject.getAbsolutePath()); format = "application/octet-stream"; }
 		 * ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
 		 * fId.setValue(format); oInfo.setFormatId(fId);
-		 * 
+		 *
 		 * // oInfo.setDateSysMetadataModified(dObject.getUpdatedAt()); Date
 		 * startDate = new Date(); try { startDate =
 		 * DataObjectMetadataUtils.getStartDateTime( irodsAccessObjectFactory,
@@ -532,7 +521,7 @@ public class MNReadImpl implements MNRead {
 		 * log.error("cannot retrieve start date for object: {}",
 		 * dObject.getAbsolutePath()); }
 		 * oInfo.setDateSysMetadataModified(startDate);
-		 * 
+		 *
 		 * Identifier id; try { id =
 		 * handleImpl.getIdentifierFromDataObject(dObject); } catch
 		 * (JargonException e) {
@@ -540,18 +529,18 @@ public class MNReadImpl implements MNRead {
 		 * e.toString()); throw new ServiceFailure("1580",
 		 * "Could not retrieve list of data objects"); }
 		 * oInfo.setIdentifier(id);
-		 * 
+		 *
 		 * Long dataSizeLong = new Long(dObject.getDataSize()); String
 		 * dataSizeStr = dataSizeLong.toString(); oInfo.setSize(new
 		 * BigInteger(dataSizeStr));
-		 * 
+		 *
 		 * objectInfoList.add(oInfo); }
-		 * 
+		 *
 		 * objectList.setObjectInfoList(objectInfoList);
 		 * objectList.setTotal(dataObjectListResponse.getTotal());
 		 * objectList.setCount(objectInfoList.size());
 		 * objectList.setStart(start);
-		 * 
+		 *
 		 * return objectList;
 		 */
 
@@ -559,28 +548,29 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public ObjectList listObjects(Session arg0, Date arg1, Date arg2,
-			ObjectFormatIdentifier arg3, Boolean arg4, Integer arg5,
-			Integer arg6) throws InvalidRequest, InvalidToken, NotAuthorized,
-			NotImplemented, ServiceFailure {
+	public ObjectList listObjects(final Session arg0, final Date arg1,
+			final Date arg2, final ObjectFormatIdentifier arg3,
+			final Boolean arg4, final Integer arg5, final Integer arg6)
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
+			ServiceFailure {
 		throw new NotImplemented("1521",
 				"this service has not been implemented");
 	}
 
 	@Override
-	public boolean synchronizationFailed(SynchronizationFailed syncFailed)
+	public boolean synchronizationFailed(final SynchronizationFailed syncFailed)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 
 		// FIXME: fix handle stuff
 
 		/*
-		 * 
+		 *
 		 * Identifier pid = null;
-		 * 
+		 *
 		 * if (syncFailed.getPid() != null) { pid = new Identifier();
 		 * pid.setValue(syncFailed.getPid()); } else { throw new
 		 * ServiceFailure("2161", "The identifier cannot be null."); }
-		 * 
+		 *
 		 * // check to make sure pid is valid try { UniqueIdAOHandleImpl
 		 * handleImpl = new UniqueIdAOHandleImpl( restConfiguration,
 		 * irodsAccessObjectFactory); // just try to access the object to see if
@@ -588,7 +578,7 @@ public class MNReadImpl implements MNRead {
 		 * (Exception ex) { throw new ServiceFailure("2161",
 		 * "The identifier specified by " + syncFailed.getPid() +
 		 * " was not found on this node."); }
-		 * 
+		 *
 		 * EventLogAOElasticSearchImpl eventLog = new
 		 * EventLogAOElasticSearchImpl( irodsAccessObjectFactory,
 		 * restConfiguration); try {
@@ -603,9 +593,9 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public boolean synchronizationFailed(Session arg0,
-			SynchronizationFailed arg1) throws InvalidToken, NotAuthorized,
-			NotImplemented, ServiceFailure {
+	public boolean synchronizationFailed(final Session arg0,
+			final SynchronizationFailed arg1) throws InvalidToken,
+			NotAuthorized, NotImplemented, ServiceFailure {
 		throw new NotImplemented("2160",
 				"this service has not been implemented");
 	}
@@ -614,7 +604,7 @@ public class MNReadImpl implements MNRead {
 	// write would require read and write to be listed as DataONE permissions
 	// and
 	// own would include read, write, and changePermission
-	private List<Permission> getD1Permission(UserFilePermission p) {
+	private List<Permission> getD1Permission(final UserFilePermission p) {
 		List<Permission> permissions = new ArrayList<Permission>();
 		FilePermissionEnum fpEnum = p.getFilePermissionEnum();
 		switch (fpEnum) {
@@ -646,8 +636,8 @@ public class MNReadImpl implements MNRead {
 		return new BigInteger(verStr);
 	}
 
-	private String getDataObjectMimeType(IRODSAccount irodsAccount,
-			DataObject dataObject) throws FileNotFoundException,
+	private String getDataObjectMimeType(final IRODSAccount irodsAccount,
+			final DataObject dataObject) throws FileNotFoundException,
 			JargonException {
 		String mimeType = null;
 		String filename = dataObject.getAbsolutePath();
@@ -661,7 +651,7 @@ public class MNReadImpl implements MNRead {
 				.instanceIRODSFileInputStream(irodsFile);
 		InputStream stream = new BufferedInputStream(irodsStream);
 		Metadata metadata = new Metadata();
-		metadata.add(Metadata.RESOURCE_NAME_KEY, filename);
+		metadata.add(TikaMetadataKeys.RESOURCE_NAME_KEY, filename);
 
 		MediaType type;
 		try {

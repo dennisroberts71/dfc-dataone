@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.auth;
 
@@ -26,9 +26,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Servlet filter implements anonymous auth
- * 
+ *
  * @author Lisa Stillwell - RENCI (www.renci.org)
- * 
+ *
  */
 @Named
 public class BasicAuthFilter implements Filter {
@@ -40,14 +40,14 @@ public class BasicAuthFilter implements Filter {
 	private IRODSAccessObjectFactory irodsAccessObjectFactory;
 
 	/**
-	 * 
+	 *
 	 */
 	public BasicAuthFilter() {
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
 	 */
 	@Override
@@ -57,14 +57,14 @@ public class BasicAuthFilter implements Filter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
 	 * javax.servlet.ServletResponse, javax.servlet.FilterChain)
 	 */
 	@Override
 	public void doFilter(final ServletRequest request,
 			final ServletResponse response, final FilterChain chain)
-			throws IOException, ServletException {
+					throws IOException, ServletException {
 
 		log.info("doFilter()");
 
@@ -83,11 +83,11 @@ public class BasicAuthFilter implements Filter {
 
 			log.info("authResponse:{}", authResponse);
 			log.info("success!");
-			
+
 			chain.doFilter(httpRequest, httpResponse);
 			return;
 
-		} catch (JargonException e) { 
+		} catch (JargonException e) {
 			log.warn("auth exception", e);
 			sendAuthError(httpResponse);
 			return;
@@ -106,7 +106,7 @@ public class BasicAuthFilter implements Filter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see javax.servlet.Filter#destroy()
 	 */
 	@Override

@@ -10,11 +10,11 @@ public enum EventsEnum {
 			Event.SYNCHRONIZATION_FAILED, "synch_failure"), ;
 	// REPLICATION_FAILED(),; not supported yet
 
-	private String databookEvent;
+	private String internalEvent;
 	private Event dataoneEvent;
 
 	EventsEnum(final Event dataoneEvent, final String databookEvent) {
-		this.databookEvent = databookEvent;
+		this.internalEvent = databookEvent;
 		this.dataoneEvent = dataoneEvent;
 	}
 
@@ -26,12 +26,12 @@ public enum EventsEnum {
 		this.dataoneEvent = dataoneEvent;
 	}
 
-	public String getDatabookEvent() {
-		return databookEvent;
+	public String getInternalEvent() {
+		return internalEvent;
 	}
 
-	public void setDatabookEvent(final String databookEvent) {
-		this.databookEvent = databookEvent;
+	public void setInternalEvent(final String internalEvent) {
+		this.internalEvent = internalEvent;
 	}
 
 	public static EventsEnum valueOfFromDataOne(final Event e) {
@@ -54,7 +54,7 @@ public enum EventsEnum {
 		}
 	}
 
-	public static EventsEnum valueOfFromDatabook(final String e) {
+	public static EventsEnum valueFromInternal(final String e) {
 		if (e.equals("put") || e.equals("data object put")) {
 			return CREATE;
 		} else if (e.equals("get") || e.equals("data object get")) {

@@ -48,7 +48,7 @@ public class MNCoreImpl implements MNCore {
 
 	@Override
 	public Date ping() throws NotImplemented, ServiceFailure,
-	InsufficientResources {
+			InsufficientResources {
 
 		try {
 			IRODSAccount irodsAccount = RestAuthUtils
@@ -83,7 +83,7 @@ public class MNCoreImpl implements MNCore {
 		// FIXME: add log stuff
 
 		/*
-		 *
+		 * 
 		 * EventLogAOElasticSearchImpl eventLogAO = new
 		 * EventLogAOElasticSearchImpl(irodsAccessObjectFactory,
 		 * restConfiguration); try { d1log = eventLogAO.getLogs(fromDate,
@@ -156,8 +156,8 @@ public class MNCoreImpl implements MNCore {
 	public Log getLogRecords(final Session session, final Date date1,
 			final Date date2, final Event event, final String s,
 			final Integer integer1, final Integer integer2)
-					throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
-					ServiceFailure {
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
+			ServiceFailure {
 
 		throw new NotImplemented("1461",
 				"Authenticated getLogRecords not implemented");

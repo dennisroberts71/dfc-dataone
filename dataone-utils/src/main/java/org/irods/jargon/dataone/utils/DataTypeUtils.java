@@ -71,7 +71,6 @@ public class DataTypeUtils {
 		String dataFormat = null;
 		String formatAttr = "Format";
 		List<AVUQueryElement> avuQueryList = new ArrayList<AVUQueryElement>();
-
 		AVUQueryElement avuQuery = AVUQueryElement.instanceForValueQuery(
 				AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 				formatAttr);

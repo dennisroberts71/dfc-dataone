@@ -48,8 +48,7 @@ import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.dataone.configuration.RestConfiguration;
+import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNError;
 import org.irods.jargon.dataone.domain.MNLog;
@@ -77,10 +76,7 @@ public class MemberNodeService {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Inject
-	IRODSAccessObjectFactory irodsAccessObjectFactory;
-
-	@Inject
-	RestConfiguration restConfiguration;
+	PublicationContext publicationContext;
 
 	@GET
 	@Path("/monitor/ping")
@@ -89,20 +85,21 @@ public class MemberNodeService {
 	// public Response handlePing(@HeaderParam("Authorization") final String
 	// authorization)
 	public Response handlePing() throws NotImplemented, ServiceFailure,
-	InsufficientResources, JargonException {
+			InsufficientResources, JargonException {
 
 		// if (authorization == null || authorization.isEmpty()) {
 		// throw new IllegalArgumentException("null or empty authorization");
 		// }
 
-		if (irodsAccessObjectFactory == null) {
-			throw new IllegalArgumentException("null irodsAccessObjectFactory");
+		if (publicationContext == null) {
+			throw new IllegalArgumentException("null publicationContext");
 		}
 
 		// MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory,
 		// restConfiguration, authorization);
-		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 		Date irodsDate = mnCoreImpl.ping();
 
 		SimpleDateFormat df = new SimpleDateFormat(
@@ -125,8 +122,9 @@ public class MemberNodeService {
 
 		MNNode nodeCapabilities = new MNNode();
 
-		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 		Node node = mnCoreImpl.getCapabilities();
 
 		nodeCapabilities.copy(node);
@@ -139,7 +137,7 @@ public class MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	public MNNode handleDefaultGetCapabilities() throws NotImplemented,
-	ServiceFailure {
+			ServiceFailure {
 
 		MNNode nodeCapabilities = handleGetCapabilities();
 
@@ -158,16 +156,17 @@ public class MemberNodeService {
 			@QueryParam("pidFilter") final String pidFilter,
 			@DefaultValue("0") @QueryParam("start") final int start,
 			@DefaultValue("500") @QueryParam("count") final int count)
-					throws NotImplemented, ServiceFailure, NotAuthorized,
-					InvalidRequest, InvalidToken {
+			throws NotImplemented, ServiceFailure, NotAuthorized,
+			InvalidRequest, InvalidToken {
 
 		logger.info("/log request: fromData={} toDate={}", fromDateStr,
 				toDateStr);
 		logger.info("/log request: event={} pidFilter={}", event, pidFilter);
 		logger.info("/log request: start={} count={}", start, count);
 
-		MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 
 		// parse date strings
 		Date fromDate = null;
@@ -205,8 +204,9 @@ public class MemberNodeService {
 			ServiceFailure, NotAuthorized, NotFound, NotImplemented,
 			InsufficientResources {
 
-		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNReadImpl mnReadImpl = new MNReadImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -232,8 +232,8 @@ public class MemberNodeService {
 	public MNChecksum handleGetChecksum(
 			@PathParam("id") final String pid,
 			@DefaultValue("MD5") @QueryParam("checksumAlgorithm") final String algorithm)
-					throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
-					NotImplemented, InvalidRequest {
+			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
+			NotImplemented, InvalidRequest {
 
 		MNChecksum mnChecksum = new MNChecksum();
 
@@ -245,8 +245,9 @@ public class MemberNodeService {
 		Identifier id = new Identifier();
 		id.setValue(pid);
 
-		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNReadImpl mnReadImpl = new MNReadImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 		Checksum checksum = mnReadImpl.getChecksum(id, algorithm);
 
 		mnChecksum.copy(checksum);
@@ -262,8 +263,9 @@ public class MemberNodeService {
 			ServiceFailure, NotAuthorized, NotFound, NotImplemented,
 			InsufficientResources {
 
-		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNReadImpl mnReadImpl = new MNReadImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -275,7 +277,7 @@ public class MemberNodeService {
 		// FIXME: add log stuff
 
 		/*
-		 *
+		 * 
 		 * // now log the event EventLogAOElasticSearchImpl eventLog = new
 		 * EventLogAOElasticSearchImpl( irodsAccessObjectFactory,
 		 * restConfiguration); try { eventLog.recordEvent(Event.REPLICATE, id,
@@ -292,16 +294,17 @@ public class MemberNodeService {
 	public MNSystemMetadata handleGetSystemMetadata(
 			@PathParam("id") final String pid)
 			// @Context final HttpServletResponse response)
-					throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
-					NotImplemented, InvalidRequest {
+			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
+			NotImplemented, InvalidRequest {
 
 		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
 
-		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNReadImpl mnReadImpl = new MNReadImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 		SystemMetadata sysMetadata = mnReadImpl.getSystemMetadata(id);
 
 		mnSystemMetadata.copy(sysMetadata);
@@ -314,7 +317,7 @@ public class MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	public Response handleDescribe(@PathParam("id") final String pid)
-	// @Context final HttpServletResponse response)
+			// @Context final HttpServletResponse response)
 			throws NotAuthorized, NotImplemented, ServiceFailure, NotFound,
 			InvalidToken {
 
@@ -323,8 +326,9 @@ public class MemberNodeService {
 
 		DescribeResponse describeResponse;
 
-		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNReadImpl mnReadImpl = new MNReadImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 		try {
 			describeResponse = mnReadImpl.describe(id);
 		} catch (NotFound ex) {
@@ -401,8 +405,9 @@ public class MemberNodeService {
 					"Synch Failure Exception message is null");
 		}
 
-		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNReadImpl mnReadImpl = new MNReadImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 		boolean success = mnReadImpl.synchronizationFailed(message);
 
 		if (!success) {
@@ -427,8 +432,8 @@ public class MemberNodeService {
 			@QueryParam("replicaStatus") final Boolean replicaStatus,
 			@DefaultValue("0") @QueryParam("start") final Integer start,
 			@DefaultValue("500") @QueryParam("count") final Integer count)
-					throws InvalidToken, ServiceFailure, NotAuthorized, InvalidRequest,
-					NotImplemented {
+			throws InvalidToken, ServiceFailure, NotAuthorized, InvalidRequest,
+			NotImplemented {
 
 		MNObjectList mnObjectList = new MNObjectList();
 
@@ -451,8 +456,9 @@ public class MemberNodeService {
 			throw new InvalidRequest("1540", e.getMessage());
 		}
 
-		MNReadImpl mnReadImpl = new MNReadImpl(irodsAccessObjectFactory,
-				restConfiguration);
+		MNReadImpl mnReadImpl = new MNReadImpl(
+				publicationContext.getIrodsAccessObjectFactory(),
+				publicationContext.getRestConfiguration());
 		ObjectList objectList = mnReadImpl.listObjects(fromDate, toDate,
 				formatId, replicaStatus, start, count);
 		mnObjectList.copy(objectList);

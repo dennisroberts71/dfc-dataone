@@ -18,8 +18,7 @@ public class RestConfiguration {
 	private String publicKeyAbsPath = "";
 	private String irodsUserName;
 	private String irodsUserPswd;
-
-	private String handlePrefix = "11333/";
+	private String pluginJarLocation;
 
 	/**
 	 * Optional URL for a web interface to access grid data (typically an
@@ -170,6 +169,71 @@ public class RestConfiguration {
 
 	public void setIrodsUserPswd(final String irodsUserPswd) {
 		this.irodsUserPswd = irodsUserPswd;
+	}
+
+	/**
+	 * @return the pluginJarLocation
+	 */
+	public String getPluginJarLocation() {
+		return pluginJarLocation;
+	}
+
+	/**
+	 * @param pluginJarLocation
+	 *            the pluginJarLocation to set
+	 */
+	public void setPluginJarLocation(String pluginJarLocation) {
+		this.pluginJarLocation = pluginJarLocation;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("RestConfiguration [");
+		if (irodsHost != null) {
+			builder.append("irodsHost=").append(irodsHost).append(", ");
+		}
+		builder.append("irodsPort=").append(irodsPort).append(", ");
+		if (irodsZone != null) {
+			builder.append("irodsZone=").append(irodsZone).append(", ");
+		}
+		if (defaultStorageResource != null) {
+			builder.append("defaultStorageResource=")
+					.append(defaultStorageResource).append(", ");
+		}
+		if (realm != null) {
+			builder.append("realm=").append(realm).append(", ");
+		}
+		builder.append("smimeEncryptAdminFunctions=")
+				.append(smimeEncryptAdminFunctions).append(", ");
+		if (privateCertAbsPath != null) {
+			builder.append("privateCertAbsPath=").append(privateCertAbsPath)
+					.append(", ");
+		}
+		if (publicKeyAbsPath != null) {
+			builder.append("publicKeyAbsPath=").append(publicKeyAbsPath)
+					.append(", ");
+		}
+		if (irodsUserName != null) {
+			builder.append("irodsUserName=").append(irodsUserName).append(", ");
+		}
+		if (irodsUserPswd != null) {
+			builder.append("irodsUserPswd=").append(irodsUserPswd).append(", ");
+		}
+		if (pluginJarLocation != null) {
+			builder.append("pluginJarLocation=").append(pluginJarLocation)
+					.append(", ");
+		}
+		if (webInterfaceURL != null) {
+			builder.append("webInterfaceURL=").append(webInterfaceURL);
+		}
+		builder.append("]");
+		return builder.toString();
 	}
 
 }

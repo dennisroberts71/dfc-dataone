@@ -15,7 +15,7 @@ import org.irods.jargon.core.exception.JargonException;
  * @author mconway
  *
  */
-public interface EventLogAO {
+public interface EventServiceAO {
 
 	/**
 	 * Retrieve logs from the event registry given the parameters

@@ -4,6 +4,8 @@
 package org.irods.jargon.dataone.configuration;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -11,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.irods.jargon.dataone.events.AbstractEventServiceAO;
+import org.irods.jargon.dataone.events.EventServiceAO;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -44,7 +48,24 @@ public class PluginDiscoveryService {
 	public PluginDiscoveryService() {
 	}
 
-	private final Class loadImplClass(Class clazz)
+	public EventServiceAO instanceEventService() throws PluginNotFoundException {
+		log.info("instanceEventService()");
+		Class<EventServiceAO> clazz = loadImplClass(AbstractEventServiceAO.class);
+		try {
+			Constructor<?> ctor = clazz
+					.getConstructor(PublicationContext.class);
+			return (EventServiceAO) ctor
+					.newInstance(new Object[] { publicationContext });
+		} catch (NoSuchMethodException | SecurityException
+				| InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			log.error("cannot find appropriate plugin", e);
+			throw new PluginNotFoundException(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private final <T> Class<T> loadImplClass(Class<?> clazz)
 			throws PluginNotFoundException {
 
 		/*
@@ -59,8 +80,10 @@ public class PluginDiscoveryService {
 						new TypeAnnotationsScanner());
 		Reflections reflections = new Reflections(configurationBuilder);
 
-		Set<Class<?>> mechanisms = reflections.getTypesAnnotatedWith(clazz,
-				true);
+		Set<?> mechanisms = reflections.getSubTypesOf(clazz);
+
+		// .getTypesAnnotatedWith(clazz,
+		// true);
 		log.info("mechanisms:{}", mechanisms);
 
 		if (mechanisms.isEmpty()) {
@@ -68,7 +91,7 @@ public class PluginDiscoveryService {
 					+ clazz.getName());
 		}
 
-		return mechanisms.iterator().next();
+		return (Class<T>) mechanisms.iterator().next();
 
 	}
 

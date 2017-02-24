@@ -11,10 +11,14 @@ package org.irods.jargon.dataone.configuration;
  */
 public class PluginNotFoundException extends Exception {
 
+	private static final long serialVersionUID = 2365990131845450987L;
+
 	public PluginNotFoundException(String string) {
 		super(string);
 	}
 
-	private static final long serialVersionUID = 2365990131845450987L;
+	public PluginNotFoundException(Exception e) {
+		super(e);
+	}
 
 }

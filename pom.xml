@@ -37,7 +37,7 @@
 			</roles>
 		</developer>
 		<developer>
-			<id>michal-conway</id>
+			<id>michael-conway</id>
 			<name>Mike Conway</name>
 			<email>michael_conway@unc.edu</email>
 			<url>http://www.renci.org</url>
@@ -92,5 +92,6 @@
 		<module>event-service-api</module>
 		<module>pid-service-handle-impl</module>
 		<module>dataone-utils</module>
+		<module>dummy-event-service-impl</module>
 	</modules>
 </project>

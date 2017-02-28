@@ -187,21 +187,18 @@
 						<phase>validate</phase>
 						<configuration>
 							<tasks>
-								<delete file="${basedir}/src/test/resources/testing.properties" />
-								<touch file="${basedir}/src/test/resources/testing.properties"
+								<delete file="${basedir}/src/test/resources/test-irods-rest.properties" />
+								<touch file="${basedir}/src/test/resources/test-irods-rest.properties"
 									mkdirs="true" />
-								<echo file="${basedir}/src/test/resources/testing.properties"
+								<echo file="${basedir}/src/test/resources/test-irods-rest.properties"
 									append="true">
-									test.confirm=${jargon.test.confirm}
-									test.data.directory=${jargon.test.data.directory}
-									test.irods.user=${jargon.test.irods.user}
-									test.irods.password=${jargon.test.irods.password}
-									test.irods.resource=${jargon.test.irods.resource}
-									test.irods.host=${jargon.test.irods.host}
-									test.irods.port=${jargon.test.irods.port}
-									test.irods.zone=${jargon.test.irods.zone}
-									test.irods.scratch.subdir=${jargon.test.irods.scratch.subdir}
-									test.rest.port=${test.rest.port}
+									irods.user=${jargon.test.irods.user}
+									irods.password=${jargon.test.irods.password}
+									irods.resource=${jargon.test.irods.resource}
+									irods.host=${jargon.test.irods.host}
+									irods.port=${jargon.test.irods.port}
+									irods.zone=${jargon.test.irods.zone}
+									plugin.jar.location=${test.plugin.jar.location}
 								</echo>
 								<copy
 									todir="${project.build.directory}/${project.name}-${project.version}/WEB-INF/lib">

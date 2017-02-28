@@ -43,6 +43,11 @@
 			<groupId>org.dataone</groupId>
 			<artifactId>d1_libclient_java</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>dataone-utils</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 	</dependencies>
 

@@ -75,7 +75,7 @@ public class MNReadImpl implements MNRead {
 
 	@Override
 	public DescribeResponse describe(final Identifier id) throws InvalidToken,
-	NotAuthorized, NotImplemented, ServiceFailure, NotFound {
+			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 
 		if (id == null || id.getValue().isEmpty()) {
 			log.error("id is null or empty");
@@ -176,7 +176,7 @@ public class MNReadImpl implements MNRead {
 			 * dataObject.getAbsolutePath(); irodsFile =
 			 * irodsAccessObjectFactory.getIRODSFileFactory(
 			 * irodsAccount).instanceIRODSFile(path);
-			 *
+			 * 
 			 * if (!irodsFile.exists()) { log.info("file does not exist"); throw
 			 * new NotFound("1020",
 			 * "No data object could be found for given PID:" + id.getValue());
@@ -190,35 +190,35 @@ public class MNReadImpl implements MNRead {
 		}
 
 		/*
-		 *
+		 * 
 		 * // now try and stream it try {
-		 *
+		 * 
 		 * stream = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
 		 * .instanceIRODSFileInputStream(irodsFile); // TODO: need to catch and
 		 * return appropriate exceptions here for no // permission
-		 *
+		 * 
 		 * contentLength = (int) irodsFile.length();
 		 * log.info("contentLength={}", contentLength);
-		 *
+		 * 
 		 * response.setContentType("application/octet-stream");
 		 * response.setHeader("Content-Disposition", "attachment;filename=" +
 		 * dataObject.getDataName()); response.setContentLength(contentLength);
 		 * // response.addHeader("Vary", "Accept-Encoding");
 		 * log.info("reponse: {}", response.toString());
-		 *
+		 * 
 		 * output = new BufferedOutputStream(response.getOutputStream());
-		 *
+		 * 
 		 * // Stream2StreamAO stream2StreamAO = getIrodsAccessObjectFactory() //
 		 * .getStream2StreamAO(irodsAccount); //
 		 * stream2StreamAO.streamToStreamCopyUsingStandardIO(input, output);
-		 *
+		 * 
 		 * int readBytes = 0; byte[] buffer = new byte[4096];
-		 *
+		 * 
 		 * while ((readBytes = stream.read(buffer, 0, 4096)) != -1) { //
 		 * log.info("readBytes={}", readBytes); output.write(buffer, 0,
 		 * readBytes); } output.flush(); if (stream != null) stream.close(); if
 		 * (output != null) output.close();
-		 *
+		 * 
 		 * } catch (Exception e) { log.error("Cannot stream iRODS object: {}",
 		 * path); throw new ServiceFailure("1030",
 		 * "unable to stream iRODS data object"); } finally {
@@ -229,8 +229,8 @@ public class MNReadImpl implements MNRead {
 
 	@Override
 	public IRODSFileInputStream get(final Identifier id) throws InvalidToken,
-	NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-	InsufficientResources {
+			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
+			InsufficientResources {
 
 		// TODO: Not sure how to implement this properly - used streamObject
 		// method instead
@@ -297,11 +297,11 @@ public class MNReadImpl implements MNRead {
 
 		/*
 		 * try {
-		 *
+		 * 
 		 * // FIXME: need to add handle stuff
-		 *
-		 *
-		 *
+		 * 
+		 * 
+		 * 
 		 * UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(
 		 * restConfiguration, irodsAccessObjectFactory); dataObject =
 		 * handleImpl.getDataObjectFromIdentifier(id); String csum =
@@ -311,7 +311,7 @@ public class MNReadImpl implements MNRead {
 		 * "Checksum does not exist for data object id provided"); }
 		 * checksum.setValue(csum); checksum.setAlgorithm(properties
 		 * .getProperty("irods.dataone.chksum-algorithm"));
-		 *
+		 * 
 		 * } catch (FileNotFoundException nf) {
 		 * log.error("Cannot access iRODS object: {}",
 		 * dataObject.getAbsolutePath()); throw new NotFound("1410",
@@ -334,8 +334,8 @@ public class MNReadImpl implements MNRead {
 
 	@Override
 	public InputStream getReplica(final Identifier arg0) throws InvalidToken,
-	NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-	InsufficientResources {
+			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
+			InsufficientResources {
 		// This is implemented in streamObject
 		return null;
 	}
@@ -368,51 +368,51 @@ public class MNReadImpl implements MNRead {
 		// FIXME: add handle stuff
 
 		/*
-		 *
+		 * 
 		 * try { irodsAccount = RestAuthUtils
 		 * .getIRODSAccountFromBasicAuthValues(restConfiguration);
-		 *
+		 * 
 		 * dataObjectAO = irodsAccessObjectFactory
 		 * .getDataObjectAO(irodsAccount); UniqueIdAOHandleImpl handleImpl = new
 		 * UniqueIdAOHandleImpl( restConfiguration, irodsAccessObjectFactory);
 		 * dataObject = handleImpl.getDataObjectFromIdentifier(id);
-		 *
+		 * 
 		 * } catch (Exception ex) { log.info("file does not exist"); throw new
 		 * NotFound("1060", "No metadata could be found for given PID:" +
 		 * id.getValue()); }
-		 *
-		 *
+		 * 
+		 * 
 		 * try { String csum = dataObject.getChecksum(); if (csum == null) {
 		 * log.info("checksum does not exist for file: {}",
 		 * dataObject.getAbsolutePath()); // throw new NotFound("404", "1420");
 		 * } else { checksum.setValue(csum); checksum.setAlgorithm(properties
 		 * .getProperty("irods.dataone.chksum-algorithm")); }
-		 *
+		 * 
 		 * String format = DataTypeUtils.getDataObjectFormatFromMetadata(
 		 * irodsAccount, irodsAccessObjectFactory, dataObject); if (format ==
 		 * null) { format = getDataObjectMimeType(irodsAccount, dataObject); }
 		 * metadata.setIdentifier(id); ObjectFormatIdentifier formatId = new
 		 * ObjectFormatIdentifier(); formatId.setValue(format);
 		 * metadata.setFormatId(formatId);
-		 *
+		 * 
 		 * Long dataSizeLong = new Long(dataObject.getDataSize()); String
 		 * dataSizeStr = dataSizeLong.toString(); metadata.setSize(new
 		 * BigInteger(dataSizeStr)); metadata.setChecksum(checksum);
-		 *
+		 * 
 		 * String dataOwner = "uid=" + dataObject.getDataOwnerName(); Subject
 		 * submitter = new Subject(); submitter.setValue(dataOwner);
 		 * metadata.setSubmitter(submitter);
-		 *
+		 * 
 		 * Subject rightsHolder = new Subject();
 		 * rightsHolder.setValue(dataOwner);
 		 * metadata.setRightsHolder(rightsHolder);
-		 *
+		 * 
 		 * List<UserFilePermission> permissions = dataObjectAO
 		 * .listPermissionsForDataObject(dataObject.getAbsolutePath()); if
 		 * (permissions != null) { AccessPolicy accessPolicy = new
 		 * AccessPolicy(); for (UserFilePermission permission : permissions) {
 		 * AccessRule rule = new AccessRule(); Subject subject = new Subject();
-		 *
+		 * 
 		 * // in DataONE - anonymous translates to public // TODO: also may need
 		 * to make translation for "public" to // "authenticatedUser" if
 		 * (permission.getUserName().equals("anonymous")) {
@@ -422,13 +422,13 @@ public class MNReadImpl implements MNRead {
 		 * (Permission d1Premission : d1Premissions) {
 		 * rule.addPermission(d1Premission); } accessPolicy.addAllow(rule); }
 		 * metadata.setAccessPolicy(accessPolicy); }
-		 *
+		 * 
 		 * ReplicationPolicy replicationPolicy = new ReplicationPolicy();
 		 * replicationPolicy.setReplicationAllowed(false);
 		 * metadata.setReplicationPolicy(replicationPolicy);
-		 *
+		 * 
 		 * // Add support for obsoletes or obsoletedBy?
-		 *
+		 * 
 		 * // Use AVU epoch date //
 		 * metadata.setDateUploaded(dataObject.getCreatedAt()); //
 		 * metadata.setDateSysMetadataModified(dataObject.getUpdatedAt()); Date
@@ -436,13 +436,13 @@ public class MNReadImpl implements MNRead {
 		 * irodsAccessObjectFactory, irodsAccount, dataObject);
 		 * metadata.setDateSysMetadataModified(startDate);
 		 * metadata.setDateUploaded(startDate);
-		 *
+		 * 
 		 * NodeReference nodeReference = new NodeReference();
 		 * nodeReference.setValue(properties
 		 * .getProperty("irods.dataone.identifier"));
 		 * metadata.setOriginMemberNode(nodeReference);
 		 * metadata.setAuthoritativeMemberNode(nodeReference);
-		 *
+		 * 
 		 * } catch (Exception e) { log.error("Cannot access iRODS object: {}",
 		 * dataObject.getAbsolutePath()); throw new ServiceFailure("1090",
 		 * e.getMessage()); } finally {
@@ -472,33 +472,33 @@ public class MNReadImpl implements MNRead {
 		// FIXME: handle stuff
 
 		/*
-		 *
+		 * 
 		 * UniqueIdAOHandleInMetadataImpl handleImpl;
-		 *
+		 * 
 		 * try { // handleImpl = new UniqueIdAOHandleImpl(restConfiguration, //
 		 * irodsAccessObjectFactory); handleImpl = new
 		 * UniqueIdAOHandleInMetadataImpl(restConfiguration,
 		 * irodsAccessObjectFactory);
-		 *
+		 * 
 		 * // dataObjectListResponse = //
 		 * handleImpl.getListOfDataoneExposedDataObjects( dataObjectListResponse
 		 * = handleImpl .getListOfDataoneExposedDataObjects(fromDate, toDate,
 		 * formatId, replicaStatus, start, count); } catch (Exception ex) {
 		 * log.info("{}", ex.toString()); throw new ServiceFailure("1580",
 		 * "Could not retrieve list of data objects"); }
-		 *
+		 * 
 		 * dataObjectList = dataObjectListResponse.getDataObjects();
-		 *
+		 * 
 		 * for (DataObject dObject : dataObjectList) {
-		 *
+		 * 
 		 * ObjectInfo oInfo = new ObjectInfo();
-		 *
+		 * 
 		 * if (dObject.getChecksum() != null) { Checksum checksum = new
 		 * Checksum(); checksum.setValue(dObject.getChecksum());
 		 * checksum.setAlgorithm(properties
 		 * .getProperty("irods.dataone.chksum-algorithm"));
 		 * oInfo.setChecksum(checksum); }
-		 *
+		 * 
 		 * // probably should combine query for format and start date at some //
 		 * future refactor IRODSAccount irodsAccount = null; ; String format =
 		 * null; try { irodsAccount = RestAuthUtils
@@ -512,7 +512,7 @@ public class MNReadImpl implements MNRead {
 		 * , dObject.getAbsolutePath()); format = "application/octet-stream"; }
 		 * ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
 		 * fId.setValue(format); oInfo.setFormatId(fId);
-		 *
+		 * 
 		 * // oInfo.setDateSysMetadataModified(dObject.getUpdatedAt()); Date
 		 * startDate = new Date(); try { startDate =
 		 * DataObjectMetadataUtils.getStartDateTime( irodsAccessObjectFactory,
@@ -521,7 +521,7 @@ public class MNReadImpl implements MNRead {
 		 * log.error("cannot retrieve start date for object: {}",
 		 * dObject.getAbsolutePath()); }
 		 * oInfo.setDateSysMetadataModified(startDate);
-		 *
+		 * 
 		 * Identifier id; try { id =
 		 * handleImpl.getIdentifierFromDataObject(dObject); } catch
 		 * (JargonException e) {
@@ -529,18 +529,18 @@ public class MNReadImpl implements MNRead {
 		 * e.toString()); throw new ServiceFailure("1580",
 		 * "Could not retrieve list of data objects"); }
 		 * oInfo.setIdentifier(id);
-		 *
+		 * 
 		 * Long dataSizeLong = new Long(dObject.getDataSize()); String
 		 * dataSizeStr = dataSizeLong.toString(); oInfo.setSize(new
 		 * BigInteger(dataSizeStr));
-		 *
+		 * 
 		 * objectInfoList.add(oInfo); }
-		 *
+		 * 
 		 * objectList.setObjectInfoList(objectInfoList);
 		 * objectList.setTotal(dataObjectListResponse.getTotal());
 		 * objectList.setCount(objectInfoList.size());
 		 * objectList.setStart(start);
-		 *
+		 * 
 		 * return objectList;
 		 */
 
@@ -564,13 +564,13 @@ public class MNReadImpl implements MNRead {
 		// FIXME: fix handle stuff
 
 		/*
-		 *
+		 * 
 		 * Identifier pid = null;
-		 *
+		 * 
 		 * if (syncFailed.getPid() != null) { pid = new Identifier();
 		 * pid.setValue(syncFailed.getPid()); } else { throw new
 		 * ServiceFailure("2161", "The identifier cannot be null."); }
-		 *
+		 * 
 		 * // check to make sure pid is valid try { UniqueIdAOHandleImpl
 		 * handleImpl = new UniqueIdAOHandleImpl( restConfiguration,
 		 * irodsAccessObjectFactory); // just try to access the object to see if
@@ -578,7 +578,7 @@ public class MNReadImpl implements MNRead {
 		 * (Exception ex) { throw new ServiceFailure("2161",
 		 * "The identifier specified by " + syncFailed.getPid() +
 		 * " was not found on this node."); }
-		 *
+		 * 
 		 * EventLogAOElasticSearchImpl eventLog = new
 		 * EventLogAOElasticSearchImpl( irodsAccessObjectFactory,
 		 * restConfiguration); try {

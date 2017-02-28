@@ -5,7 +5,7 @@ import org.irods.jargon.dataone.configuration.PublicationContext;
 /**
  * 
  * @author mconway
- *
+ * 
  */
 public class AbstractDataOnePlugin {
 

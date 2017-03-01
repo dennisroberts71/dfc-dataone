@@ -86,10 +86,6 @@
 			<artifactId>log4j</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 		</dependency>
@@ -120,6 +116,12 @@
 		<dependency>
 			<groupId>org.dataone</groupId>
 			<artifactId>d1_libclient_java</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.irods</groupId>
@@ -136,18 +138,25 @@
 			<artifactId>dataone-utils</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>org.irods.jargon.springboot</groupId>
 			<artifactId>resteasy-spring-boot-starter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency> -->
+		<dependency>
+			<groupId>org.xeustechnologies</groupId>
+			<artifactId>jcl-core</artifactId>
 		</dependency>
 		<dependency>
-				<groupId>org.xeustechnologies</groupId>
-				<artifactId>jcl-core</artifactId>
-			</dependency>
-			<dependency>
-				<groupId>org.reflections</groupId>
-				<artifactId>reflections</artifactId>
-			</dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -187,10 +196,10 @@
 						<phase>validate</phase>
 						<configuration>
 							<tasks>
-								<delete file="${basedir}/src/test/resources/test-irods-rest.properties" />
-								<touch file="${basedir}/src/test/resources/test-irods-rest.properties"
+								<delete file="${basedir}/src/test/resources/test-dataone.properties" />
+								<touch file="${basedir}/src/test/resources/test-dataone.properties"
 									mkdirs="true" />
-								<echo file="${basedir}/src/test/resources/test-irods-rest.properties"
+								<echo file="${basedir}/src/test/resources/test-dataone.properties"
 									append="true">
 									irods.user=${jargon.test.irods.user}
 									irods.password=${jargon.test.irods.password}

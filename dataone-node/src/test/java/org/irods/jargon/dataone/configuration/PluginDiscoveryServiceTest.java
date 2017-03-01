@@ -33,6 +33,7 @@ public class PluginDiscoveryServiceTest {
 		publicationContext.setIrodsAccessObjectFactory(aof);
 		PluginDiscoveryService pluginDiscoveryService = new PluginDiscoveryService();
 		pluginDiscoveryService.setPublicationContext(publicationContext);
+		pluginDiscoveryService.init();
 
 		EventServiceAO eventServiceAO = pluginDiscoveryService
 				.instanceEventService();

@@ -106,6 +106,7 @@
 		<module>dataone-node</module>
 		<module>pid-service-api</module>
 		<module>event-service-api</module>
+		<module>repo-service-api</module>
 		<module>pid-service-handle-impl</module>
 		<module>dataone-utils</module>
 		<module>dummy-event-service-impl</module>

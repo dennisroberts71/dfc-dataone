@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.events.EventServiceAO;
 import org.irods.jargon.dataone.utils.DataOneTestHelper;
+import org.irods.jargon.pid.pidservice.UniqueIdAO;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,5 +39,24 @@ public class PluginDiscoveryServiceTest {
 		EventServiceAO eventServiceAO = pluginDiscoveryService
 				.instanceEventService();
 		Assert.assertNotNull("no eventServiceAO", eventServiceAO);
+	}
+
+	@Test
+	public void testInstanceUniqueIdService() throws Exception {
+		IRODSAccessObjectFactory aof = Mockito
+				.mock(IRODSAccessObjectFactory.class);
+		PublicationContext publicationContext = new PublicationContext();
+		RestConfiguration restConfiguration = new RestConfiguration();
+		restConfiguration.setPluginJarLocation(dataOneTestHelper
+				.getPluginJarLocation(dataOneProperties));
+		publicationContext.setRestConfiguration(restConfiguration);
+		publicationContext.setIrodsAccessObjectFactory(aof);
+		PluginDiscoveryService pluginDiscoveryService = new PluginDiscoveryService();
+		pluginDiscoveryService.setPublicationContext(publicationContext);
+		pluginDiscoveryService.init();
+
+		UniqueIdAO uniqueIdAO = pluginDiscoveryService
+				.instanceUniqueIdService();
+		Assert.assertNotNull("no uniqueIdAO", uniqueIdAO);
 	}
 }

@@ -109,5 +109,6 @@
 		<module>pid-service-handle-impl</module>
 		<module>dataone-utils</module>
 		<module>dummy-event-service-impl</module>
+		<module>dummy-pid-service-impl</module>
 	</modules>
 </project>

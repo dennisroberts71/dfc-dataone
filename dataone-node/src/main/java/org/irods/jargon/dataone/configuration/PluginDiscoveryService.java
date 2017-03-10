@@ -15,6 +15,8 @@ import java.util.Set;
 
 import org.irods.jargon.dataone.events.AbstractEventServiceAO;
 import org.irods.jargon.dataone.events.EventServiceAO;
+import org.irods.jargon.pid.pidservice.AbstractUniqueIdAO;
+import org.irods.jargon.pid.pidservice.UniqueIdAO;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -55,6 +57,22 @@ public class PluginDiscoveryService {
 			Constructor<?> ctor = clazz
 					.getConstructor(PublicationContext.class);
 			return (EventServiceAO) ctor
+					.newInstance(new Object[] { publicationContext });
+		} catch (NoSuchMethodException | SecurityException
+				| InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			log.error("cannot find appropriate plugin", e);
+			throw new PluginNotFoundException(e);
+		}
+	}
+
+	public UniqueIdAO instanceUniqueIdService() throws PluginNotFoundException {
+		log.info("instancePidService()");
+		Class<EventServiceAO> clazz = loadImplClass(AbstractUniqueIdAO.class);
+		try {
+			Constructor<?> ctor = clazz
+					.getConstructor(PublicationContext.class);
+			return (UniqueIdAO) ctor
 					.newInstance(new Object[] { publicationContext });
 		} catch (NoSuchMethodException | SecurityException
 				| InstantiationException | IllegalAccessException

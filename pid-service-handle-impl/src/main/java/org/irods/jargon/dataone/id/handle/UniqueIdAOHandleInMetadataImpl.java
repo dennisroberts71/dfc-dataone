@@ -21,16 +21,10 @@ import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.pid.pidservice.DataObjectListResponse;
 import org.irods.jargon.pid.pidservice.UniqueIdAO;
-//import org.irods.jargon.dataprofile.DataProfile;
-//import org.irods.jargon.dataprofile.DataProfileService;
-//import org.irods.jargon.dataprofile.DataProfileServiceImpl;
-//import org.irods.jargon.dataprofile.DataTypeResolutionService;
-//import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService
-implements UniqueIdAO {
+public class UniqueIdAOHandleInMetadataImpl extends AbstractJargonService implements UniqueIdAO {
 
 	private Properties properties;
 	private String propertiesFilename = "d1client.properties";
@@ -41,8 +35,7 @@ implements UniqueIdAO {
 			throws JargonException, FileNotFoundException {
 
 		DataObject dataObject = null;
-		log.info("retrieving irods data object id from identifier: {}",
-				identifier.getValue());
+		log.info("retrieving irods data object id from identifier: {}", identifier.getValue());
 		long dataObjectId = getDataObjectIdFromDataOneIdentifier(identifier);
 		log.info("got id: {}", dataObjectId);
 
@@ -55,12 +48,11 @@ implements UniqueIdAO {
 
 		try {
 
-			DataObjectAO dataObjectAO = irodsAccessObjectFactory
-					.getDataObjectAO(irodsAccount);
+			DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
 			log.info("got dataObjectAO: {}", dataObjectAO.toString());
 			// Find iRODS object here from Identifier
-			dataObject = dataObjectAO.findById(new Long(dataObjectId)
-			.intValue());
+			dataObject = dataObjectAO.findById(new Long(dataObjectId).intValue());
+
 			if (dataObject != null) {
 				log.info("found iRODS file: {}", dataObject.getAbsolutePath());
 			} else {
@@ -78,8 +70,7 @@ implements UniqueIdAO {
 	}
 
 	@Override
-	public Identifier getIdentifierFromDataObject(final DataObject dataObject)
-			throws JargonException {
+	public Identifier getIdentifierFromDataObject(final DataObject dataObject) throws JargonException {
 
 		if (dataObject == null) {
 			log.error("getIdentifierFromDataObject: dataObject is null");
@@ -100,26 +91,22 @@ implements UniqueIdAO {
 	}
 
 	@Override
-	public List<Identifier> getListOfDataoneExposedIdentifiers()
-			throws JargonException {
+	public List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException {
 
 		AVUQueryElement avuQuery1 = null;
 		AVUQueryElement avuQuery2 = null;
 
-		String handleAttr = properties
-				.getProperty("irods.dataone.publish_entity_metadata_attr");
-		String handleValue = properties
-				.getProperty("irods.dataone.publish_entity_metadata_value");
+		String handleAttr = properties.getProperty("irods.dataone.publish_entity_metadata_attr");
+		String handleValue = properties.getProperty("irods.dataone.publish_entity_metadata_value");
 
 		List<Identifier> identifiers = new ArrayList<Identifier>();
 
 		try {
-			avuQuery1 = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
+			avuQuery1 = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 					handleAttr);
 
-			avuQuery2 = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
+			avuQuery2 = AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
+
 					handleValue);
 
 		} catch (JargonQueryException e) {
@@ -127,12 +114,10 @@ implements UniqueIdAO {
 			return identifiers;
 		}
 
-		DataObjectAO dataObjectAO = irodsAccessObjectFactory
-				.getDataObjectAO(irodsAccount);
+		DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
 		List<DataObject> dataObjects = new ArrayList<DataObject>();
 		try {
-			dataObjects = dataObjectAO.findDomainByMetadataQuery(Arrays.asList(
-					avuQuery1, avuQuery2));
+			dataObjects = dataObjectAO.findDomainByMetadataQuery(Arrays.asList(avuQuery1, avuQuery2));
 		} catch (JargonQueryException e) {
 			log.error("getListOfDataoneExposedIdentifiers: failed to execute AVU query");
 			return identifiers;
@@ -151,25 +136,21 @@ implements UniqueIdAO {
 	}
 
 	@Override
-	public DataObjectListResponse getListOfDataoneExposedDataObjects(
-			final Date fromDate, final Date toDate,
-			final ObjectFormatIdentifier formatId, final Boolean replicaStatus,
-			final Integer start, final Integer count) throws JargonException {
+	public DataObjectListResponse getListOfDataoneExposedDataObjects(final Date fromDate, final Date toDate,
+			final ObjectFormatIdentifier formatId, final Boolean replicaStatus, final Integer start,
+			final Integer count) throws JargonException {
 
 		int total = 0;
 
 		DataObjectListResponse dataObjectListResponse = new DataObjectListResponse();
 
-		List<AVUQueryElement> avuQueryList = createAVUQueryElementList(
-				fromDate, toDate, formatId);
+		List<AVUQueryElement> avuQueryList = createAVUQueryElementList(fromDate, toDate, formatId);
 
-		DataObjectAO dataObjectAO = irodsAccessObjectFactory
-				.getDataObjectAO(irodsAccount);
+		DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
 		List<DataObject> dataObjects = new ArrayList<DataObject>();
 
 		try {
-			dataObjects = dataObjectAO.findDomainByMetadataQuery(avuQueryList,
-					start);
+			dataObjects = dataObjectAO.findDomainByMetadataQuery(avuQueryList, start);
 			// save original size of set returned
 			total = dataObjects.size();
 		} catch (JargonQueryException e) {
@@ -203,9 +184,7 @@ implements UniqueIdAO {
 			dataObjectId = -1;
 		}
 
-		log.info(
-				"getDataObjectIdFromDataOneIdentifier: returning data object id: {}",
-				dataObjectId);
+		log.info("getDataObjectIdFromDataOneIdentifier: returning data object id: {}", dataObjectId);
 		return dataObjectId;
 	}
 
@@ -220,16 +199,14 @@ implements UniqueIdAO {
 	private void loadProperties() {
 		properties = new Properties();
 		InputStream input = null;
-		input = getClass().getClassLoader().getResourceAsStream(
-				propertiesFilename);
+
+		input = getClass().getClassLoader().getResourceAsStream(this.propertiesFilename);
 
 		// load a properties file
 		try {
 			properties.load(input);
 		} catch (IOException e) {
-			log.error("Cannot load Member Node properties file: {}",
-					propertiesFilename);
-			log.error("IOException: {}", e.getStackTrace());
+			log.error("Cannot load Member Node properties file: {}", propertiesFilename, e);
 			properties = new Properties();
 		} finally {
 			if (input != null) {
@@ -242,29 +219,25 @@ implements UniqueIdAO {
 		}
 	}
 
-	private List<AVUQueryElement> createAVUQueryElementList(
-			final Date fromDate, final Date toDate,
-			final ObjectFormatIdentifier formatId) {
+	private List<AVUQueryElement> createAVUQueryElementList(Date fromDate, Date toDate,
+			ObjectFormatIdentifier formatId) {
 
 		// TODO: probably should move these to properties
 		String dateAttr = "StartDateTime";
 		String formatAttr = "Format";
 		List<AVUQueryElement> avuQueryList = new ArrayList<AVUQueryElement>();
-		String handleAttr = properties
-				.getProperty("irods.dataone.publish_entity_metadata_attr");
-		String handleValue = properties
-				.getProperty("irods.dataone.publish_entity_metadata_value");
+		String handleAttr = properties.getProperty("irods.dataone.publish_entity_metadata_attr");
+		String handleValue = properties.getProperty("irods.dataone.publish_entity_metadata_value");
 
 		AVUQueryElement avuQuery;
 		try {
 			// DataOne exposed query
-			avuQuery = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
+			avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 					handleAttr);
 			avuQueryList.add(avuQuery);
 
-			avuQuery = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
+			avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
+
 					handleValue);
 			avuQueryList.add(avuQuery);
 
@@ -276,33 +249,29 @@ implements UniqueIdAO {
 			// GMT : 1459123201
 			long newFromDate;
 			if (fromDate != null) {
-				newFromDate = java.lang.Math.max(fromDate.getTime() / 1000,
-						Long.parseLong("1459123201"));
+				newFromDate = java.lang.Math.max(fromDate.getTime() / 1000, Long.parseLong("1459123201"));
 			} else {
 				newFromDate = Long.parseLong("1459123201");
 			}
 
 			// fromDate query
-			avuQuery = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
+			avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 					dateAttr);
 			avuQueryList.add(avuQuery);
 
-			avuQuery = AVUQueryElement.instanceForValueQuery(
-					AVUQueryPart.VALUE,
-					QueryConditionOperators.GREATER_THAN_OR_EQUAL_TO,
-					Long.toString(newFromDate));
+			avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE,
+					QueryConditionOperators.GREATER_THAN_OR_EQUAL_TO, Long.toString(newFromDate));
+
 			avuQueryList.add(avuQuery);
 
 			// toDate query
 			if ((toDate != null) && ((toDate.getTime() / 1000) >= newFromDate)) {
-				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
+
+				avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 						dateAttr);
 				avuQueryList.add(avuQuery);
 
-				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.VALUE, QueryConditionOperators.LESS_THAN,
+				avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, QueryConditionOperators.LESS_THAN,
 						Long.toString(toDate.getTime() / 1000));
 				avuQueryList.add(avuQuery);
 
@@ -339,13 +308,12 @@ implements UniqueIdAO {
 
 			// handle data format query
 			if ((formatId != null) && (formatId.getValue() != null)) {
-				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
+
+				avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 						formatAttr);
 				avuQueryList.add(avuQuery);
 
-				avuQuery = AVUQueryElement.instanceForValueQuery(
-						AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
+				avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE, QueryConditionOperators.EQUAL,
 						formatId.getValue());
 				avuQueryList.add(avuQuery);
 

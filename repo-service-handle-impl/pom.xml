@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>dataone-utils</artifactId>
+	<artifactId>repo-service-handle-impl</artifactId>
+	<name>Handle repo server impl</name>
 	<parent>
 		<groupId>org.irods</groupId>
 		<artifactId>dfc-dataone</artifactId>
 		<version>4.2.1.0-SNAPSHOT</version>
 	</parent>
 	<packaging>jar</packaging>
-	<name>DataONE utilities</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
@@ -32,46 +32,29 @@
 			<artifactId>log4j</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-core</artifactId>
+			<artifactId>handle</artifactId>
+			<groupId>org.handle</groupId>
+			<scope>system</scope>
+			<version>1.0.0</version>
+			<systemPath>${project.basedir}/src/main/lib/handle.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
+			<groupId>org.irods</groupId>
+			<artifactId>repo-service-api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-expression</artifactId>
+			<groupId>org.irods</groupId>
+			<artifactId>dataone-utils</artifactId>
+			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-aop</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.xeustechnologies</groupId>
-			<artifactId>jcl-core</artifactId>
-			</dependency>
-		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-			</dependency>
-
 	</dependencies>
-
 </project>

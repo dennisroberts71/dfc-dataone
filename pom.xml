@@ -111,5 +111,6 @@
 		<module>dataone-utils</module>
 		<module>dummy-event-service-impl</module>
 		<module>dummy-pid-service-impl</module>
+		<module>repo-service-handle-impl</module>
 	</modules>
 </project>

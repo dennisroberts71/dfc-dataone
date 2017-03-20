@@ -10,34 +10,30 @@ import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.query.AVUQueryElement;
-import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.QueryConditionOperators;
 
 public class DataObjectMetadataUtils {
-	
-	static public Date getStartDateTime(
-			IRODSAccessObjectFactory irodsAccessObjectFactory,
-			IRODSAccount irodsAccount,
-			DataObject dObject)
-			throws JargonQueryException, JargonException {
-		
-		long epoch=0;
+
+	static public Date getStartDateTime(IRODSAccessObjectFactory irodsAccessObjectFactory, IRODSAccount irodsAccount,
+			DataObject dObject) throws JargonQueryException, JargonException {
+
+		long epoch = 0;
 		AVUQueryElement avuQuery = null;
 		List<AVUQueryElement> avuQueryList = new ArrayList<AVUQueryElement>();
 		List<MetaDataAndDomainData> metadataAndDomainDataList = new ArrayList<MetaDataAndDomainData>();
 		String dateAttr = "StartDateTime";
-		
-		avuQuery = AVUQueryElement.instanceForValueQuery(
-				AVUQueryPart.ATTRIBUTE,
-				AVUQueryOperatorEnum.EQUAL,
+
+		avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
 				dateAttr);
 		avuQueryList.add(avuQuery);
-		
+
 		DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-	
-		metadataAndDomainDataList =  dataObjectAO.findMetadataValuesForDataObjectUsingAVUQuery(avuQueryList, dObject.getAbsolutePath());
+
+		metadataAndDomainDataList = dataObjectAO.findMetadataValuesForDataObjectUsingAVUQuery(avuQueryList,
+				dObject.getAbsolutePath());
 		String value = null;
 		for (MetaDataAndDomainData data : metadataAndDomainDataList) {
 			value = data.getAvuValue();
@@ -46,8 +42,8 @@ public class DataObjectMetadataUtils {
 		}
 		epoch = Long.parseLong(value);
 		// need to convert it 2 milliseconds for Java date
-		Date theDate = new Date(epoch*1000);
-		
+		Date theDate = new Date(epoch * 1000);
+
 		return theDate;
 	}
 

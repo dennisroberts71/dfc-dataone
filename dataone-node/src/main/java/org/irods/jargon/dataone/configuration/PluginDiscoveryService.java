@@ -226,4 +226,49 @@ public class PluginDiscoveryService {
 		this.publicationContext = publicationContext;
 	}
 
+	/**
+	 * @return the dataOneEventServiceFactory
+	 */
+	DataOneEventServiceFactory getDataOneEventServiceFactory() {
+		return dataOneEventServiceFactory;
+	}
+
+	/**
+	 * @param dataOneEventServiceFactory
+	 *            the dataOneEventServiceFactory to set
+	 */
+	void setDataOneEventServiceFactory(DataOneEventServiceFactory dataOneEventServiceFactory) {
+		this.dataOneEventServiceFactory = dataOneEventServiceFactory;
+	}
+
+	/**
+	 * @return the dataOnePidServiceFactory
+	 */
+	DataOnePidServiceFactory getDataOnePidServiceFactory() {
+		return dataOnePidServiceFactory;
+	}
+
+	/**
+	 * @param dataOnePidServiceFactory
+	 *            the dataOnePidServiceFactory to set
+	 */
+	void setDataOnePidServiceFactory(DataOnePidServiceFactory dataOnePidServiceFactory) {
+		this.dataOnePidServiceFactory = dataOnePidServiceFactory;
+	}
+
+	/**
+	 * @return the dataOneRepoServiceFactory
+	 */
+	DataOneRepoServiceFactory getDataOneRepoServiceFactory() {
+		return dataOneRepoServiceFactory;
+	}
+
+	/**
+	 * @param dataOneRepoServiceFactory
+	 *            the dataOneRepoServiceFactory to set
+	 */
+	void setDataOneRepoServiceFactory(DataOneRepoServiceFactory dataOneRepoServiceFactory) {
+		this.dataOneRepoServiceFactory = dataOneRepoServiceFactory;
+	}
+
 }

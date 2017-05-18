@@ -12,7 +12,7 @@ import org.irods.jargon.dataone.configuration.PublicationContext;
  * @author mcc
  *
  */
-public abstract class AbstractDataOneEventServiceFactory {
+public abstract class AbstractDataOneEventServiceFactory implements DataOneEventServiceFactory {
 
 	/**
 	 * Create an instance of the pid service
@@ -23,6 +23,7 @@ public abstract class AbstractDataOneEventServiceFactory {
 	 *            {@link IRODSAccount} associated with the instance
 	 * @return
 	 */
+	@Override
 	public abstract DataOneEventServiceAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount);
 
 }

@@ -2,9 +2,6 @@ package org.irods.jargon.dataone.id.handle;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 import org.dataone.service.types.v1.Identifier;
@@ -84,67 +81,6 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements Uniqu
 		return identifier;
 	}
 
-	@Override
-	public List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException {
-
-		List<Identifier> identifiers = new ArrayList<>();
-
-		// retrieve properties to get list of current handles from
-		// handle server
-		StringBuilder hdl = new StringBuilder();
-		hdl.append(properties.getProperty("irods.dataone.handle.namingAuthority"));
-		hdl.append("/");
-		hdl.append(properties.getProperty("irods.dataone.handle.prefix"));
-		String authHandle = hdl.toString();
-		String authIndex = properties.getProperty("irods.dataone.handle.index");
-		String privateKey = properties.getProperty("irods.dataone.handle.privateKeyPath");
-		String namingAuthority = properties.getProperty("irods.dataone.handle.prefix");
-
-		log.info("config params for handle lister:");
-		log.info("authHandle: {}", authHandle);
-		log.info("authIndex:{}", authIndex);
-		log.info("privateKey: {}", privateKey);
-		log.info("namingAuthority: {}", namingAuthority);
-
-		// LinkedBlockingQueue<List<String>> queue = new
-		// LinkedBlockingQueue<List<String>>();
-		LinkedList<List<String>> queue = new LinkedList<>();
-
-		HandleListerRunnable hlThread = new HandleListerRunnable(queue, authHandle, authIndex, privateKey,
-				namingAuthority);
-		hlThread.run();
-		log.info("continuing after call to run");
-
-		synchronized (queue) {
-			while (queue.isEmpty()) {
-				try {
-					queue.wait();
-				} catch (InterruptedException e) {
-					log.warn("getListOfDataoneExposedIdentifiers: caught InterruptedException while waiting for queue");
-				}
-			}
-		}
-
-		List<String> handles = null;
-		if (!queue.isEmpty()) {
-			log.debug("listObjects: got list of Handle values");
-			handles = queue.element();
-		}
-
-		if (handles != null) {
-			log.info("listObjects: got list of Handle values: {}", handles.toString());
-
-			for (String h : handles) {
-				Identifier id = new Identifier();
-				id.setValue(h);
-				identifiers.add(id);
-			}
-		}
-
-		log.info("returning identifiers: {}", identifiers);
-		return identifiers;
-	}
-
 	public long getDataObjectIdFromDataOneIdentifier(final Identifier pid) {
 
 		int idIdx = pid.getValue().indexOf("/") + 1;
@@ -178,7 +114,7 @@ public class UniqueIdAOHandleImpl extends AbstractJargonService implements Uniqu
 			properties.load(input);
 		} catch (IOException e) {
 			log.error("Cannot load Member Node properties file: {}", propertiesFilename);
-			log.error("IOException: {}", e.getStackTrace());
+			log.error("IOException", e);
 			properties = new Properties();
 		} finally {
 			if (input != null) {

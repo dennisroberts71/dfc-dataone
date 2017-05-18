@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>pid-service-api</artifactId>
+	<artifactId>repo-service-handle-impl</artifactId>
+	<name>Handle repo server impl</name>
 	<parent>
 		<groupId>org.irods</groupId>
 		<artifactId>dfc-dataone</artifactId>
 		<version>4.2.1.0-SNAPSHOT</version>
 	</parent>
 	<packaging>jar</packaging>
-	<name>PID service API</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
@@ -36,14 +36,25 @@
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.dataone</groupId>
-			<artifactId>d1_libclient_java</artifactId>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+		</dependency>
+		<dependency>
+			<artifactId>handle</artifactId>
+			<groupId>org.handle</groupId>
+			<scope>system</scope>
+			<version>1.0.0</version>
+			<systemPath>${project.basedir}/src/main/lib/handle.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>repo-service-api</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.irods</groupId>
 			<artifactId>dataone-utils</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
 	</dependencies>
 </project>

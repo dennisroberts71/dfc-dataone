@@ -1,8 +1,11 @@
 package org.irods.jargon.dataone.pidservice.impl.dummy;
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 
+=======
+>>>>>>> e62fc1cc438d1c176f0cef8a76bbd905d42d375d
 import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -31,6 +34,7 @@ public class DummyPidServiceAOImpl extends AbstractUniqueIdAO {
 		return new DataObject();
 	}
 
+<<<<<<< HEAD
 	@Override
 	public List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException {
 		List<Identifier> ids = new ArrayList<>();
@@ -40,4 +44,6 @@ public class DummyPidServiceAOImpl extends AbstractUniqueIdAO {
 		return ids;
 	}
 
+=======
+>>>>>>> e62fc1cc438d1c176f0cef8a76bbd905d42d375d
 }

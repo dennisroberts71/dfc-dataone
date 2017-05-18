@@ -27,17 +27,15 @@ import org.irods.jargon.core.query.QueryConditionOperators;
 public class DataTypeUtils {
 
 	public static String getDataObjectMimeType(final IRODSAccount irodsAccount,
-			final IRODSAccessObjectFactory irodsAccessObjectFactory,
-			final DataObject dataObject) throws FileNotFoundException,
-			JargonException {
+			final IRODSAccessObjectFactory irodsAccessObjectFactory, final DataObject dataObject)
+			throws FileNotFoundException, JargonException {
+
 		String mimeType = null;
 		String filename = dataObject.getAbsolutePath();
 
 		DefaultDetector typeDetector = new DefaultDetector();
-		IRODSFile irodsFile = irodsAccessObjectFactory.getIRODSFileFactory(
-				irodsAccount).instanceIRODSFile(filename);
-		IRODSFileInputStream irodsStream = irodsAccessObjectFactory
-				.getIRODSFileFactory(irodsAccount)
+		IRODSFile irodsFile = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount).instanceIRODSFile(filename);
+		IRODSFileInputStream irodsStream = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
 				.instanceIRODSFileInputStream(irodsFile);
 		InputStream stream = new BufferedInputStream(irodsStream);
 		Metadata metadata = new Metadata();
@@ -47,8 +45,7 @@ public class DataTypeUtils {
 		try {
 			type = typeDetector.detect(stream, metadata);
 		} catch (IOException e) {
-			throw new FileNotFoundException(
-					"Cannot stream file in order to detect file type");
+			throw new FileNotFoundException("Cannot stream file in order to detect file type");
 		}
 
 		// if mime type is returned as "application/x-netcdf" change to
@@ -62,27 +59,23 @@ public class DataTypeUtils {
 
 	}
 
-	public static String getDataObjectFormatFromMetadata(
-			final IRODSAccount irodsAccount,
-			final IRODSAccessObjectFactory irodsAccessObjectFactory,
-			final DataObject dataObject) throws FileNotFoundException,
-			JargonException, JargonQueryException {
+	public static String getDataObjectFormatFromMetadata(final IRODSAccount irodsAccount,
+			final IRODSAccessObjectFactory irodsAccessObjectFactory, final DataObject dataObject)
+			throws FileNotFoundException, JargonException, JargonQueryException {
 
 		String dataFormat = null;
 		String formatAttr = "Format";
 		List<AVUQueryElement> avuQueryList = new ArrayList<AVUQueryElement>();
-		AVUQueryElement avuQuery = AVUQueryElement.instanceForValueQuery(
-				AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
-				formatAttr);
+
+		AVUQueryElement avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE,
+				QueryConditionOperators.EQUAL, formatAttr);
 		avuQueryList.add(avuQuery);
 
-		DataObjectAO dataObjectAO = irodsAccessObjectFactory
-				.getDataObjectAO(irodsAccount);
+		DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
 		// List<MetaDataAndDomainData> result =
 		// dataObjectAO.findMetadataValuesForDataObject(dataObject.getAbsolutePath());
-		List<MetaDataAndDomainData> result = dataObjectAO
-				.findMetadataValuesForDataObjectUsingAVUQuery(avuQueryList,
-						dataObject.getAbsolutePath());
+		List<MetaDataAndDomainData> result = dataObjectAO.findMetadataValuesForDataObjectUsingAVUQuery(avuQueryList,
+				dataObject.getAbsolutePath());
 
 		for (MetaDataAndDomainData metadata : result) {
 			if (metadata.getAvuAttribute().equals("Format")) {

@@ -17,10 +17,8 @@ import org.irods.jargon.core.query.QueryConditionOperators;
 
 public class DataObjectMetadataUtils {
 
-	static public Date getStartDateTime(
-			final IRODSAccessObjectFactory irodsAccessObjectFactory,
-			final IRODSAccount irodsAccount, final DataObject dObject)
-					throws JargonQueryException, JargonException {
+	static public Date getStartDateTime(final IRODSAccessObjectFactory irodsAccessObjectFactory,
+			final IRODSAccount irodsAccount, final DataObject dObject) throws JargonQueryException, JargonException {
 
 		long epoch = 0;
 		AVUQueryElement avuQuery = null;
@@ -28,17 +26,15 @@ public class DataObjectMetadataUtils {
 		List<MetaDataAndDomainData> metadataAndDomainDataList = new ArrayList<MetaDataAndDomainData>();
 		String dateAttr = "StartDateTime";
 
-		avuQuery = AVUQueryElement
-				.instanceForValueQuery(AVUQueryPart.ATTRIBUTE,
-						QueryConditionOperators.EQUAL, dateAttr);
+		avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE, QueryConditionOperators.EQUAL,
+				dateAttr);
 		avuQueryList.add(avuQuery);
 
-		DataObjectAO dataObjectAO = irodsAccessObjectFactory
-				.getDataObjectAO(irodsAccount);
+		DataObjectAO dataObjectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
 
-		metadataAndDomainDataList = dataObjectAO
-				.findMetadataValuesForDataObjectUsingAVUQuery(avuQueryList,
-						dObject.getAbsolutePath());
+		metadataAndDomainDataList = dataObjectAO.findMetadataValuesForDataObjectUsingAVUQuery(avuQueryList,
+				dObject.getAbsolutePath());
+
 		String value = null;
 		for (MetaDataAndDomainData data : metadataAndDomainDataList) {
 			value = data.getAvuValue();

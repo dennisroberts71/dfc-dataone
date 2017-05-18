@@ -29,11 +29,7 @@
 			<groupId>org.jboss.resteasy</groupId>
 			<artifactId>resteasy-jackson-provider</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-crypto</artifactId>
-		</dependency>
-		<dependency>
+		<dependency>  
 			<groupId>org.jboss.resteasy</groupId>
 			<artifactId>tjws</artifactId>
 			<scope>test</scope>
@@ -126,6 +122,11 @@
 		<dependency>
 			<groupId>org.irods</groupId>
 			<artifactId>pid-service-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>repo-service-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

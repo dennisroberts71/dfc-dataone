@@ -3,8 +3,6 @@
  */
 package org.irods.jargon.pid.pidservice;
 
-import java.util.List;
-
 import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -49,14 +47,5 @@ public abstract class AbstractUniqueIdAO extends AbstractDataOnePlugin implement
 	 */
 	@Override
 	public abstract DataObject getDataObjectFromIdentifier(Identifier identifier) throws JargonException;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.irods.jargon.pid.pidservice.UniqueIdAO#
-	 * getListOfDataoneExposedIdentifiers ()
-	 */
-	@Override
-	public abstract List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException;
 
 }

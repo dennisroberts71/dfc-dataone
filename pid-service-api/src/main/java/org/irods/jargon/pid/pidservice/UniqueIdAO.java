@@ -1,7 +1,5 @@
 package org.irods.jargon.pid.pidservice;
 
-import java.util.List;
-
 import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -34,14 +32,5 @@ public interface UniqueIdAO {
 	 * @throws JargonException
 	 */
 	public DataObject getDataObjectFromIdentifier(Identifier identifier) throws JargonException;
-
-	/**
-	 * Returns a complete list of Unique Identifiers that are associated with
-	 * iRODS objects that are exposed to DataONE
-	 * 
-	 * @return <code>List<<code>Identifier</code>></code>
-	 * @throws JargonException
-	 */
-	public List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException;
 
 }

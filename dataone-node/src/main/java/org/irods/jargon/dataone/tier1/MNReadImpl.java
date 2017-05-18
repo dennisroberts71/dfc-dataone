@@ -74,8 +74,8 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public DescribeResponse describe(final Identifier id) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
+	public DescribeResponse describe(final Identifier id)
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 
 		if (id == null || id.getValue().isEmpty()) {
 			log.error("id is null or empty");
@@ -102,8 +102,7 @@ public class MNReadImpl implements MNRead {
 			// dataObject = handleImpl.getDataObjectFromIdentifier(id);
 		} catch (Exception e) {
 			log.info("cannot find id: {}", id.getValue());
-			throw new NotFound("1380",
-					"The specified object does not exist on this node.");
+			throw new NotFound("1380", "The specified object does not exist on this node.");
 		}
 
 		try {
@@ -111,15 +110,13 @@ public class MNReadImpl implements MNRead {
 			String contentLengthStr = contentLengthLong.toString();
 			contentLength = new BigInteger(contentLengthStr);
 
-			IRODSAccount irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+			IRODSAccount irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(restConfiguration);
 
 			// lastModified = dataObject.getUpdatedAt();
-			lastModified = DataObjectMetadataUtils.getStartDateTime(
-					irodsAccessObjectFactory, irodsAccount, dataObject);
+			lastModified = DataObjectMetadataUtils.getStartDateTime(irodsAccessObjectFactory, irodsAccount, dataObject);
 
-			String format = DataTypeUtils.getDataObjectFormatFromMetadata(
-					irodsAccount, irodsAccessObjectFactory, dataObject);
+			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory,
+					dataObject);
 			// use back up if no format stores in dataObject AVU
 			if (format == null) {
 				format = getDataObjectMimeType(irodsAccount, dataObject);
@@ -128,38 +125,31 @@ public class MNReadImpl implements MNRead {
 
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
-				log.info("checksum does not exist for file: {}",
-						dataObject.getAbsolutePath());
+				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
 				// throw new NotFound("404", "1420");
 			} else {
 				checksum.setValue(csum);
-				checksum.setAlgorithm(properties
-						.getProperty("irods.dataone.chksum-algorithm"));
+				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
 			}
 
 			serialVersion = getSerialVersion();
 
 		} catch (Exception e) {
-			log.error("Cannot access iRODS object: {}",
-					dataObject.getAbsolutePath());
+			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
 			throw new ServiceFailure("1390", e.getMessage());
 		} finally {
 			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
-		return new DescribeResponse(formatIdentifier, contentLength,
-				lastModified, checksum, serialVersion);
+		return new DescribeResponse(formatIdentifier, contentLength, lastModified, checksum, serialVersion);
 	}
 
 	@Override
 	public DescribeResponse describe(final Session arg0, final Identifier arg1)
-			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
-			NotFound {
-		throw new NotImplemented("1361",
-				"this service has not been implemented");
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
+		throw new NotImplemented("1361", "this service has not been implemented");
 	}
 
-	public void streamObject(final HttpServletResponse response,
-			final Identifier id) throws ServiceFailure, NotFound {
+	public void streamObject(final HttpServletResponse response, final Identifier id) throws ServiceFailure, NotFound {
 
 		new String();
 		new DataObject();
@@ -184,9 +174,7 @@ public class MNReadImpl implements MNRead {
 			 */
 		} catch (Exception ex) {
 			log.info("file does not exist");
-			throw new NotFound("1020",
-					"No data object could be found for given PID:"
-							+ id.getValue());
+			throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
 		}
 
 		/*
@@ -228,9 +216,8 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public IRODSFileInputStream get(final Identifier id) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-			InsufficientResources {
+	public IRODSFileInputStream get(final Identifier id)
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound, InsufficientResources {
 
 		// TODO: Not sure how to implement this properly - used streamObject
 		// method instead
@@ -254,7 +241,8 @@ public class MNReadImpl implements MNRead {
 		// if (!irodsFile.exists()) {
 		// log.info("file does not exist");
 		// throw new NotFound("404",
-		// "The iRODS member node can't find object requested - "+id.toString());
+		// "The iRODS member node can't find object requested -
+		// "+id.toString());
 		// }
 		//
 		// stream = irodsAccessObjectFactory
@@ -273,16 +261,13 @@ public class MNReadImpl implements MNRead {
 
 	@Override
 	public InputStream get(final Session arg0, final Identifier arg1)
-			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
-			NotFound, InsufficientResources {
-		throw new NotImplemented("1001",
-				"this service has not been implemented");
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound, InsufficientResources {
+		throw new NotImplemented("1001", "this service has not been implemented");
 	}
 
 	@Override
 	public Checksum getChecksum(final Identifier id, final String algorithm)
-			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
-			ServiceFailure, NotFound {
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 
 		if (id == null || id.getValue().isEmpty()) {
 			throw new NotFound("1420", "invalid iRODS data object id");
@@ -325,33 +310,27 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public Checksum getChecksum(final Session arg0, final Identifier arg1,
-			final String arg2) throws InvalidRequest, InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound {
-		throw new NotImplemented("1401",
-				"this service has not been implemented");
+	public Checksum getChecksum(final Session arg0, final Identifier arg1, final String arg2)
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
+		throw new NotImplemented("1401", "this service has not been implemented");
 	}
 
 	@Override
-	public InputStream getReplica(final Identifier arg0) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-			InsufficientResources {
+	public InputStream getReplica(final Identifier arg0)
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound, InsufficientResources {
 		// This is implemented in streamObject
 		return null;
 	}
 
 	@Override
 	public InputStream getReplica(final Session arg0, final Identifier arg1)
-			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
-			NotFound, InsufficientResources {
-		throw new NotImplemented("2180",
-				"this service has not been implemented");
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound, InsufficientResources {
+		throw new NotImplemented("2180", "this service has not been implemented");
 	}
 
 	@Override
 	public SystemMetadata getSystemMetadata(final Identifier id)
-			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure,
-			NotFound {
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 		if (id == null || id.getValue().isEmpty()) {
 			throw new InvalidToken("1402", "invalid iRODS data object id");
 		}
@@ -452,18 +431,15 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public SystemMetadata getSystemMetadata(final Session arg0,
-			final Identifier arg1) throws InvalidToken, NotAuthorized,
-			NotImplemented, ServiceFailure, NotFound {
-		throw new NotImplemented("1041",
-				"this service has not been implemented");
+	public SystemMetadata getSystemMetadata(final Session arg0, final Identifier arg1)
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
+		throw new NotImplemented("1041", "this service has not been implemented");
 	}
 
 	@Override
-	public ObjectList listObjects(final Date fromDate, final Date toDate,
-			final ObjectFormatIdentifier formatId, final Boolean replicaStatus,
-			final Integer start, final Integer count) throws InvalidRequest,
-			InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
+	public ObjectList listObjects(final Date fromDate, final Date toDate, final ObjectFormatIdentifier formatId,
+			final Boolean replicaStatus, final Integer start, final Integer count)
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 		new DataObjectListResponse();
 		new ArrayList<DataObject>();
 		new ArrayList<ObjectInfo>();
@@ -548,13 +524,10 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public ObjectList listObjects(final Session arg0, final Date arg1,
-			final Date arg2, final ObjectFormatIdentifier arg3,
-			final Boolean arg4, final Integer arg5, final Integer arg6)
-			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
-			ServiceFailure {
-		throw new NotImplemented("1521",
-				"this service has not been implemented");
+	public ObjectList listObjects(final Session arg0, final Date arg1, final Date arg2,
+			final ObjectFormatIdentifier arg3, final Boolean arg4, final Integer arg5, final Integer arg6)
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
+		throw new NotImplemented("1521", "this service has not been implemented");
 	}
 
 	@Override
@@ -593,11 +566,9 @@ public class MNReadImpl implements MNRead {
 	}
 
 	@Override
-	public boolean synchronizationFailed(final Session arg0,
-			final SynchronizationFailed arg1) throws InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure {
-		throw new NotImplemented("2160",
-				"this service has not been implemented");
+	public boolean synchronizationFailed(final Session arg0, final SynchronizationFailed arg1)
+			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
+		throw new NotImplemented("2160", "this service has not been implemented");
 	}
 
 	// need to return every DataONE permission implied by iRODS permissions i.e.
@@ -605,7 +576,7 @@ public class MNReadImpl implements MNRead {
 	// and
 	// own would include read, write, and changePermission
 	private List<Permission> getD1Permission(final UserFilePermission p) {
-		List<Permission> permissions = new ArrayList<Permission>();
+		List<Permission> permissions = new ArrayList<>();
 		FilePermissionEnum fpEnum = p.getFilePermissionEnum();
 		switch (fpEnum) {
 		case READ:
@@ -636,18 +607,15 @@ public class MNReadImpl implements MNRead {
 		return new BigInteger(verStr);
 	}
 
-	private String getDataObjectMimeType(final IRODSAccount irodsAccount,
-			final DataObject dataObject) throws FileNotFoundException,
-			JargonException {
+	private String getDataObjectMimeType(final IRODSAccount irodsAccount, final DataObject dataObject)
+			throws FileNotFoundException, JargonException {
 		String mimeType = null;
 		String filename = dataObject.getAbsolutePath();
 		log.info("file name is: {}", filename);
 
 		DefaultDetector typeDetector = new DefaultDetector();
-		IRODSFile irodsFile = irodsAccessObjectFactory.getIRODSFileFactory(
-				irodsAccount).instanceIRODSFile(filename);
-		IRODSFileInputStream irodsStream = irodsAccessObjectFactory
-				.getIRODSFileFactory(irodsAccount)
+		IRODSFile irodsFile = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount).instanceIRODSFile(filename);
+		IRODSFileInputStream irodsStream = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
 				.instanceIRODSFileInputStream(irodsFile);
 		InputStream stream = new BufferedInputStream(irodsStream);
 		Metadata metadata = new Metadata();
@@ -658,8 +626,7 @@ public class MNReadImpl implements MNRead {
 			type = typeDetector.detect(stream, metadata);
 		} catch (IOException e) {
 			log.error("detect failed: {}", e.toString());
-			throw new FileNotFoundException(
-					"Cannot stream file in order to detect file type");
+			throw new FileNotFoundException("Cannot stream file in order to detect file type");
 		}
 
 		// if mime type is returned as "application/x-netcdf" change to

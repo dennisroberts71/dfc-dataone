@@ -14,7 +14,7 @@ import org.irods.jargon.core.exception.JargonException;
  * @author mconway
  *
  */
-public interface DataOneRepoAO {
+public interface DataOneRepoServiceAO {
 
 	/**
 	 * Returns a complete list of Unique Identifiers that are associated with

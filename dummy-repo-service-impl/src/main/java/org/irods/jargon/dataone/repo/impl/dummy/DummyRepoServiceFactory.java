@@ -6,7 +6,7 @@ package org.irods.jargon.dataone.repo.impl.dummy;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoFactory;
-import org.irods.jargon.dataone.reposervice.DataOneRepoAO;
+import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
 
 /**
  * @author mcc
@@ -30,7 +30,7 @@ public class DummyRepoServiceFactory extends AbstractDataOneRepoFactory {
 	 * org.irods.jargon.core.connection.IRODSAccount)
 	 */
 	@Override
-	public DataOneRepoAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount) {
+	public DataOneRepoServiceAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount) {
 		return new DummyRepoServiceImpl(irodsAccount, publicationContext);
 	}
 

@@ -11,14 +11,14 @@ import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
-import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoAO;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 
 /**
  * @author mcc
  *
  */
-public class DummyRepoServiceImpl extends AbstractDataOneRepoAO {
+public class DummyRepoServiceImpl extends AbstractDataOneRepoServiceAO {
 
 	public DummyRepoServiceImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
 		super(irodsAccount, publicationContext);

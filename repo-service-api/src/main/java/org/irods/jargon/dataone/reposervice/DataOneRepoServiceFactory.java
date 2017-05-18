@@ -1,18 +1,9 @@
-/**
- * 
- */
-package org.irods.jargon.dataone.events;
+package org.irods.jargon.dataone.reposervice;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 
-/**
- * Factory to create event services
- * 
- * @author mcc
- *
- */
-public abstract class AbstractDataOneEventServiceFactory {
+public interface DataOneRepoServiceFactory {
 
 	/**
 	 * Create an instance of the pid service
@@ -23,6 +14,6 @@ public abstract class AbstractDataOneEventServiceFactory {
 	 *            {@link IRODSAccount} associated with the instance
 	 * @return
 	 */
-	public abstract DataOneEventServiceAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount);
+	DataOneRepoServiceAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount);
 
 }

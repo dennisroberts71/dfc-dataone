@@ -22,7 +22,7 @@ import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
  * @author mconway
  *
  */
-public abstract class AbstractEventServiceAO extends AbstractDataOnePlugin implements EventServiceAO {
+public abstract class AbstractEventServiceAO extends AbstractDataOnePlugin implements DataOneEventServiceAO {
 
 	/**
 	 * Default constructor with required values

@@ -20,7 +20,7 @@ import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
  * @author mconway
  *
  */
-public abstract class AbstractDataOneRepoAO extends AbstractDataOnePlugin implements DataOneRepoAO {
+public abstract class AbstractDataOneRepoServiceAO extends AbstractDataOnePlugin implements DataOneRepoServiceAO {
 
 	/**
 	 * Default constructor with required values
@@ -31,7 +31,7 @@ public abstract class AbstractDataOneRepoAO extends AbstractDataOnePlugin implem
 	 *            {@link PublicationContext} with configuration and other
 	 *            information
 	 */
-	public AbstractDataOneRepoAO(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+	public AbstractDataOneRepoServiceAO(IRODSAccount irodsAccount, PublicationContext publicationContext) {
 		super(irodsAccount, publicationContext);
 	}
 

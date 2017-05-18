@@ -13,9 +13,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.irods.jargon.dataone.events.AbstractEventServiceAO;
-import org.irods.jargon.dataone.events.EventServiceAO;
-import org.irods.jargon.pid.pidservice.AbstractUniqueIdAO;
+import javax.annotation.PostConstruct;
+
+import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.dataone.events.AbstractDataOneEventServiceFactory;
+import org.irods.jargon.dataone.events.DataOneEventServiceAO;
+import org.irods.jargon.dataone.events.DataOneEventServiceFactory;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoFactory;
+import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
+import org.irods.jargon.dataone.reposervice.DataOneRepoServiceFactory;
+import org.irods.jargon.pid.pidservice.AbstractDataOnePidFactory;
+import org.irods.jargon.pid.pidservice.DataOnePidServiceFactory;
 import org.irods.jargon.pid.pidservice.UniqueIdAO;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -40,62 +48,44 @@ import org.xeustechnologies.jcl.context.JclContext;
 public class PluginDiscoveryService {
 
 	private JarClassLoader jcl;
-	private List<URL> urls = new ArrayList<URL>();
+	private List<URL> urls = new ArrayList<>();
 	@Autowired
 	private PublicationContext publicationContext;
 
-	public static final Logger log = LoggerFactory
-			.getLogger(PluginDiscoveryService.class);
+	private DataOneEventServiceFactory dataOneEventServiceFactory;
+	private DataOnePidServiceFactory dataOnePidServiceFactory;
+	private DataOneRepoServiceFactory dataOneRepoServiceFactory;
+
+	public static final Logger log = LoggerFactory.getLogger(PluginDiscoveryService.class);
 
 	public PluginDiscoveryService() {
 	}
 
-	public EventServiceAO instanceEventService() throws PluginNotFoundException {
+	public DataOneEventServiceAO instanceEventService(IRODSAccount irodsAccount) throws PluginNotFoundException {
 		log.info("instanceEventService()");
-		Class<EventServiceAO> clazz = loadImplClass(AbstractEventServiceAO.class);
-		try {
-			Constructor<?> ctor = clazz
-					.getConstructor(PublicationContext.class);
-			return (EventServiceAO) ctor
-					.newInstance(new Object[] { publicationContext });
-		} catch (NoSuchMethodException | SecurityException
-				| InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
-			log.error("cannot find appropriate plugin", e);
-			throw new PluginNotFoundException(e);
-		}
+		return dataOneEventServiceFactory.instance(getPublicationContext(), irodsAccount);
 	}
 
-	public UniqueIdAO instanceUniqueIdService() throws PluginNotFoundException {
+	public UniqueIdAO instanceUniqueIdService(IRODSAccount irodsAccount) throws PluginNotFoundException {
 		log.info("instancePidService()");
-		Class<EventServiceAO> clazz = loadImplClass(AbstractUniqueIdAO.class);
-		try {
-			Constructor<?> ctor = clazz
-					.getConstructor(PublicationContext.class);
-			return (UniqueIdAO) ctor
-					.newInstance(new Object[] { publicationContext });
-		} catch (NoSuchMethodException | SecurityException
-				| InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
-			log.error("cannot find appropriate plugin", e);
-			throw new PluginNotFoundException(e);
-		}
+		return dataOnePidServiceFactory.instance(getPublicationContext(), irodsAccount);
+	}
+
+	public DataOneRepoServiceAO instanceRepoService(IRODSAccount irodsAccount) throws PluginNotFoundException {
+		log.info("instancePidService()");
+		return dataOneRepoServiceFactory.instance(getPublicationContext(), irodsAccount);
 	}
 
 	@SuppressWarnings("unchecked")
-	private final <T> Class<T> loadImplClass(Class<?> clazz)
-			throws PluginNotFoundException {
+	private final <T> Class<T> loadImplClass(Class<?> clazz) throws PluginNotFoundException {
 
 		/*
 		 * see: https://github.com/ronmamo/reflections
 		 */
 
 		ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-		configurationBuilder
-				.setUrls(urls)
-				.addClassLoader(JclContext.get())
-				.addScanners(new SubTypesScanner(),
-						new TypeAnnotationsScanner());
+		configurationBuilder.setUrls(urls).addClassLoader(JclContext.get()).addScanners(new SubTypesScanner(),
+				new TypeAnnotationsScanner());
 		Reflections reflections = new Reflections(configurationBuilder);
 
 		Set<?> mechanisms = reflections.getSubTypesOf(clazz);
@@ -105,8 +95,7 @@ public class PluginDiscoveryService {
 		log.info("mechanisms:{}", mechanisms);
 
 		if (mechanisms.isEmpty()) {
-			throw new PluginNotFoundException("no plugin found for class:"
-					+ clazz.getName());
+			throw new PluginNotFoundException("no plugin found for class:" + clazz.getName());
 		}
 
 		return (Class<T>) mechanisms.iterator().next();
@@ -116,26 +105,72 @@ public class PluginDiscoveryService {
 	/**
 	 * Initialize publisher based on (required) configuration
 	 * 
+	 * @throws PluginNotFoundException
+	 * 
 	 * @throws PublicationException
 	 */
-	public void init() {
+
+	@PostConstruct
+	public void init() throws PluginNotFoundException {
 		log.info("init()");
 		if (publicationContext == null) {
-			throw new PluginRuntimeException(
-					"init() cannot be called, no provided publicationContext");
+			throw new PluginRuntimeException("init() cannot be called, no provided publicationContext");
 		}
 
 		if (publicationContext.getRestConfiguration().getPluginJarLocation() == null
-				|| publicationContext.getRestConfiguration()
-						.getPluginJarLocation().isEmpty()) {
-			throw new PluginRuntimeException(
-					"no jar file plugin directory specified");
+				|| publicationContext.getRestConfiguration().getPluginJarLocation().isEmpty()) {
+			throw new PluginRuntimeException("no jar file plugin directory specified");
 		}
 
-		log.info("scanning for plugin jars at:{}", publicationContext
-				.getRestConfiguration().getPluginJarLocation());
-		loadCandidateClasspaths(publicationContext.getRestConfiguration()
-				.getPluginJarLocation());
+		log.info("scanning for plugin jars at:{}", publicationContext.getRestConfiguration().getPluginJarLocation());
+		loadCandidateClasspaths(publicationContext.getRestConfiguration().getPluginJarLocation());
+		initializeFactories();
+
+	}
+
+	/**
+	 * Look up and instantiate service factories, part of the startup process
+	 */
+	private void initializeFactories() throws PluginNotFoundException {
+		log.info("initializeFactories()");
+
+		log.info("pid factory...");
+		Class<AbstractDataOnePidFactory> clazz = loadImplClass(AbstractDataOnePidFactory.class);
+		try {
+			Constructor<?> ctor = clazz.getConstructor();
+			dataOnePidServiceFactory = (DataOnePidServiceFactory) ctor.newInstance(new Object[] {});
+			log.info("dataOnePidServiceFactory success");
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			log.error("cannot find appropriate plugin", e);
+			throw new PluginNotFoundException(e);
+		}
+
+		log.info("event factory...");
+		Class<AbstractDataOneEventServiceFactory> clazzEvent = loadImplClass(AbstractDataOneEventServiceFactory.class);
+		try {
+			Constructor<?> ctor = clazzEvent.getConstructor();
+			dataOneEventServiceFactory = (DataOneEventServiceFactory) ctor.newInstance(new Object[] {});
+			log.info("dataOneEventServiceFactory success");
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			log.error("cannot find appropriate plugin", e);
+			throw new PluginNotFoundException(e);
+		}
+
+		log.info("repo factory...");
+		Class<AbstractDataOneEventServiceFactory> clazzRepo = loadImplClass(AbstractDataOneRepoFactory.class);
+		try {
+			Constructor<?> ctor = clazzRepo.getConstructor();
+			dataOneRepoServiceFactory = (DataOneRepoServiceFactory) ctor.newInstance(new Object[] {});
+			log.info("dataOneRepoServiceFactory success");
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			log.error("cannot find appropriate plugin", e);
+			throw new PluginNotFoundException(e);
+		}
+
+		log.info("plugin factories loaded");
 
 	}
 
@@ -147,7 +182,7 @@ public class PluginDiscoveryService {
 
 		File dependencyDirectory = new File(libDir);
 		File[] files = dependencyDirectory.listFiles();
-		ArrayList<URI> uris = new ArrayList<URI>();
+		ArrayList<URI> uris = new ArrayList<>();
 		for (int i = 0; i < files.length; i++) {
 			if (files[i].getName().endsWith(".jar")) {
 				log.info("adding jar:{} to candidates", files[i]);

@@ -14,7 +14,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
-import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoAO;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * @author mcc
  *
  */
-public class DfcRepoServiceImpl extends AbstractDataOneRepoAO {
+public class DfcRepoServiceImpl extends AbstractDataOneRepoServiceAO {
 
 	public DfcRepoServiceImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
 		super(irodsAccount, publicationContext);

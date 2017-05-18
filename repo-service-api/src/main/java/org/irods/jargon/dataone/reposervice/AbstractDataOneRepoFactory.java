@@ -12,17 +12,12 @@ import org.irods.jargon.dataone.configuration.PublicationContext;
  * @author mcc
  *
  */
-public abstract class AbstractDataOneRepoFactory {
+public abstract class AbstractDataOneRepoFactory implements DataOneRepoServiceFactory {
 
-	/**
-	 * Create an instance of the pid service
-	 * 
-	 * @param publicationContext
-	 *            {@link PublicationContext} with configuration information
-	 * @param irodsAccount
-	 *            {@link IRODSAccount} associated with the instance
-	 * @return
+	/* (non-Javadoc)
+	 * @see org.irods.jargon.dataone.reposervice.DataOneRepoFactory#instance(org.irods.jargon.dataone.configuration.PublicationContext, org.irods.jargon.core.connection.IRODSAccount)
 	 */
-	public abstract DataOneRepoAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount);
+	@Override
+	public abstract DataOneRepoServiceAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount);
 
 }

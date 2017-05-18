@@ -50,10 +50,10 @@ import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
+import org.irods.jargon.dataone.repo.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.DataObjectMetadataUtils;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
-import org.irods.jargon.pid.pidservice.DataObjectListResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

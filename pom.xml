@@ -107,9 +107,11 @@
 		<module>pid-service-api</module>
 		<module>event-service-api</module>
 		<module>repo-service-api</module>
+		<module>dummy-repo-service-impl</module>
 		<module>pid-service-handle-impl</module>
 		<module>dataone-utils</module>
 		<module>dummy-event-service-impl</module>
 		<module>dummy-pid-service-impl</module>
+		<module>dfc-repo-service-impl</module>
 	</modules>
 </project>

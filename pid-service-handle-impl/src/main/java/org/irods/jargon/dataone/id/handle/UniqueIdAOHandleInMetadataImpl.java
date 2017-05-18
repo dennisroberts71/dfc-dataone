@@ -19,7 +19,7 @@ import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.service.AbstractJargonService;
-import org.irods.jargon.pid.pidservice.DataObjectListResponse;
+import org.irods.jargon.dataone.repo.reposervice.DataObjectListResponse;
 import org.irods.jargon.pid.pidservice.UniqueIdAO;
 //import org.irods.jargon.dataprofile.DataProfile;
 //import org.irods.jargon.dataprofile.DataProfileService;

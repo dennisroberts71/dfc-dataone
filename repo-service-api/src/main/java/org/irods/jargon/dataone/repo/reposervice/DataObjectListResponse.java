@@ -1,4 +1,4 @@
-package org.irods.jargon.pid.pidservice;
+package org.irods.jargon.dataone.repo.reposervice;
 
 import java.util.List;
 

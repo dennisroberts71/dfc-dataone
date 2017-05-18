@@ -49,10 +49,9 @@
 			<artifactId>dataone-utils</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-			<dependency>
+		<dependency>
 			<groupId>org.irods</groupId>
-			<artifactId>pid-service-handel-impl</artifactId>
+			<artifactId>repo-service-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

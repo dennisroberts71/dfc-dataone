@@ -9,6 +9,7 @@ import org.dataone.service.exceptions.ServiceFailure;
 import org.dataone.service.types.v1.Event;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
@@ -26,15 +27,10 @@ import org.slf4j.LoggerFactory;
  */
 public class DummyEventServiceAOImpl extends AbstractEventServiceAO {
 
-	public static final Logger log = LoggerFactory
-			.getLogger(DummyEventServiceAOImpl.class);
+	public static final Logger log = LoggerFactory.getLogger(DummyEventServiceAOImpl.class);
 
-	/**
-	 * @param publicationContext
-	 */
-	public DummyEventServiceAOImpl(PublicationContext publicationContext) {
-		super(publicationContext);
-		log.info("publicationContext:{}", publicationContext);
+	public DummyEventServiceAOImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
 	}
 
 	/*
@@ -46,8 +42,7 @@ public class DummyEventServiceAOImpl extends AbstractEventServiceAO {
 	 * java.lang.String, int, int)
 	 */
 	@Override
-	public Log getLogs(Date fromDate, Date toDate, EventsEnum event,
-			String pidFilter, int startIdx, int count) {
+	public Log getLogs(Date fromDate, Date toDate, EventsEnum event, String pidFilter, int startIdx, int count) {
 		log.info("getLogs()");
 		return new Log();
 	}

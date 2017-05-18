@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.dataone.service.types.v1.Identifier;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;
@@ -16,14 +17,13 @@ import org.slf4j.LoggerFactory;
 
 public class UniqueIdAOHandleInMetadataImpl extends AbstractUniqueIdAO {
 
-	public UniqueIdAOHandleInMetadataImpl(PublicationContext publicationContext) {
-		super(publicationContext);
-		loadProperties();
-	}
-
 	private Properties properties;
 	private String propertiesFilename = "d1client.properties";
 	private Logger log = LoggerFactory.getLogger(this.getClass());
+
+	public UniqueIdAOHandleInMetadataImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
+	}
 
 	@Override
 	public DataObject getDataObjectFromIdentifier(final Identifier identifier)

@@ -9,6 +9,7 @@ import org.dataone.service.exceptions.ServiceFailure;
 import org.dataone.service.types.v1.Event;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
@@ -21,11 +22,19 @@ import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
  * @author mconway
  *
  */
-public abstract class AbstractEventServiceAO extends AbstractDataOnePlugin
-		implements EventServiceAO {
+public abstract class AbstractEventServiceAO extends AbstractDataOnePlugin implements EventServiceAO {
 
-	public AbstractEventServiceAO(PublicationContext publicationContext) {
-		super(publicationContext);
+	/**
+	 * Default constructor with required values
+	 * 
+	 * @param irodsAccount
+	 *            {@link IRODSAccount} for the current iRODS connection
+	 * @param publicationContext
+	 *            {@link PublicationContext} with configuration and other
+	 *            information
+	 */
+	public AbstractEventServiceAO(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
 	}
 
 	/*
@@ -37,8 +46,8 @@ public abstract class AbstractEventServiceAO extends AbstractDataOnePlugin
 	 * java.lang.String, int, int)
 	 */
 	@Override
-	public abstract Log getLogs(Date fromDate, Date toDate, EventsEnum event,
-			String pidFilter, int startIdx, int count);
+	public abstract Log getLogs(Date fromDate, Date toDate, EventsEnum event, String pidFilter, int startIdx,
+			int count);
 
 	/*
 	 * (non-Javadoc)
@@ -49,7 +58,6 @@ public abstract class AbstractEventServiceAO extends AbstractDataOnePlugin
 	 * java.lang.String)
 	 */
 	@Override
-	public abstract void recordEvent(Event event, Identifier id,
-			String description) throws InvalidArgumentException,
-			JargonException, ServiceFailure;
+	public abstract void recordEvent(Event event, Identifier id, String description)
+			throws InvalidArgumentException, JargonException, ServiceFailure;
 }

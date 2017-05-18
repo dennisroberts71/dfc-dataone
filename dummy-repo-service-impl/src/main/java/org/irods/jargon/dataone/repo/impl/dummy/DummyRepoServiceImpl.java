@@ -4,25 +4,24 @@
 package org.irods.jargon.dataone.repo.impl.dummy;
 
 import java.util.Date;
+import java.util.List;
 
+import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
-import org.irods.jargon.dataone.repo.reposervice.AbstractRepoServiceAO;
-import org.irods.jargon.dataone.repo.reposervice.DataObjectListResponse;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoAO;
+import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 
 /**
  * @author mcc
  *
  */
-public class DummyRepoServiceImpl extends AbstractRepoServiceAO {
+public class DummyRepoServiceImpl extends AbstractDataOneRepoAO {
 
-	/**
-	 * @param publicationContext
-	 */
-	public DummyRepoServiceImpl(PublicationContext publicationContext) {
-		super(publicationContext);
-		// TODO Auto-generated constructor stub
+	public DummyRepoServiceImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
 	}
 
 	/*
@@ -37,6 +36,12 @@ public class DummyRepoServiceImpl extends AbstractRepoServiceAO {
 	public DataObjectListResponse getListOfDataoneExposedDataObjects(Date arg0, Date arg1, ObjectFormatIdentifier arg2,
 			Boolean arg3, Integer arg4, Integer arg5) throws JargonException {
 		return new DataObjectListResponse();
+	}
+
+	@Override
+	public List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException {
+		// FIXME: narrow down the needed public methods
+		return null;
 	}
 
 }

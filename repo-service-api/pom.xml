@@ -48,7 +48,6 @@
 			<artifactId>dataone-utils</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
 	</dependencies>
 
 </project>

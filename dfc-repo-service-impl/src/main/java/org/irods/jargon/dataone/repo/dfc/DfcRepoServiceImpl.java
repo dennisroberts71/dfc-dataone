@@ -5,18 +5,17 @@ package org.irods.jargon.dataone.repo.dfc;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
-import org.irods.jargon.dataone.id.handle.HandleListerRunnable;
-import org.irods.jargon.dataone.repo.reposervice.AbstractRepoServiceAO;
-import org.irods.jargon.dataone.repo.reposervice.DataObjectListResponse;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoAO;
+import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,16 +24,13 @@ import org.slf4j.LoggerFactory;
  * @author mcc
  *
  */
-public class DfcRepoServiceImpl extends AbstractRepoServiceAO {
+public class DfcRepoServiceImpl extends AbstractDataOneRepoAO {
+
+	public DfcRepoServiceImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
+	}
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-
-	/**
-	 * @param publicationContext
-	 */
-	public DfcRepoServiceImpl(PublicationContext publicationContext) {
-		super(publicationContext);
-	}
 
 	@Override
 	public DataObjectListResponse getListOfDataoneExposedDataObjects(final Date fromDate, final Date toDate,
@@ -53,12 +49,8 @@ public class DfcRepoServiceImpl extends AbstractRepoServiceAO {
 
 		for (Identifier id : ids) {
 			DataObject dataObject;
-			try {
-				dataObject = getDataObjectFromIdentifier(id);
-			} catch (JargonException ex) {
-				// just ignore this id
-				dataObject = null;
-			}
+			dataObject = null; // TODO://recast
+								// getDataObjectFromIdentifier(id);
 
 			if (dataObject != null) {
 				Date modifiedDate = dataObject.getUpdatedAt();
@@ -125,8 +117,8 @@ public class DfcRepoServiceImpl extends AbstractRepoServiceAO {
 	private boolean matchesFormatId(final ObjectFormatIdentifier formatId, final DataObject dataObject)
 			throws JargonException, JargonQueryException {
 
-		String dataFormat = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory,
-				dataObject);
+		String dataFormat = DataTypeUtils.getDataObjectFormatFromMetadata(getIrodsAccount(),
+				this.getPublicationContext().getIrodsAccessObjectFactory(), dataObject);
 
 		if ((formatId.getValue() == null) || (formatId.getValue().equals(dataFormat))) {
 			return true;
@@ -146,63 +138,12 @@ public class DfcRepoServiceImpl extends AbstractRepoServiceAO {
 		return false;
 	}
 
-	private List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException {
+	@Override
+	public List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException {
 
 		List<Identifier> identifiers = new ArrayList<>();
 
-		// retrieve properties to get list of current handles from
-		// handle server
-		StringBuilder hdl = new StringBuilder();
-		hdl.append(properties.getProperty("irods.dataone.handle.namingAuthority"));
-		hdl.append("/");
-		hdl.append(properties.getProperty("irods.dataone.handle.prefix"));
-		String authHandle = hdl.toString();
-		String authIndex = properties.getProperty("irods.dataone.handle.index");
-		String privateKey = properties.getProperty("irods.dataone.handle.privateKeyPath");
-		String namingAuthority = properties.getProperty("irods.dataone.handle.prefix");
-
-		log.info("config params for handle lister:");
-		log.info("authHandle: {}", authHandle);
-		log.info("authIndex:{}", authIndex);
-		log.info("privateKey: {}", privateKey);
-		log.info("namingAuthority: {}", namingAuthority);
-
-		// LinkedBlockingQueue<List<String>> queue = new
-		// LinkedBlockingQueue<List<String>>();
-		LinkedList<List<String>> queue = new LinkedList<>();
-
-		HandleListerRunnable hlThread = new HandleListerRunnable(queue, authHandle, authIndex, privateKey,
-				namingAuthority);
-		hlThread.run();
-		log.info("continuing after call to run");
-
-		synchronized (queue) {
-			while (queue.isEmpty()) {
-				try {
-					queue.wait();
-				} catch (InterruptedException e) {
-					log.warn("getListOfDataoneExposedIdentifiers: caught InterruptedException while waiting for queue");
-				}
-			}
-		}
-
-		List<String> handles = null;
-		if (!queue.isEmpty()) {
-			log.debug("listObjects: got list of Handle values");
-			handles = queue.element();
-		}
-
-		if (handles != null) {
-			log.info("listObjects: got list of Handle values: {}", handles.toString());
-
-			for (String h : handles) {
-				Identifier id = new Identifier();
-				id.setValue(h);
-				identifiers.add(id);
-			}
-		}
-
-		log.info("returning identifiers: {}", identifiers);
+		// FIXME: recast
 		return identifiers;
 	}
 

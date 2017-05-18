@@ -4,6 +4,7 @@
 package org.irods.jargon.pid.pidservice;
 
 import org.dataone.service.types.v1.Identifier;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.configuration.PublicationContext;
@@ -19,13 +20,16 @@ import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
 public abstract class AbstractUniqueIdAO extends AbstractDataOnePlugin implements UniqueIdAO {
 
 	/**
-	 * Default constructor takes a context object with a handle to connection
-	 * and config
+	 * Default constructor with required values
 	 * 
+	 * @param irodsAccount
+	 *            {@link IRODSAccount} for the current iRODS connection
 	 * @param publicationContext
+	 *            {@link PublicationContext} with configuration and other
+	 *            information
 	 */
-	public AbstractUniqueIdAO(PublicationContext publicationContext) {
-		super(publicationContext);
+	public AbstractUniqueIdAO(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
 	}
 
 	/*

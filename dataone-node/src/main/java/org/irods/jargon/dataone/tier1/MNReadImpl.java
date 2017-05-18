@@ -50,7 +50,7 @@ import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
-import org.irods.jargon.dataone.repo.reposervice.DataObjectListResponse;
+import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.DataObjectMetadataUtils;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.dataone.utils.PropertiesLoader;

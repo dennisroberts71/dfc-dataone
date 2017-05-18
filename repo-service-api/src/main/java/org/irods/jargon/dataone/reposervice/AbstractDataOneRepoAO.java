@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
@@ -22,11 +23,16 @@ import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
 public abstract class AbstractDataOneRepoAO extends AbstractDataOnePlugin implements DataOneRepoAO {
 
 	/**
+	 * Default constructor with required values
+	 * 
+	 * @param irodsAccount
+	 *            {@link IRODSAccount} for the current iRODS connection
 	 * @param publicationContext
+	 *            {@link PublicationContext} with configuration and other
+	 *            information
 	 */
-	public AbstractDataOneRepoAO(PublicationContext publicationContext) {
-		super(publicationContext);
-		// TODO Auto-generated constructor stub
+	public AbstractDataOneRepoAO(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
 	}
 
 	/*

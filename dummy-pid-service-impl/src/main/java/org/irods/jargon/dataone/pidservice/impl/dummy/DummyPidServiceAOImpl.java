@@ -1,12 +1,7 @@
 package org.irods.jargon.dataone.pidservice.impl.dummy;
 
-<<<<<<< HEAD
-import java.util.ArrayList;
-import java.util.List;
-
-=======
->>>>>>> e62fc1cc438d1c176f0cef8a76bbd905d42d375d
 import org.dataone.service.types.v1.Identifier;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.configuration.PublicationContext;
@@ -18,8 +13,8 @@ public class DummyPidServiceAOImpl extends AbstractUniqueIdAO {
 
 	public static final Logger log = LoggerFactory.getLogger(DummyPidServiceAOImpl.class);
 
-	public DummyPidServiceAOImpl(PublicationContext publicationContext) {
-		super(publicationContext);
+	public DummyPidServiceAOImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+		super(irodsAccount, publicationContext);
 	}
 
 	@Override
@@ -34,16 +29,4 @@ public class DummyPidServiceAOImpl extends AbstractUniqueIdAO {
 		return new DataObject();
 	}
 
-<<<<<<< HEAD
-	@Override
-	public List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException {
-		List<Identifier> ids = new ArrayList<>();
-		Identifier id = new Identifier();
-		id.setValue(new String("http://handle/dummy/" + String.valueOf(System.currentTimeMillis())));
-		ids.add(id);
-		return ids;
-	}
-
-=======
->>>>>>> e62fc1cc438d1c176f0cef8a76bbd905d42d375d
 }

@@ -20,10 +20,13 @@ import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.Synchronization;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.EnvironmentalInfoAO;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
-import org.irods.jargon.dataone.configuration.RestConfiguration;
+import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
+import org.irods.jargon.dataone.configuration.PluginNotFoundException;
+import org.irods.jargon.dataone.configuration.PublicationContext;
+import org.irods.jargon.dataone.events.DataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventsEnum;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
@@ -32,29 +35,24 @@ import org.slf4j.LoggerFactory;
 public class MNCoreImpl implements MNCore {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
-	private final RestConfiguration restConfiguration;
-
+	private final PublicationContext publicationContext;
+	private final PluginDiscoveryService pluginDiscoveryService;
 	// private final MNCoreModel mnCoreModel;
 
-	public MNCoreImpl(final IRODSAccessObjectFactory irodsAccessObjectFactory,
-			final RestConfiguration restConfiguration) {
-
-		this.irodsAccessObjectFactory = irodsAccessObjectFactory;
-		this.restConfiguration = restConfiguration;
-		// this.mnCoreModel = new MNCoreModel(irodsAccessObjectFactory,
-		// restConfiguration);
+	public MNCoreImpl(final PublicationContext publicationContext,
+			final PluginDiscoveryService pluginDiscoveryService) {
+		this.publicationContext = publicationContext;
+		this.pluginDiscoveryService = pluginDiscoveryService;
 	}
 
 	@Override
-	public Date ping() throws NotImplemented, ServiceFailure,
-			InsufficientResources {
+	public Date ping() throws NotImplemented, ServiceFailure, InsufficientResources {
 
 		try {
 			IRODSAccount irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(restConfiguration);
+					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			EnvironmentalInfoAO environmentalInfoAO = irodsAccessObjectFactory
+			EnvironmentalInfoAO environmentalInfoAO = publicationContext.getIrodsAccessObjectFactory()
 					.getEnvironmentalInfoAO(irodsAccount);
 
 			long currentTime = environmentalInfoAO.getIRODSServerCurrentTime();
@@ -64,34 +62,34 @@ public class MNCoreImpl implements MNCore {
 			log.error("ping failed: {}", e.getMessage());
 			throw new ServiceFailure("2042", "failed to contact iRODS server");
 		} finally {
-			irodsAccessObjectFactory.closeSessionAndEatExceptions();
+			publicationContext.getIrodsAccessObjectFactory().closeSessionAndEatExceptions();
 		}
 	}
 
 	@Override
-	public Log getLogRecords(final Date fromDate, final Date toDate,
-			final Event event, final String pidFilter, final Integer startIdx,
-			final Integer count) throws InvalidRequest, InvalidToken,
-			NotAuthorized, NotImplemented, ServiceFailure {
+	public Log getLogRecords(final Date fromDate, final Date toDate, final Event event, final String pidFilter,
+			final Integer startIdx, final Integer count)
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 
-		Log d1log = new Log();
 		log.info("getLogRecords: elasticsearch implementation");
+		EventsEnum eventsEnum = null;
 		if (event != null) {
-			EventsEnum.valueOfFromDataOne(event);
+			eventsEnum = EventsEnum.valueOfFromDataOne(event);
 		}
 
-		// FIXME: add log stuff
+		try {
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+			DataOneEventServiceAO eventService = pluginDiscoveryService.instanceEventService(irodsAccount);
+			return eventService.getLogs(fromDate, toDate, eventsEnum, pidFilter, startIdx, count);
+		} catch (PluginNotFoundException e) {
+			log.error("error processing event plugin", e);
+			throw new ServiceFailure("1490", "retrieval of log records failed");
+		} catch (JargonException e) {
+			log.error("error processing event ", e);
+			throw new ServiceFailure("1490", "retrieval of log records failed");
+		}
 
-		/*
-		 * 
-		 * EventLogAOElasticSearchImpl eventLogAO = new
-		 * EventLogAOElasticSearchImpl(irodsAccessObjectFactory,
-		 * restConfiguration); try { d1log = eventLogAO.getLogs(fromDate,
-		 * toDate, newEvent, pidFilter, startIdx, count); }
-		 * catch(NoNodeAvailableException ex) { throw new ServiceFailure("1490",
-		 * "retrieval of log records failed"); }
-		 */
-		return d1log;
 	}
 
 	@Override
@@ -105,9 +103,8 @@ public class MNCoreImpl implements MNCore {
 
 		try {
 			IRODSAccount irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(restConfiguration);
-
-			EnvironmentalInfoAO environmentalInfoAO = irodsAccessObjectFactory
+					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+			EnvironmentalInfoAO environmentalInfoAO = publicationContext.getIrodsAccessObjectFactory()
 					.getEnvironmentalInfoAO(irodsAccount);
 
 			environmentalInfoAO.getIRODSServerProperties().getServerBootTime();
@@ -116,8 +113,6 @@ public class MNCoreImpl implements MNCore {
 			log.error("getCapabilities: iRODS server is not running");
 			ping.setSuccess(false);
 			node.setState(NodeState.DOWN);
-		} finally {
-			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
 
 		// get properties
@@ -125,14 +120,13 @@ public class MNCoreImpl implements MNCore {
 		String subjectString = new String();
 		subjectString += pl.getProperty("irods.dataone.subject-string");
 		String contactSubjectString = new String();
-		contactSubjectString += pl
-				.getProperty("irods.dataone.contact-subject-string");
+		contactSubjectString += pl.getProperty("irods.dataone.contact-subject-string");
 
-		List<Subject> subjects = new ArrayList<Subject>();
+		List<Subject> subjects = new ArrayList<>();
 		Subject subject = new Subject();
 		subject.setValue(subjectString);
 		subjects.add(subject);
-		List<Subject> contactSubjects = new ArrayList<Subject>();
+		List<Subject> contactSubjects = new ArrayList<>();
 		Subject contactSubject = new Subject();
 		contactSubject.setValue(contactSubjectString);
 		contactSubjects.add(contactSubject);
@@ -142,7 +136,7 @@ public class MNCoreImpl implements MNCore {
 		node.setContactSubjectList(contactSubjects);
 
 		Synchronization sync = new Synchronization();
-		// TODO: put correct dates here
+		// TODO: put correct dates here, pull from RepoService
 		sync.setLastCompleteHarvest(new Date());
 		sync.setLastHarvested(new Date());
 		node.setSynchronization(sync);
@@ -153,14 +147,11 @@ public class MNCoreImpl implements MNCore {
 	}
 
 	@Override
-	public Log getLogRecords(final Session session, final Date date1,
-			final Date date2, final Event event, final String s,
-			final Integer integer1, final Integer integer2)
-			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented,
-			ServiceFailure {
+	public Log getLogRecords(final Session session, final Date date1, final Date date2, final Event event,
+			final String s, final Integer integer1, final Integer integer2)
+			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 
-		throw new NotImplemented("1461",
-				"Authenticated getLogRecords not implemented");
+		throw new NotImplemented("1461", "Authenticated getLogRecords not implemented");
 	}
 
 }

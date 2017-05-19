@@ -1,8 +1,10 @@
 package org.irods.jargon.dataone.tier1;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +38,6 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
-import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 //import org.irods.jargon.dataprofile.DataProfileService;
 //import org.irods.jargon.dataprofile.DataTypeResolutionService;
 //import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
@@ -48,30 +49,34 @@ import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
-import org.irods.jargon.dataone.configuration.RestConfiguration;
+import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
+import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.DataObjectMetadataUtils;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
+import org.irods.jargon.pid.pidservice.UniqueIdAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MNReadImpl implements MNRead {
 
+	/**
+	 * @param publicationContext
+	 * @param pluginDiscoveryService
+	 */
+	public MNReadImpl(PublicationContext publicationContext, PluginDiscoveryService pluginDiscoveryService) {
+		super();
+		this.publicationContext = publicationContext;
+		this.pluginDiscoveryService = pluginDiscoveryService;
+	}
+
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
-	private final RestConfiguration restConfiguration;
-
+	private final PublicationContext publicationContext;
+	private final PluginDiscoveryService pluginDiscoveryService;
 	private PropertiesLoader properties = new PropertiesLoader();
-
-	public MNReadImpl(final IRODSAccessObjectFactory irodsAccessObjectFactory,
-			final RestConfiguration restConfiguration) {
-
-		this.irodsAccessObjectFactory = irodsAccessObjectFactory;
-		this.restConfiguration = restConfiguration;
-	}
 
 	@Override
 	public DescribeResponse describe(final Identifier id)
@@ -90,16 +95,12 @@ public class MNReadImpl implements MNRead {
 		BigInteger serialVersion;
 
 		try {
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			// FIXME: add handle factory and lookup
+			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			dataObject = pidService.getDataObjectFromIdentifier(id);
 
-			// need last modified, content length, Content-Type:
-			// application/octet-stream, object format (mime), checksum, serial
-			// version
-			// UniqueIdAOHandleImpl handleImpl = new
-			// UniqueIdAOHandleImpl(restConfiguration,
-			// irodsAccessObjectFactory);
-			// dataObject = handleImpl.getDataObjectFromIdentifier(id);
 		} catch (Exception e) {
 			log.info("cannot find id: {}", id.getValue());
 			throw new NotFound("1380", "The specified object does not exist on this node.");
@@ -110,13 +111,12 @@ public class MNReadImpl implements MNRead {
 			String contentLengthStr = contentLengthLong.toString();
 			contentLength = new BigInteger(contentLengthStr);
 
-			IRODSAccount irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(restConfiguration);
-
 			// lastModified = dataObject.getUpdatedAt();
-			lastModified = DataObjectMetadataUtils.getStartDateTime(irodsAccessObjectFactory, irodsAccount, dataObject);
+			lastModified = DataObjectMetadataUtils.getStartDateTime(publicationContext.getIrodsAccessObjectFactory(),
+					irodsAccount, dataObject);
 
-			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount, irodsAccessObjectFactory,
-					dataObject);
+			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount,
+					publicationContext.getIrodsAccessObjectFactory(), dataObject);
 			// use back up if no format stores in dataObject AVU
 			if (format == null) {
 				format = getDataObjectMimeType(irodsAccount, dataObject);
@@ -137,9 +137,8 @@ public class MNReadImpl implements MNRead {
 		} catch (Exception e) {
 			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
 			throw new ServiceFailure("1390", e.getMessage());
-		} finally {
-			irodsAccessObjectFactory.closeSessionAndEatExceptions();
 		}
+
 		return new DescribeResponse(formatIdentifier, contentLength, lastModified, checksum, serialVersion);
 	}
 
@@ -151,67 +150,62 @@ public class MNReadImpl implements MNRead {
 
 	public void streamObject(final HttpServletResponse response, final Identifier id) throws ServiceFailure, NotFound {
 
-		new String();
-		new DataObject();
+		DataObject dataObject;
+		String path;
+		IRODSAccount irodsAccount;
+		IRODSFile irodsFile;
 		// first try and find data object for this id
 		try {
-			RestAuthUtils.getIRODSAccountFromBasicAuthValues(restConfiguration);
+			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			// FIXME: add handle factory and lookup
+			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			dataObject = pidService.getDataObjectFromIdentifier(id);
 
-			/*
-			 * UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(
-			 * restConfiguration, irodsAccessObjectFactory); dataObject =
-			 * handleImpl.getDataObjectFromIdentifier(id); path =
-			 * dataObject.getAbsolutePath(); irodsFile =
-			 * irodsAccessObjectFactory.getIRODSFileFactory(
-			 * irodsAccount).instanceIRODSFile(path);
-			 * 
-			 * if (!irodsFile.exists()) { log.info("file does not exist"); throw
-			 * new NotFound("1020",
-			 * "No data object could be found for given PID:" + id.getValue());
-			 * }
-			 */
+			path = dataObject.getAbsolutePath();
+			irodsFile = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
+					.instanceIRODSFile(path);
+
+			if (!irodsFile.exists()) {
+				log.info("file does not exist");
+				throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
+			}
+
 		} catch (Exception ex) {
 			log.info("file does not exist");
 			throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
 		}
 
-		/*
-		 * 
-		 * // now try and stream it try {
-		 * 
-		 * stream = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
-		 * .instanceIRODSFileInputStream(irodsFile); // TODO: need to catch and
-		 * return appropriate exceptions here for no // permission
-		 * 
-		 * contentLength = (int) irodsFile.length();
-		 * log.info("contentLength={}", contentLength);
-		 * 
-		 * response.setContentType("application/octet-stream");
-		 * response.setHeader("Content-Disposition", "attachment;filename=" +
-		 * dataObject.getDataName()); response.setContentLength(contentLength);
-		 * // response.addHeader("Vary", "Accept-Encoding");
-		 * log.info("reponse: {}", response.toString());
-		 * 
-		 * output = new BufferedOutputStream(response.getOutputStream());
-		 * 
-		 * // Stream2StreamAO stream2StreamAO = getIrodsAccessObjectFactory() //
-		 * .getStream2StreamAO(irodsAccount); //
-		 * stream2StreamAO.streamToStreamCopyUsingStandardIO(input, output);
-		 * 
-		 * int readBytes = 0; byte[] buffer = new byte[4096];
-		 * 
-		 * while ((readBytes = stream.read(buffer, 0, 4096)) != -1) { //
-		 * log.info("readBytes={}", readBytes); output.write(buffer, 0,
-		 * readBytes); } output.flush(); if (stream != null) stream.close(); if
-		 * (output != null) output.close();
-		 * 
-		 * } catch (Exception e) { log.error("Cannot stream iRODS object: {}",
-		 * path); throw new ServiceFailure("1030",
-		 * "unable to stream iRODS data object"); } finally {
-		 * irodsAccessObjectFactory.closeSessionAndEatExceptions(); }
-		 */
+		try {
+			InputStream stream = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
+					.instanceIRODSFileInputStream(irodsFile);
+			int contentLength = (int) irodsFile.length();
+			log.info("contentLength={}", contentLength);
+
+			response.setContentType("application/octet-stream");
+			response.setHeader("Content-Disposition", "attachment;filename=" + dataObject.getDataName());
+			response.setContentLength(contentLength);
+			// response.addHeader("Vary", "Accept-Encoding");
+			log.info("reponse: {}", response.toString());
+
+			OutputStream output = new BufferedOutputStream(response.getOutputStream());
+
+			int readBytes = 0;
+			byte[] buffer = new byte[4096];
+
+			while ((readBytes = stream.read(buffer, 0, 4096)) != -1) { //
+				log.info("readBytes={}", readBytes);
+				output.write(buffer, 0, readBytes);
+			}
+			output.flush();
+			if (stream != null)
+				stream.close();
+			if (output != null)
+				output.close();
+
+		} catch (Exception e) {
+			log.error("Cannot stream iRODS object: {}", path);
+			throw new ServiceFailure("1030", "unable to stream iRODS data object");
+		}
 
 	}
 
@@ -614,9 +608,10 @@ public class MNReadImpl implements MNRead {
 		log.info("file name is: {}", filename);
 
 		DefaultDetector typeDetector = new DefaultDetector();
-		IRODSFile irodsFile = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount).instanceIRODSFile(filename);
-		IRODSFileInputStream irodsStream = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
-				.instanceIRODSFileInputStream(irodsFile);
+		IRODSFile irodsFile = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(filename);
+		IRODSFileInputStream irodsStream = publicationContext.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFileInputStream(irodsFile);
 		InputStream stream = new BufferedInputStream(irodsStream);
 		Metadata metadata = new Metadata();
 		metadata.add(TikaMetadataKeys.RESOURCE_NAME_KEY, filename);

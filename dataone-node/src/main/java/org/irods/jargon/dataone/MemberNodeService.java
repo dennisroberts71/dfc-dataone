@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -48,6 +47,7 @@ import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNError;
@@ -64,6 +64,7 @@ import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * User: Lisa Stillwell - RENCI, UNC @ Chapel Hill Date: 10/4/13 Time: 2:22 PM
@@ -75,8 +76,10 @@ public class MemberNodeService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@Inject
-	PublicationContext publicationContext;
+	@Autowired
+	private PublicationContext publicationContext;
+	@Autowired
+	private PluginDiscoveryService pluginDiscoveryService;
 
 	@GET
 	@Path("/monitor/ping")
@@ -84,26 +87,16 @@ public class MemberNodeService {
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	// public Response handlePing(@HeaderParam("Authorization") final String
 	// authorization)
-	public Response handlePing() throws NotImplemented, ServiceFailure,
-			InsufficientResources, JargonException {
-
-		// if (authorization == null || authorization.isEmpty()) {
-		// throw new IllegalArgumentException("null or empty authorization");
-		// }
+	public Response handlePing() throws NotImplemented, ServiceFailure, InsufficientResources, JargonException {
 
 		if (publicationContext == null) {
 			throw new IllegalArgumentException("null publicationContext");
 		}
 
-		// MNCoreImpl mnCoreImpl = new MNCoreImpl(irodsAccessObjectFactory,
-		// restConfiguration, authorization);
-		MNCoreImpl mnCoreImpl = new MNCoreImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(publicationContext, pluginDiscoveryService);
 		Date irodsDate = mnCoreImpl.ping();
 
-		SimpleDateFormat df = new SimpleDateFormat(
-				"EEE, dd MMM yyyy HH:mm:ss zzz");
+		SimpleDateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 		String dateStr = df.format(irodsDate);
 
 		Response.ResponseBuilder builder = Response.ok();
@@ -122,9 +115,7 @@ public class MemberNodeService {
 
 		MNNode nodeCapabilities = new MNNode();
 
-		MNCoreImpl mnCoreImpl = new MNCoreImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(publicationContext, pluginDiscoveryService);
 		Node node = mnCoreImpl.getCapabilities();
 
 		nodeCapabilities.copy(node);
@@ -136,8 +127,7 @@ public class MemberNodeService {
 	@Path("/")
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
-	public MNNode handleDefaultGetCapabilities() throws NotImplemented,
-			ServiceFailure {
+	public MNNode handleDefaultGetCapabilities() throws NotImplemented, ServiceFailure {
 
 		MNNode nodeCapabilities = handleGetCapabilities();
 
@@ -149,24 +139,17 @@ public class MemberNodeService {
 	@Path("/log")
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
-	public MNLog handleGetLogRecords(
-			@QueryParam("fromDate") final String fromDateStr,
-			@QueryParam("toDate") final String toDateStr,
-			@QueryParam("event") final String event,
-			@QueryParam("pidFilter") final String pidFilter,
-			@DefaultValue("0") @QueryParam("start") final int start,
+	public MNLog handleGetLogRecords(@QueryParam("fromDate") final String fromDateStr,
+			@QueryParam("toDate") final String toDateStr, @QueryParam("event") final String event,
+			@QueryParam("pidFilter") final String pidFilter, @DefaultValue("0") @QueryParam("start") final int start,
 			@DefaultValue("500") @QueryParam("count") final int count)
-			throws NotImplemented, ServiceFailure, NotAuthorized,
-			InvalidRequest, InvalidToken {
+			throws NotImplemented, ServiceFailure, NotAuthorized, InvalidRequest, InvalidToken {
 
-		logger.info("/log request: fromData={} toDate={}", fromDateStr,
-				toDateStr);
+		logger.info("/log request: fromData={} toDate={}", fromDateStr, toDateStr);
 		logger.info("/log request: event={} pidFilter={}", event, pidFilter);
 		logger.info("/log request: start={} count={}", start, count);
 
-		MNCoreImpl mnCoreImpl = new MNCoreImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MMNCoreImpl mnCoreImpl = new MNCoreImpl(publicationContext, pluginDiscoveryService);
 
 		// parse date strings
 		Date fromDate = null;
@@ -185,8 +168,7 @@ public class MemberNodeService {
 
 		Event e = Event.convert(event);
 
-		Log log = mnCoreImpl.getLogRecords(fromDate, toDate, e, pidFilter,
-				start, count);
+		Log log = mnCoreImpl.getLogRecords(fromDate, toDate, e, pidFilter, start, count);
 		logger.info("returned log={}", log.toString());
 
 		// set Log attributes in MNLog
@@ -199,13 +181,10 @@ public class MemberNodeService {
 	@GET
 	@Path("/object/{id}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public void handleRead(@PathParam("id") final String pid,
-			@Context final HttpServletResponse response) throws InvalidToken,
-			ServiceFailure, NotAuthorized, NotFound, NotImplemented,
-			InsufficientResources {
+	public void handleRead(@PathParam("id") final String pid, @Context final HttpServletResponse response)
+			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound, NotImplemented, InsufficientResources {
 
-		MNReadImpl mnReadImpl = new MNReadImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
 				publicationContext.getRestConfiguration());
 
 		Identifier id = new Identifier();
@@ -229,24 +208,20 @@ public class MemberNodeService {
 	@GET
 	@Path("/checksum/{id}")
 	@Produces(MediaType.TEXT_XML)
-	public MNChecksum handleGetChecksum(
-			@PathParam("id") final String pid,
+	public MNChecksum handleGetChecksum(@PathParam("id") final String pid,
 			@DefaultValue("MD5") @QueryParam("checksumAlgorithm") final String algorithm)
-			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
-			NotImplemented, InvalidRequest {
+			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound, NotImplemented, InvalidRequest {
 
 		MNChecksum mnChecksum = new MNChecksum();
 
 		if (!algorithm.toUpperCase().equals("MD5")) {
-			throw new InvalidRequest("1402",
-					"invalid checksum algorithm requested - only MD5 supported");
+			throw new InvalidRequest("1402", "invalid checksum algorithm requested - only MD5 supported");
 		}
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
 
-		MNReadImpl mnReadImpl = new MNReadImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
 				publicationContext.getRestConfiguration());
 		Checksum checksum = mnReadImpl.getChecksum(id, algorithm);
 
@@ -258,13 +233,10 @@ public class MemberNodeService {
 	@GET
 	@Path("/replica/{id}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public void handleReplica(@PathParam("id") final String pid,
-			@Context final HttpServletResponse response) throws InvalidToken,
-			ServiceFailure, NotAuthorized, NotFound, NotImplemented,
-			InsufficientResources {
+	public void handleReplica(@PathParam("id") final String pid, @Context final HttpServletResponse response)
+			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound, NotImplemented, InsufficientResources {
 
-		MNReadImpl mnReadImpl = new MNReadImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
 				publicationContext.getRestConfiguration());
 
 		Identifier id = new Identifier();
@@ -291,19 +263,16 @@ public class MemberNodeService {
 	@GET
 	@Path("/meta/{id}")
 	@Produces(MediaType.TEXT_XML)
-	public MNSystemMetadata handleGetSystemMetadata(
-			@PathParam("id") final String pid)
+	public MNSystemMetadata handleGetSystemMetadata(@PathParam("id") final String pid)
 			// @Context final HttpServletResponse response)
-			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound,
-			NotImplemented, InvalidRequest {
+			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound, NotImplemented, InvalidRequest {
 
 		MNSystemMetadata mnSystemMetadata = new MNSystemMetadata();
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
 
-		MNReadImpl mnReadImpl = new MNReadImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
 				publicationContext.getRestConfiguration());
 		SystemMetadata sysMetadata = mnReadImpl.getSystemMetadata(id);
 
@@ -318,16 +287,14 @@ public class MemberNodeService {
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	public Response handleDescribe(@PathParam("id") final String pid)
 			// @Context final HttpServletResponse response)
-			throws NotAuthorized, NotImplemented, ServiceFailure, NotFound,
-			InvalidToken {
+			throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
 
 		DescribeResponse describeResponse;
 
-		MNReadImpl mnReadImpl = new MNReadImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
 				publicationContext.getRestConfiguration());
 		try {
 			describeResponse = mnReadImpl.describe(id);
@@ -345,12 +312,10 @@ public class MemberNodeService {
 		}
 
 		Checksum checksum = describeResponse.getDataONE_Checksum();
-		String checksumStr = checksum.getAlgorithm() + ","
-				+ checksum.getValue();
+		String checksumStr = checksum.getAlgorithm() + "," + checksum.getValue();
 
 		// Convert data to GMT and format for HTTP header
-		DateFormat gmtFormat = new SimpleDateFormat(
-				"EEE, dd MMM yyyy HH:mm:ss ");
+		DateFormat gmtFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ");
 		TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
 		gmtFormat.setTimeZone(gmtTimeZone);
 		Calendar calendar = new GregorianCalendar();
@@ -361,14 +326,11 @@ public class MemberNodeService {
 
 		Response.ResponseBuilder builder = Response.ok();
 		builder.header("Last-Modified", dateStr);
-		builder.header("Content-Length", describeResponse.getContent_Length()
-				.toString());
+		builder.header("Content-Length", describeResponse.getContent_Length().toString());
 		builder.type(MediaType.APPLICATION_OCTET_STREAM);
-		builder.header("DataONE-formatId", describeResponse
-				.getDataONE_ObjectFormatIdentifier().getValue().toString());
+		builder.header("DataONE-formatId", describeResponse.getDataONE_ObjectFormatIdentifier().getValue().toString());
 		builder.header("DataONE-Checksum", checksumStr);
-		builder.header("DataONE-SerialVersion", describeResponse
-				.getSerialVersion().toString());
+		builder.header("DataONE-SerialVersion", describeResponse.getSerialVersion().toString());
 
 		return builder.build();
 	}
@@ -378,41 +340,34 @@ public class MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
-	public Response handleSynchronizationFailed(
-			final MultipartFormDataInput input) throws NotAuthorized,
-			NotImplemented, ServiceFailure, InvalidToken {
+	public Response handleSynchronizationFailed(final MultipartFormDataInput input)
+			throws NotAuthorized, NotImplemented, ServiceFailure, InvalidToken {
 
 		Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
 		List<InputPart> inputParts = uploadForm.get("message");
 		if (inputParts == null || inputParts.size() == 0) {
-			throw new ServiceFailure("2161",
-					"Synch Failure Exception cannot parse message");
+			throw new ServiceFailure("2161", "Synch Failure Exception cannot parse message");
 		}
 		String str_xml = null;
 		try {
 			str_xml = inputParts.get(0).getBodyAsString();
 		} catch (IOException e) {
-			throw new ServiceFailure("2161",
-					"Synch Failure Exception cannot extract message xml");
+			throw new ServiceFailure("2161", "Synch Failure Exception cannot extract message xml");
 		}
 
-		MNError error = JAXB
-				.unmarshal(new StringReader(str_xml), MNError.class);
+		MNError error = JAXB.unmarshal(new StringReader(str_xml), MNError.class);
 		SynchronizationFailed message = error.copyToSynchronizationFailed();
 
 		if (message == null) {
-			throw new ServiceFailure("2161",
-					"Synch Failure Exception message is null");
+			throw new ServiceFailure("2161", "Synch Failure Exception message is null");
 		}
 
-		MNReadImpl mnReadImpl = new MNReadImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
 				publicationContext.getRestConfiguration());
 		boolean success = mnReadImpl.synchronizationFailed(message);
 
 		if (!success) {
-			throw new ServiceFailure("2161",
-					"Failed to log Synchronization Failure event");
+			throw new ServiceFailure("2161", "Failed to log Synchronization Failure event");
 		}
 
 		Response.ResponseBuilder builder = Response.ok();
@@ -425,15 +380,12 @@ public class MemberNodeService {
 	@GET
 	@Path("/object")
 	@Produces(MediaType.TEXT_XML)
-	public MNObjectList handleListObjects(
-			@QueryParam("fromDate") final String fromDateStr,
-			@QueryParam("toDate") final String toDateStr,
-			@QueryParam("formatId") final String formatIdStr,
+	public MNObjectList handleListObjects(@QueryParam("fromDate") final String fromDateStr,
+			@QueryParam("toDate") final String toDateStr, @QueryParam("formatId") final String formatIdStr,
 			@QueryParam("replicaStatus") final Boolean replicaStatus,
 			@DefaultValue("0") @QueryParam("start") final Integer start,
 			@DefaultValue("500") @QueryParam("count") final Integer count)
-			throws InvalidToken, ServiceFailure, NotAuthorized, InvalidRequest,
-			NotImplemented {
+			throws InvalidToken, ServiceFailure, NotAuthorized, InvalidRequest, NotImplemented {
 
 		MNObjectList mnObjectList = new MNObjectList();
 
@@ -456,13 +408,25 @@ public class MemberNodeService {
 			throw new InvalidRequest("1540", e.getMessage());
 		}
 
-		MNReadImpl mnReadImpl = new MNReadImpl(
-				publicationContext.getIrodsAccessObjectFactory(),
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
 				publicationContext.getRestConfiguration());
-		ObjectList objectList = mnReadImpl.listObjects(fromDate, toDate,
-				formatId, replicaStatus, start, count);
+		ObjectList objectList = mnReadImpl.listObjects(fromDate, toDate, formatId, replicaStatus, start, count);
 		mnObjectList.copy(objectList);
 
 		return mnObjectList;
+	}
+
+	/**
+	 * @return the publicationContext
+	 */
+	public PublicationContext getPublicationContext() {
+		return publicationContext;
+	}
+
+	/**
+	 * @return the pluginDiscoveryService
+	 */
+	public PluginDiscoveryService getPluginDiscoveryService() {
+		return pluginDiscoveryService;
 	}
 }

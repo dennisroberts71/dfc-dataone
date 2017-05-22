@@ -65,6 +65,12 @@
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>uk.org.mygrid.resources</groupId>
+					<artifactId>cog-jglobus</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- <dependency> <groupId>org.irods.jargon</groupId> <artifactId>data-profile</artifactId> 
 			</dependency> -->

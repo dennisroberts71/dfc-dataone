@@ -8,9 +8,9 @@ package org.irods.jargon.dataone.configuration;
  */
 public class RestConfiguration {
 
-	private String irodsHost = "iren2.renci.org";
+	private String irodsHost = "";
 	private int irodsPort = 1247;
-	private String irodsZone = "dfcmain";
+	private String irodsZone = "";
 	private String defaultStorageResource = "";
 	private String realm = "dfc-dataone";
 	private boolean smimeEncryptAdminFunctions = false;
@@ -19,6 +19,7 @@ public class RestConfiguration {
 	private String irodsUserName;
 	private String irodsUserPswd;
 	private String pluginJarLocation;
+	private String authType = "";
 
 	/**
 	 * Optional URL for a web interface to access grid data (typically an
@@ -112,8 +113,7 @@ public class RestConfiguration {
 	 * @param smimeEncryptAdminFunctions
 	 *            the smimeEncryptAdminFunctions to set
 	 */
-	public void setSmimeEncryptAdminFunctions(
-			final boolean smimeEncryptAdminFunctions) {
+	public void setSmimeEncryptAdminFunctions(final boolean smimeEncryptAdminFunctions) {
 		this.smimeEncryptAdminFunctions = smimeEncryptAdminFunctions;
 	}
 
@@ -203,21 +203,17 @@ public class RestConfiguration {
 			builder.append("irodsZone=").append(irodsZone).append(", ");
 		}
 		if (defaultStorageResource != null) {
-			builder.append("defaultStorageResource=")
-					.append(defaultStorageResource).append(", ");
+			builder.append("defaultStorageResource=").append(defaultStorageResource).append(", ");
 		}
 		if (realm != null) {
 			builder.append("realm=").append(realm).append(", ");
 		}
-		builder.append("smimeEncryptAdminFunctions=")
-				.append(smimeEncryptAdminFunctions).append(", ");
+		builder.append("smimeEncryptAdminFunctions=").append(smimeEncryptAdminFunctions).append(", ");
 		if (privateCertAbsPath != null) {
-			builder.append("privateCertAbsPath=").append(privateCertAbsPath)
-					.append(", ");
+			builder.append("privateCertAbsPath=").append(privateCertAbsPath).append(", ");
 		}
 		if (publicKeyAbsPath != null) {
-			builder.append("publicKeyAbsPath=").append(publicKeyAbsPath)
-					.append(", ");
+			builder.append("publicKeyAbsPath=").append(publicKeyAbsPath).append(", ");
 		}
 		if (irodsUserName != null) {
 			builder.append("irodsUserName=").append(irodsUserName).append(", ");
@@ -226,14 +222,28 @@ public class RestConfiguration {
 			builder.append("irodsUserPswd=").append(irodsUserPswd).append(", ");
 		}
 		if (pluginJarLocation != null) {
-			builder.append("pluginJarLocation=").append(pluginJarLocation)
-					.append(", ");
+			builder.append("pluginJarLocation=").append(pluginJarLocation).append(", ");
 		}
 		if (webInterfaceURL != null) {
 			builder.append("webInterfaceURL=").append(webInterfaceURL);
 		}
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * @return the authType
+	 */
+	public String getAuthType() {
+		return authType;
+	}
+
+	/**
+	 * @param authType
+	 *            the authType to set
+	 */
+	public void setAuthType(String authType) {
+		this.authType = authType;
 	}
 
 }

@@ -25,19 +25,26 @@ import org.dataone.service.exceptions.NotImplemented;
 import org.dataone.service.exceptions.ServiceFailure;
 import org.dataone.service.exceptions.SynchronizationFailed;
 import org.dataone.service.mn.tier1.v1.MNRead;
+import org.dataone.service.types.v1.AccessPolicy;
+import org.dataone.service.types.v1.AccessRule;
 import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.DescribeResponse;
+import org.dataone.service.types.v1.Event;
 import org.dataone.service.types.v1.Identifier;
+import org.dataone.service.types.v1.NodeReference;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.dataone.service.types.v1.ObjectInfo;
 import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.Permission;
+import org.dataone.service.types.v1.ReplicationPolicy;
 import org.dataone.service.types.v1.Session;
+import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
+import org.irods.jargon.core.pub.DataObjectAO;
 //import org.irods.jargon.dataprofile.DataProfileService;
 //import org.irods.jargon.dataprofile.DataTypeResolutionService;
 //import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
@@ -50,9 +57,12 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
+import org.irods.jargon.dataone.configuration.PluginNotFoundException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
+import org.irods.jargon.dataone.events.DataOneEventServiceAO;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
+import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
 import org.irods.jargon.dataone.utils.DataObjectMetadataUtils;
 import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
@@ -62,21 +72,22 @@ import org.slf4j.LoggerFactory;
 
 public class MNReadImpl implements MNRead {
 
-	/**
-	 * @param publicationContext
-	 * @param pluginDiscoveryService
-	 */
-	public MNReadImpl(PublicationContext publicationContext, PluginDiscoveryService pluginDiscoveryService) {
-		super();
-		this.publicationContext = publicationContext;
-		this.pluginDiscoveryService = pluginDiscoveryService;
-	}
-
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	private final PublicationContext publicationContext;
 	private final PluginDiscoveryService pluginDiscoveryService;
 	private PropertiesLoader properties = new PropertiesLoader();
+
+	/**
+	 * @param publicationContext
+	 * @param pluginDiscoveryService
+	 */
+	public MNReadImpl(final PublicationContext publicationContext,
+			final PluginDiscoveryService pluginDiscoveryService) {
+		super();
+		this.publicationContext = publicationContext;
+		this.pluginDiscoveryService = pluginDiscoveryService;
+	}
 
 	@Override
 	public DescribeResponse describe(final Identifier id)
@@ -93,10 +104,9 @@ public class MNReadImpl implements MNRead {
 		BigInteger contentLength;
 		Date lastModified;
 		BigInteger serialVersion;
-
+		IRODSAccount irodsAccount;
 		try {
-			IRODSAccount irodsAccount = RestAuthUtils
-					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
 			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
 			dataObject = pidService.getDataObjectFromIdentifier(id);
@@ -197,10 +207,12 @@ public class MNReadImpl implements MNRead {
 				output.write(buffer, 0, readBytes);
 			}
 			output.flush();
-			if (stream != null)
+			if (stream != null) {
 				stream.close();
-			if (output != null)
+			}
+			if (output != null) {
 				output.close();
+			}
 
 		} catch (Exception e) {
 			log.error("Cannot stream iRODS object: {}", path);
@@ -271,35 +283,41 @@ public class MNReadImpl implements MNRead {
 			throw new NotFound("1420", "invalid checksum algorithm provided");
 		}
 
-		new DataObject();
 		Checksum checksum = new Checksum();
 
-		/*
-		 * try {
-		 * 
-		 * // FIXME: need to add handle stuff
-		 * 
-		 * 
-		 * 
-		 * UniqueIdAOHandleImpl handleImpl = new UniqueIdAOHandleImpl(
-		 * restConfiguration, irodsAccessObjectFactory); dataObject =
-		 * handleImpl.getDataObjectFromIdentifier(id); String csum =
-		 * dataObject.getChecksum(); if (csum == null) {
-		 * log.info("checksum does not exist for file: {}",
-		 * dataObject.getAbsolutePath()); throw new NotFound("1410",
-		 * "Checksum does not exist for data object id provided"); }
-		 * checksum.setValue(csum); checksum.setAlgorithm(properties
-		 * .getProperty("irods.dataone.chksum-algorithm"));
-		 * 
-		 * } catch (FileNotFoundException nf) {
-		 * log.error("Cannot access iRODS object: {}",
-		 * dataObject.getAbsolutePath()); throw new NotFound("1410",
-		 * "No data object could be found for given PID:"); } catch
-		 * (JargonException je) { log.error("cannot access iRODS object: {}",
-		 * dataObject.getAbsolutePath()); throw new ServiceFailure("1410",
-		 * je.getMessage()); } finally {
-		 * irodsAccessObjectFactory.closeSessionAndEatExceptions(); }
-		 */
+		DataObject dataObject;
+		String path;
+		IRODSAccount irodsAccount;
+		IRODSFile irodsFile;
+		// first try and find data object for this id
+		try {
+			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+
+			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			dataObject = pidService.getDataObjectFromIdentifier(id);
+
+			path = dataObject.getAbsolutePath();
+			irodsFile = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
+					.instanceIRODSFile(path);
+
+			if (!irodsFile.exists()) {
+				log.info("file does not exist");
+				throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
+			}
+
+		} catch (Exception ex) {
+			log.info("file does not exist");
+			throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
+		}
+
+		String csum = dataObject.getChecksum();
+		if (csum == null) {
+			log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
+			throw new NotFound("1410", "Checksum does not exist for data object id provided");
+		}
+		checksum.setValue(csum);
+		checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
+
 		return checksum;
 	}
 
@@ -329,98 +347,115 @@ public class MNReadImpl implements MNRead {
 			throw new InvalidToken("1402", "invalid iRODS data object id");
 		}
 
-		new DataObject();
 		SystemMetadata metadata = new SystemMetadata();
 		// TODO: hardcode version to 1 for now
 		metadata.setSerialVersion(getSerialVersion());
 
-		new Checksum();
+		DataObject dataObject;
+		IRODSAccount irodsAccount;
+		Checksum checksum = new Checksum();
+
+		// first try and find data object for this id
+		try {
+			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+
+			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			dataObject = pidService.getDataObjectFromIdentifier(id);
+
+		} catch (Exception ex) {
+			log.info("file does not exist");
+			throw new NotFound("1060", "No metadata could be found for given PID:" + id.getValue());
+		}
+
+		try {
+			String csum = dataObject.getChecksum();
+			if (csum == null) {
+				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath()); // throw
+																								// new
+																								// NotFound("404",
+																								// "1420");
+			} else {
+				checksum.setValue(csum);
+				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
+			}
+
+			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount,
+					publicationContext.getIrodsAccessObjectFactory(), dataObject);
+			if (format == null) {
+				format = getDataObjectMimeType(irodsAccount, dataObject);
+			}
+			metadata.setIdentifier(id);
+			ObjectFormatIdentifier formatId = new ObjectFormatIdentifier();
+			formatId.setValue(format);
+			metadata.setFormatId(formatId);
+
+			Long dataSizeLong = new Long(dataObject.getDataSize());
+			String dataSizeStr = dataSizeLong.toString();
+			metadata.setSize(new BigInteger(dataSizeStr));
+			metadata.setChecksum(checksum);
+
+			String dataOwner = "uid=" + dataObject.getDataOwnerName();
+			Subject submitter = new Subject();
+			submitter.setValue(dataOwner);
+			metadata.setSubmitter(submitter);
+
+			Subject rightsHolder = new Subject();
+			rightsHolder.setValue(dataOwner);
+			metadata.setRightsHolder(rightsHolder);
+
+			DataObjectAO dataObjectAO = publicationContext.getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount);
+			List<UserFilePermission> permissions = dataObjectAO
+					.listPermissionsForDataObject(dataObject.getAbsolutePath());
+			if (permissions != null) {
+				AccessPolicy accessPolicy = new AccessPolicy();
+				for (UserFilePermission permission : permissions) {
+					AccessRule rule = new AccessRule();
+					Subject subject = new Subject();
+
+					// in DataONE - anonymous translates to public
+					// TODO: also may need to make translation for "public" to
+					// "authenticatedUser"
+					if (permission.getUserName().equals("anonymous")) {
+						subject.setValue("public");
+					} else {
+						subject.setValue("uid=" + permission.getUserName());
+					}
+					rule.addSubject(subject);
+					List<Permission> d1Premissions = getD1Permission(permission);
+					for (Permission d1Premission : d1Premissions) {
+						rule.addPermission(d1Premission);
+					}
+					accessPolicy.addAllow(rule);
+				}
+				metadata.setAccessPolicy(accessPolicy);
+			}
+
+			ReplicationPolicy replicationPolicy = new ReplicationPolicy();
+			replicationPolicy.setReplicationAllowed(false);
+			metadata.setReplicationPolicy(replicationPolicy);
+
+			// Add support for obsoletes or obsoletedBy?
+
+			// Use AVU epoch date //
+			metadata.setDateUploaded(dataObject.getCreatedAt()); //
+			metadata.setDateSysMetadataModified(dataObject.getUpdatedAt());
+			Date startDate = DataObjectMetadataUtils.getStartDateTime(publicationContext.getIrodsAccessObjectFactory(),
+					irodsAccount, dataObject);
+			metadata.setDateSysMetadataModified(startDate);
+			metadata.setDateUploaded(startDate);
+
+			NodeReference nodeReference = new NodeReference();
+			nodeReference.setValue(properties.getProperty("irods.dataone.identifier"));
+			metadata.setOriginMemberNode(nodeReference);
+			metadata.setAuthoritativeMemberNode(nodeReference);
+
+		} catch (Exception e) {
+			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
+			throw new ServiceFailure("1090", e.getMessage());
+		}
 
 		// first try and find data object for this id
 
-		// FIXME: add handle stuff
-
-		/*
-		 * 
-		 * try { irodsAccount = RestAuthUtils
-		 * .getIRODSAccountFromBasicAuthValues(restConfiguration);
-		 * 
-		 * dataObjectAO = irodsAccessObjectFactory
-		 * .getDataObjectAO(irodsAccount); UniqueIdAOHandleImpl handleImpl = new
-		 * UniqueIdAOHandleImpl( restConfiguration, irodsAccessObjectFactory);
-		 * dataObject = handleImpl.getDataObjectFromIdentifier(id);
-		 * 
-		 * } catch (Exception ex) { log.info("file does not exist"); throw new
-		 * NotFound("1060", "No metadata could be found for given PID:" +
-		 * id.getValue()); }
-		 * 
-		 * 
-		 * try { String csum = dataObject.getChecksum(); if (csum == null) {
-		 * log.info("checksum does not exist for file: {}",
-		 * dataObject.getAbsolutePath()); // throw new NotFound("404", "1420");
-		 * } else { checksum.setValue(csum); checksum.setAlgorithm(properties
-		 * .getProperty("irods.dataone.chksum-algorithm")); }
-		 * 
-		 * String format = DataTypeUtils.getDataObjectFormatFromMetadata(
-		 * irodsAccount, irodsAccessObjectFactory, dataObject); if (format ==
-		 * null) { format = getDataObjectMimeType(irodsAccount, dataObject); }
-		 * metadata.setIdentifier(id); ObjectFormatIdentifier formatId = new
-		 * ObjectFormatIdentifier(); formatId.setValue(format);
-		 * metadata.setFormatId(formatId);
-		 * 
-		 * Long dataSizeLong = new Long(dataObject.getDataSize()); String
-		 * dataSizeStr = dataSizeLong.toString(); metadata.setSize(new
-		 * BigInteger(dataSizeStr)); metadata.setChecksum(checksum);
-		 * 
-		 * String dataOwner = "uid=" + dataObject.getDataOwnerName(); Subject
-		 * submitter = new Subject(); submitter.setValue(dataOwner);
-		 * metadata.setSubmitter(submitter);
-		 * 
-		 * Subject rightsHolder = new Subject();
-		 * rightsHolder.setValue(dataOwner);
-		 * metadata.setRightsHolder(rightsHolder);
-		 * 
-		 * List<UserFilePermission> permissions = dataObjectAO
-		 * .listPermissionsForDataObject(dataObject.getAbsolutePath()); if
-		 * (permissions != null) { AccessPolicy accessPolicy = new
-		 * AccessPolicy(); for (UserFilePermission permission : permissions) {
-		 * AccessRule rule = new AccessRule(); Subject subject = new Subject();
-		 * 
-		 * // in DataONE - anonymous translates to public // TODO: also may need
-		 * to make translation for "public" to // "authenticatedUser" if
-		 * (permission.getUserName().equals("anonymous")) {
-		 * subject.setValue("public"); } else { subject.setValue("uid=" +
-		 * permission.getUserName()); } rule.addSubject(subject);
-		 * List<Permission> d1Premissions = getD1Permission(permission); for
-		 * (Permission d1Premission : d1Premissions) {
-		 * rule.addPermission(d1Premission); } accessPolicy.addAllow(rule); }
-		 * metadata.setAccessPolicy(accessPolicy); }
-		 * 
-		 * ReplicationPolicy replicationPolicy = new ReplicationPolicy();
-		 * replicationPolicy.setReplicationAllowed(false);
-		 * metadata.setReplicationPolicy(replicationPolicy);
-		 * 
-		 * // Add support for obsoletes or obsoletedBy?
-		 * 
-		 * // Use AVU epoch date //
-		 * metadata.setDateUploaded(dataObject.getCreatedAt()); //
-		 * metadata.setDateSysMetadataModified(dataObject.getUpdatedAt()); Date
-		 * startDate = DataObjectMetadataUtils.getStartDateTime(
-		 * irodsAccessObjectFactory, irodsAccount, dataObject);
-		 * metadata.setDateSysMetadataModified(startDate);
-		 * metadata.setDateUploaded(startDate);
-		 * 
-		 * NodeReference nodeReference = new NodeReference();
-		 * nodeReference.setValue(properties
-		 * .getProperty("irods.dataone.identifier"));
-		 * metadata.setOriginMemberNode(nodeReference);
-		 * metadata.setAuthoritativeMemberNode(nodeReference);
-		 * 
-		 * } catch (Exception e) { log.error("Cannot access iRODS object: {}",
-		 * dataObject.getAbsolutePath()); throw new ServiceFailure("1090",
-		 * e.getMessage()); } finally {
-		 * irodsAccessObjectFactory.closeSessionAndEatExceptions(); }
-		 */
 		return metadata;
 	}
 
@@ -434,87 +469,91 @@ public class MNReadImpl implements MNRead {
 	public ObjectList listObjects(final Date fromDate, final Date toDate, final ObjectFormatIdentifier formatId,
 			final Boolean replicaStatus, final Integer start, final Integer count)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
-		new DataObjectListResponse();
-		new ArrayList<DataObject>();
-		new ArrayList<ObjectInfo>();
-		new ObjectList();
 
-		// FIXME: handle stuff
+		IRODSAccount irodsAccount;
+		DataObjectListResponse response = new DataObjectListResponse();
+		List<ObjectInfo> objectInfoList = new ArrayList<>();
+		ObjectList objectList = new ObjectList();
 
-		/*
-		 * 
-		 * UniqueIdAOHandleInMetadataImpl handleImpl;
-		 * 
-		 * try { // handleImpl = new UniqueIdAOHandleImpl(restConfiguration, //
-		 * irodsAccessObjectFactory); handleImpl = new
-		 * UniqueIdAOHandleInMetadataImpl(restConfiguration,
-		 * irodsAccessObjectFactory);
-		 * 
-		 * // dataObjectListResponse = //
-		 * handleImpl.getListOfDataoneExposedDataObjects( dataObjectListResponse
-		 * = handleImpl .getListOfDataoneExposedDataObjects(fromDate, toDate,
-		 * formatId, replicaStatus, start, count); } catch (Exception ex) {
-		 * log.info("{}", ex.toString()); throw new ServiceFailure("1580",
-		 * "Could not retrieve list of data objects"); }
-		 * 
-		 * dataObjectList = dataObjectListResponse.getDataObjects();
-		 * 
-		 * for (DataObject dObject : dataObjectList) {
-		 * 
-		 * ObjectInfo oInfo = new ObjectInfo();
-		 * 
-		 * if (dObject.getChecksum() != null) { Checksum checksum = new
-		 * Checksum(); checksum.setValue(dObject.getChecksum());
-		 * checksum.setAlgorithm(properties
-		 * .getProperty("irods.dataone.chksum-algorithm"));
-		 * oInfo.setChecksum(checksum); }
-		 * 
-		 * // probably should combine query for format and start date at some //
-		 * future refactor IRODSAccount irodsAccount = null; ; String format =
-		 * null; try { irodsAccount = RestAuthUtils
-		 * .getIRODSAccountFromBasicAuthValues(restConfiguration); format =
-		 * DataTypeUtils.getDataObjectFormatFromMetadata( irodsAccount,
-		 * irodsAccessObjectFactory, dObject); // use back up if no format
-		 * stores in dataObject AVU if (format == null) { format =
-		 * getDataObjectMimeType(irodsAccount, dObject); } } catch (Exception
-		 * e1) { log.error(e1.toString()); log.error(
-		 * "cannot retrieve mime type for object:{} setting to application/octet-stream"
-		 * , dObject.getAbsolutePath()); format = "application/octet-stream"; }
-		 * ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
-		 * fId.setValue(format); oInfo.setFormatId(fId);
-		 * 
-		 * // oInfo.setDateSysMetadataModified(dObject.getUpdatedAt()); Date
-		 * startDate = new Date(); try { startDate =
-		 * DataObjectMetadataUtils.getStartDateTime( irodsAccessObjectFactory,
-		 * irodsAccount, dObject); } catch (Exception e1) {
-		 * log.error(e1.toString());
-		 * log.error("cannot retrieve start date for object: {}",
-		 * dObject.getAbsolutePath()); }
-		 * oInfo.setDateSysMetadataModified(startDate);
-		 * 
-		 * Identifier id; try { id =
-		 * handleImpl.getIdentifierFromDataObject(dObject); } catch
-		 * (JargonException e) {
-		 * log.error("could not convert data object id to identifier: {}",
-		 * e.toString()); throw new ServiceFailure("1580",
-		 * "Could not retrieve list of data objects"); }
-		 * oInfo.setIdentifier(id);
-		 * 
-		 * Long dataSizeLong = new Long(dObject.getDataSize()); String
-		 * dataSizeStr = dataSizeLong.toString(); oInfo.setSize(new
-		 * BigInteger(dataSizeStr));
-		 * 
-		 * objectInfoList.add(oInfo); }
-		 * 
-		 * objectList.setObjectInfoList(objectInfoList);
-		 * objectList.setTotal(dataObjectListResponse.getTotal());
-		 * objectList.setCount(objectInfoList.size());
-		 * objectList.setStart(start);
-		 * 
-		 * return objectList;
-		 */
+		// first try and find data object for this id
+		try {
+			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-		return null;
+			DataOneRepoServiceAO repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
+			response = repoService.getListOfDataoneExposedDataObjects(fromDate, toDate, formatId, replicaStatus, start,
+					count);
+		} catch (Exception ex) {
+			log.error("{}", ex.toString());
+			throw new ServiceFailure("1580", "Could not retrieve list of data objects");
+		}
+
+		List<DataObject> dataObjects = response.getDataObjects();
+
+		for (DataObject dObject : dataObjects) {
+
+			ObjectInfo oInfo = new ObjectInfo();
+
+			if (dObject.getChecksum() != null) {
+				Checksum checksum = new Checksum();
+				checksum.setValue(dObject.getChecksum());
+				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
+				oInfo.setChecksum(checksum);
+			}
+
+			String format = null;
+			try {
+				format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount,
+						publicationContext.getIrodsAccessObjectFactory(), dObject);
+				// use back up if no format stores in dataObject AVU
+				if (format == null) {
+					format = getDataObjectMimeType(irodsAccount, dObject);
+				}
+
+			} catch (Exception e1) {
+				log.error(e1.toString());
+				log.error("cannot retrieve mime type for object:{} setting to application/octet-stream",
+						dObject.getAbsolutePath());
+				format = "application/octet-stream";
+			}
+
+			ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
+			fId.setValue(format);
+			oInfo.setFormatId(fId);
+
+			Date startDate = new Date();
+			try {
+				startDate = DataObjectMetadataUtils.getStartDateTime(publicationContext.getIrodsAccessObjectFactory(),
+						irodsAccount, dObject);
+			} catch (Exception e1) {
+				log.error(e1.toString());
+				log.error("cannot retrieve start date for object: {}", dObject.getAbsolutePath());
+			}
+			oInfo.setDateSysMetadataModified(startDate);
+
+			Identifier id;
+			try {
+				UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+				id = pidService.getIdentifierFromDataObject(dObject);
+			} catch (JargonException | PluginNotFoundException e) {
+				log.error("could not convert data object id to identifier: {}", e.toString());
+				throw new ServiceFailure("1580", "Could not retrieve list of data objects");
+			}
+			oInfo.setIdentifier(id);
+
+			Long dataSizeLong = new Long(dObject.getDataSize());
+			String dataSizeStr = dataSizeLong.toString();
+			oInfo.setSize(new BigInteger(dataSizeStr));
+			objectInfoList.add(oInfo);
+
+		}
+
+		objectList.setObjectInfoList(objectInfoList);
+		objectList.setTotal(response.getTotal());
+		objectList.setCount(objectInfoList.size());
+		objectList.setStart(start);
+
+		return objectList;
+
 	}
 
 	@Override
@@ -528,33 +567,36 @@ public class MNReadImpl implements MNRead {
 	public boolean synchronizationFailed(final SynchronizationFailed syncFailed)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 
-		// FIXME: fix handle stuff
+		Identifier pid = null;
+		IRODSAccount irodsAccount;
+		DataObject dataObject;
 
-		/*
-		 * 
-		 * Identifier pid = null;
-		 * 
-		 * if (syncFailed.getPid() != null) { pid = new Identifier();
-		 * pid.setValue(syncFailed.getPid()); } else { throw new
-		 * ServiceFailure("2161", "The identifier cannot be null."); }
-		 * 
-		 * // check to make sure pid is valid try { UniqueIdAOHandleImpl
-		 * handleImpl = new UniqueIdAOHandleImpl( restConfiguration,
-		 * irodsAccessObjectFactory); // just try to access the object to see if
-		 * is there or not handleImpl.getDataObjectFromIdentifier(pid); } catch
-		 * (Exception ex) { throw new ServiceFailure("2161",
-		 * "The identifier specified by " + syncFailed.getPid() +
-		 * " was not found on this node."); }
-		 * 
-		 * EventLogAOElasticSearchImpl eventLog = new
-		 * EventLogAOElasticSearchImpl( irodsAccessObjectFactory,
-		 * restConfiguration); try {
-		 * eventLog.recordEvent(Event.SYNCHRONIZATION_FAILED, pid,
-		 * syncFailed.getDescription()); } catch (Exception e) {
-		 * log.error("failed to log synchronization failed event: {}",
-		 * e.toString()); throw new ServiceFailure("2161",
-		 * "Failed to log Synchronization Failure event"); }
-		 */
+		if (syncFailed.getPid() != null) {
+			pid = new Identifier();
+			pid.setValue(syncFailed.getPid());
+		} else {
+			throw new ServiceFailure("2161", "The identifier cannot be null.");
+		}
+
+		try {
+			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+
+			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			dataObject = pidService.getDataObjectFromIdentifier(pid);
+
+		} catch (Exception ex) {
+			throw new ServiceFailure("2161",
+					"The identifier specified by " + syncFailed.getPid() + " was not found on this node.");
+		}
+
+		try {
+			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
+			eventServiceAO.recordEvent(Event.SYNCHRONIZATION_FAILED, pid, syncFailed.getDescription());
+
+		} catch (PluginNotFoundException | JargonException e) {
+			log.error("failed to log synchronization failed event: {}", e.toString());
+			throw new ServiceFailure("2161", "Failed to log Synchronization Failure event");
+		}
 
 		return true;
 	}

@@ -149,7 +149,7 @@ public class MemberNodeService {
 		logger.info("/log request: event={} pidFilter={}", event, pidFilter);
 		logger.info("/log request: start={} count={}", start, count);
 
-		MMNCoreImpl mnCoreImpl = new MNCoreImpl(publicationContext, pluginDiscoveryService);
+		MNCoreImpl mnCoreImpl = new MNCoreImpl(publicationContext, pluginDiscoveryService);
 
 		// parse date strings
 		Date fromDate = null;
@@ -184,8 +184,7 @@ public class MemberNodeService {
 	public void handleRead(@PathParam("id") final String pid, @Context final HttpServletResponse response)
 			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound, NotImplemented, InsufficientResources {
 
-		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -221,8 +220,7 @@ public class MemberNodeService {
 		Identifier id = new Identifier();
 		id.setValue(pid);
 
-		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 		Checksum checksum = mnReadImpl.getChecksum(id, algorithm);
 
 		mnChecksum.copy(checksum);
@@ -236,8 +234,7 @@ public class MemberNodeService {
 	public void handleReplica(@PathParam("id") final String pid, @Context final HttpServletResponse response)
 			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound, NotImplemented, InsufficientResources {
 
-		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 
 		Identifier id = new Identifier();
 		id.setValue(pid);
@@ -272,8 +269,7 @@ public class MemberNodeService {
 		Identifier id = new Identifier();
 		id.setValue(pid);
 
-		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 		SystemMetadata sysMetadata = mnReadImpl.getSystemMetadata(id);
 
 		mnSystemMetadata.copy(sysMetadata);
@@ -294,8 +290,7 @@ public class MemberNodeService {
 
 		DescribeResponse describeResponse;
 
-		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 		try {
 			describeResponse = mnReadImpl.describe(id);
 		} catch (NotFound ex) {
@@ -362,8 +357,7 @@ public class MemberNodeService {
 			throw new ServiceFailure("2161", "Synch Failure Exception message is null");
 		}
 
-		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 		boolean success = mnReadImpl.synchronizationFailed(message);
 
 		if (!success) {
@@ -408,8 +402,7 @@ public class MemberNodeService {
 			throw new InvalidRequest("1540", e.getMessage());
 		}
 
-		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext.getIrodsAccessObjectFactory(),
-				publicationContext.getRestConfiguration());
+		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 		ObjectList objectList = mnReadImpl.listObjects(fromDate, toDate, formatId, replicaStatus, start, count);
 		mnObjectList.copy(objectList);
 

@@ -1,5 +1,8 @@
 package org.irods.jargon.dataone.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -11,23 +14,35 @@ public class PropertiesLoader {
 
 	private Properties properties;
 
-	private String propertiesFilename = "d1client.properties";
+	private String propertiesFilename = "/etc/irods-ext/d1client.properties";
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	public PropertiesLoader() {
 
 		properties = new Properties();
 		InputStream input = null;
-		input = getClass().getClassLoader().getResourceAsStream(
-				propertiesFilename);
+		File propsFile = new File(propertiesFilename);
+		if (!propsFile.exists()) {
+			log.error("illegal state exception, cannot find /etc/irods-ext/dlclient.properties");
+			throw new IllegalStateException("unable to load properties file at /etc/irods-ext/dlclient.properties");
+		}
+
+		try {
+			input = new FileInputStream(propsFile);
+		} catch (FileNotFoundException e1) {
+			log.error("cannot open /etc/irods-ext/dlclient.properties");
+			throw new IllegalStateException("unable to stream properties file at /etc/irods-ext/dlclient.properties");
+		}
+
+		// input = getClass().getClassLoader().getResourceAsStream(
+		// propertiesFilename);
 
 		// load a properties file
 		try {
 			properties.load(input);
 		} catch (IOException e) {
-			log.error("Cannot load Member Node properties file: {}",
-					propertiesFilename);
-			log.error("IOException: {}", e.getStackTrace());
+			log.error("Cannot load Member Node properties file: {}", propertiesFilename);
+			log.error("IOException: {}", e);
 			properties = new Properties();
 		} finally {
 			if (input != null) {

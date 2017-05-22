@@ -26,6 +26,8 @@ import org.irods.jargon.core.query.QueryConditionOperators;
 
 public class DataTypeUtils {
 
+	// FIXME: consider moving to repo service
+
 	public static String getDataObjectMimeType(final IRODSAccount irodsAccount,
 			final IRODSAccessObjectFactory irodsAccessObjectFactory, final DataObject dataObject)
 			throws FileNotFoundException, JargonException {
@@ -65,7 +67,7 @@ public class DataTypeUtils {
 
 		String dataFormat = null;
 		String formatAttr = "Format";
-		List<AVUQueryElement> avuQueryList = new ArrayList<AVUQueryElement>();
+		List<AVUQueryElement> avuQueryList = new ArrayList<>();
 
 		AVUQueryElement avuQuery = AVUQueryElement.instanceForValueQuery(AVUQueryPart.ATTRIBUTE,
 				QueryConditionOperators.EQUAL, formatAttr);

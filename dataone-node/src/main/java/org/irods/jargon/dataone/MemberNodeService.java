@@ -46,8 +46,11 @@ import org.dataone.service.types.v1.Node;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.SystemMetadata;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
+import org.irods.jargon.dataone.configuration.PluginNotFoundException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNError;
@@ -55,6 +58,7 @@ import org.irods.jargon.dataone.domain.MNLog;
 import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.domain.MNObjectList;
 import org.irods.jargon.dataone.domain.MNSystemMetadata;
+import org.irods.jargon.dataone.events.DataOneEventServiceAO;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
 import org.irods.jargon.dataone.tier1.MNReadImpl;
 import org.irods.jargon.dataone.utils.ISO8601;
@@ -192,15 +196,15 @@ public class MemberNodeService {
 		// couldn't figure out how to override the get method
 		mnReadImpl.streamObject(response, id);
 
-		// FIXME: add log stuff
-		/*
-		 * // now log the event EventLogAOElasticSearchImpl eventLog = new
-		 * EventLogAOElasticSearchImpl( irodsAccessObjectFactory,
-		 * restConfiguration); try { eventLog.recordEvent(Event.READ, id,
-		 * "DataONE replication"); } catch (Exception e) {
-		 * logger.error("Unable to log EVENT: {} for data object id: {}",
-		 * Event.READ, pid); }
-		 */
+		try {
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
+			eventServiceAO.recordEvent(Event.READ, id, "DataONE replication");
+
+		} catch (PluginNotFoundException | JargonException e) {
+			logger.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
+		}
 
 	}
 
@@ -243,17 +247,15 @@ public class MemberNodeService {
 		// couldn't figure out how to override the get method
 		mnReadImpl.streamObject(response, id);
 
-		// FIXME: add log stuff
+		try {
+			IRODSAccount irodsAccount = RestAuthUtils
+					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
+			eventServiceAO.recordEvent(Event.READ, id, "DataONE replication");
 
-		/*
-		 * 
-		 * // now log the event EventLogAOElasticSearchImpl eventLog = new
-		 * EventLogAOElasticSearchImpl( irodsAccessObjectFactory,
-		 * restConfiguration); try { eventLog.recordEvent(Event.REPLICATE, id,
-		 * "DataONE replication"); } catch (Exception e) {
-		 * logger.error("Unable to log EVENT: {} for data object id: {}",
-		 * Event.REPLICATE, pid); }
-		 */
+		} catch (PluginNotFoundException | JargonException e) {
+			logger.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
+		}
 
 	}
 

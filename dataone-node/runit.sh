@@ -9,6 +9,18 @@ else
    echo "No cert to import"
 fi
 
+echo "augmenting libs"
+
+if [ -d /tmp/lib ];
+then
+echo "additional libs found in /tmp/lib"
+	cp -R /tmp/lib /usr/local/tomcat
+else
+ echo "No libs to import"
+fi
+
+
 echo "running catalina"
+
 catalina.sh run
 

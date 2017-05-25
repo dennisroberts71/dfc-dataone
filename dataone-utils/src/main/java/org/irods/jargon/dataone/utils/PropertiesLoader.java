@@ -55,6 +55,22 @@ public class PropertiesLoader {
 		}
 	}
 
+	/**
+	 * Get all available properties
+	 * 
+	 * @return {@link Properties} configured in etc
+	 */
+	public Properties getProperties() {
+		return properties;
+	}
+
+	/**
+	 * Get an individual property from etc by key
+	 * 
+	 * @param key
+	 *            <code>String</code> with the prop key
+	 * @return <code>String</code> with the property value, or <code>null</code>
+	 */
 	public String getProperty(final String key) {
 		return properties.getProperty(key);
 	}

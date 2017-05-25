@@ -1,8 +1,6 @@
 package org.irods.jargon.dataone.tier1;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -12,10 +10,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.tika.detect.DefaultDetector;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaMetadataKeys;
-import org.apache.tika.mime.MediaType;
 import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
 import org.dataone.service.exceptions.InvalidToken;
@@ -41,16 +35,9 @@ import org.dataone.service.types.v1.Session;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;
 import org.irods.jargon.core.pub.DataObjectAO;
-//import org.irods.jargon.dataprofile.DataProfileService;
-//import org.irods.jargon.dataprofile.DataTypeResolutionService;
-//import org.irods.jargon.dataprofile.DataTypeResolutionServiceImpl;
-//import org.irods.jargon.dataprofile.DataProfileServiceImpl;
-//import org.irods.jargon.dataprofile.DataProfile;
-//import org.irods.jargon.core.pub.Stream2StreamAO;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.IRODSFile;
@@ -63,8 +50,6 @@ import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.DataOneEventServiceAO;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
-import org.irods.jargon.dataone.utils.DataObjectMetadataUtils;
-import org.irods.jargon.dataone.utils.DataTypeUtils;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.irods.jargon.pid.pidservice.UniqueIdAO;
 import org.slf4j.Logger;
@@ -105,6 +90,17 @@ public class MNReadImpl implements MNRead {
 		Date lastModified;
 		BigInteger serialVersion;
 		IRODSAccount irodsAccount;
+		DataOneRepoServiceAO repoService;
+
+		// first try and find data object for this id
+		try {
+			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+			repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
+		} catch (Exception ex) {
+			log.error("{}", ex.toString());
+			throw new ServiceFailure("1390", ex.getMessage());
+		}
+
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
@@ -122,15 +118,9 @@ public class MNReadImpl implements MNRead {
 			contentLength = new BigInteger(contentLengthStr);
 
 			// lastModified = dataObject.getUpdatedAt();
-			lastModified = DataObjectMetadataUtils.getStartDateTime(publicationContext.getIrodsAccessObjectFactory(),
-					irodsAccount, dataObject);
+			lastModified = repoService.getLastModifiedDateForDataObject(dataObject);
 
-			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount,
-					publicationContext.getIrodsAccessObjectFactory(), dataObject);
-			// use back up if no format stores in dataObject AVU
-			if (format == null) {
-				format = getDataObjectMimeType(irodsAccount, dataObject);
-			}
+			String format = repoService.dataObjectFormat(dataObject);
 			formatIdentifier.setValue(format);
 
 			String csum = dataObject.getChecksum();
@@ -195,7 +185,7 @@ public class MNReadImpl implements MNRead {
 			response.setHeader("Content-Disposition", "attachment;filename=" + dataObject.getDataName());
 			response.setContentLength(contentLength);
 			// response.addHeader("Vary", "Accept-Encoding");
-			log.info("reponse: {}", response.toString());
+			log.info("response: {}", response.toString());
 
 			OutputStream output = new BufferedOutputStream(response.getOutputStream());
 
@@ -355,9 +345,19 @@ public class MNReadImpl implements MNRead {
 		IRODSAccount irodsAccount;
 		Checksum checksum = new Checksum();
 
+		DataOneRepoServiceAO repoService;
+
 		// first try and find data object for this id
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+			repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
+		} catch (Exception ex) {
+			log.error("{}", ex.toString());
+			throw new ServiceFailure("1390", ex.getMessage());
+		}
+
+		// first try and find data object for this id
+		try {
 
 			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
 			dataObject = pidService.getDataObjectFromIdentifier(id);
@@ -379,11 +379,8 @@ public class MNReadImpl implements MNRead {
 				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
 			}
 
-			String format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount,
-					publicationContext.getIrodsAccessObjectFactory(), dataObject);
-			if (format == null) {
-				format = getDataObjectMimeType(irodsAccount, dataObject);
-			}
+			String format = repoService.dataObjectFormat(dataObject);
+
 			metadata.setIdentifier(id);
 			ObjectFormatIdentifier formatId = new ObjectFormatIdentifier();
 			formatId.setValue(format);
@@ -439,8 +436,7 @@ public class MNReadImpl implements MNRead {
 			// Use AVU epoch date //
 			metadata.setDateUploaded(dataObject.getCreatedAt()); //
 			metadata.setDateSysMetadataModified(dataObject.getUpdatedAt());
-			Date startDate = DataObjectMetadataUtils.getStartDateTime(publicationContext.getIrodsAccessObjectFactory(),
-					irodsAccount, dataObject);
+			Date startDate = repoService.getLastModifiedDateForDataObject(dataObject);
 			metadata.setDateSysMetadataModified(startDate);
 			metadata.setDateUploaded(startDate);
 
@@ -474,12 +470,13 @@ public class MNReadImpl implements MNRead {
 		DataObjectListResponse response = new DataObjectListResponse();
 		List<ObjectInfo> objectInfoList = new ArrayList<>();
 		ObjectList objectList = new ObjectList();
+		DataOneRepoServiceAO repoService;
 
 		// first try and find data object for this id
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			DataOneRepoServiceAO repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
+			repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
 			response = repoService.getListOfDataoneExposedDataObjects(fromDate, toDate, formatId, replicaStatus, start,
 					count);
 		} catch (Exception ex) {
@@ -502,12 +499,7 @@ public class MNReadImpl implements MNRead {
 
 			String format = null;
 			try {
-				format = DataTypeUtils.getDataObjectFormatFromMetadata(irodsAccount,
-						publicationContext.getIrodsAccessObjectFactory(), dObject);
-				// use back up if no format stores in dataObject AVU
-				if (format == null) {
-					format = getDataObjectMimeType(irodsAccount, dObject);
-				}
+				format = repoService.dataObjectFormat(dObject);
 
 			} catch (Exception e1) {
 				log.error(e1.toString());
@@ -522,8 +514,7 @@ public class MNReadImpl implements MNRead {
 
 			Date startDate = new Date();
 			try {
-				startDate = DataObjectMetadataUtils.getStartDateTime(publicationContext.getIrodsAccessObjectFactory(),
-						irodsAccount, dObject);
+				startDate = repoService.getLastModifiedDateForDataObject(dObject);
 			} catch (Exception e1) {
 				log.error(e1.toString());
 				log.error("cannot retrieve start date for object: {}", dObject.getAbsolutePath());
@@ -641,54 +632,6 @@ public class MNReadImpl implements MNRead {
 		Long verLong = new Long(1);
 		String verStr = verLong.toString();
 		return new BigInteger(verStr);
-	}
-
-	private String getDataObjectMimeType(final IRODSAccount irodsAccount, final DataObject dataObject)
-			throws FileNotFoundException, JargonException {
-		String mimeType = null;
-		String filename = dataObject.getAbsolutePath();
-		log.info("file name is: {}", filename);
-
-		DefaultDetector typeDetector = new DefaultDetector();
-		IRODSFile irodsFile = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
-				.instanceIRODSFile(filename);
-		IRODSFileInputStream irodsStream = publicationContext.getIrodsAccessObjectFactory()
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFileInputStream(irodsFile);
-		InputStream stream = new BufferedInputStream(irodsStream);
-		Metadata metadata = new Metadata();
-		metadata.add(TikaMetadataKeys.RESOURCE_NAME_KEY, filename);
-
-		MediaType type;
-		try {
-			type = typeDetector.detect(stream, metadata);
-		} catch (IOException e) {
-			log.error("detect failed: {}", e.toString());
-			throw new FileNotFoundException("Cannot stream file in order to detect file type");
-		}
-
-		// if mime type is returned as "application/x-netcdf" change to
-		// DataONE accepted name: "netCDF-4"
-		mimeType = type.toString();
-		if (mimeType.equals("application/x-netcdf")) {
-			mimeType = "netCDF-4";
-		}
-
-		// data-profile stuff removed from jargon!!!!!!!
-
-		// DataTypeResolutionService resolutionService = new
-		// DataTypeResolutionServiceImpl(
-		// irodsAccessObjectFactory, irodsAccount);
-		// DataProfileService dataProfileService = new DataProfileServiceImpl(
-		// irodsAccessObjectFactory, irodsAccount, resolutionService);
-		//
-		// @SuppressWarnings("unchecked")
-		// DataProfile<DataObject> dataProfile =
-		// dataProfileService.retrieveDataProfile(dataObject.getAbsolutePath());
-		// mimeType = dataProfile.getMimeType();
-
-		log.info("mime type is: {}", mimeType);
-		return mimeType;
-
 	}
 
 }

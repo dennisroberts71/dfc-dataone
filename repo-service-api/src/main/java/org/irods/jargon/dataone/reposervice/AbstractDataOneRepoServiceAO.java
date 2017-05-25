@@ -9,7 +9,9 @@ import java.util.List;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
 
@@ -57,4 +59,22 @@ public abstract class AbstractDataOneRepoServiceAO extends AbstractDataOnePlugin
 			ObjectFormatIdentifier formatId, Boolean replicaStatus, Integer start, Integer count)
 			throws JargonException;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO#
+	 * getLastModifiedDateForDataObject(org.irods.jargon.core.pub.domain.
+	 * DataObject)
+	 */
+	@Override
+	public abstract Date getLastModifiedDateForDataObject(DataObject dataObject) throws JargonException;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO#
+	 * dataObjectFormat(org.irods.jargon.core.pub.domain.DataObject)
+	 */
+	@Override
+	public abstract String dataObjectFormat(DataObject dataObject) throws FileNotFoundException, JargonException;
 }

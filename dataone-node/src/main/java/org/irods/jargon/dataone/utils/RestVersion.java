@@ -1,5 +1,5 @@
 package org.irods.jargon.dataone.utils;
 public final class RestVersion {
  public static String VERSION="4.2.1.0-SNAPSHOT";
- public static String BUILD_TIME="2017-05-25T12:41:51Z";
+ public static String BUILD_TIME="2017-05-25T18:54:39Z";
 }

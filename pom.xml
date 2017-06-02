@@ -12,6 +12,9 @@
 	<name>DFC DataONE Adapter Framework</name>
 	<description>DataONE Member Node service and supporting libraries</description>
 	<url>https://code.renci.org/gf/project/dfc-dataone/</url>
+	<properties>
+		<spring.integration.version>${spring.core.version}</spring.integration.version>
+	</properties>
 	<issueManagement>
 		<system>gForge</system>
 		<url>https://code.renci.org/gf/project/dfc-dataone/tracker/</url>
@@ -72,6 +75,24 @@
 				<artifactId>reflections</artifactId>
 				<version>0.9.10</version>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-core -->
+			<dependency>
+				<groupId>org.springframework.integration</groupId>
+				<artifactId>spring-integration-core</artifactId>
+				<version>${spring.integration.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-stream -->
+			<dependency>
+				<groupId>org.springframework.integration</groupId>
+				<artifactId>spring-integration-stream</artifactId>
+				<version>${spring.integration.version}</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-amqp -->
+			<dependency>
+				<groupId>org.springframework.integration</groupId>
+				<artifactId>spring-integration-amqp</artifactId>
+				<version>${spring.integration.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<repositories>
@@ -113,5 +134,6 @@
 		<module>dummy-event-service-impl</module>
 		<module>dummy-pid-service-impl</module>
 		<module>dfc-repo-service-impl</module>
+		<module>default-event-service</module>
 	</modules>
 </project>

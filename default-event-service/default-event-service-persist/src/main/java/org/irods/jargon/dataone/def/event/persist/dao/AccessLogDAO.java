@@ -3,56 +3,43 @@
  */
 package org.irods.jargon.dataone.def.event.persist.dao;
 
-import java.security.KeyStore;
+import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
+import org.irods.jargon.dataone.events.EventLoggingException;
 
 /**
- * DAO for <code>KeyStore</code> managing the stored 'pass phrase' for the
- * transfer database.
- * <p/>
- * The <code>GridAccount</code> preserves account information for transfers and
- * synchs, and also allows preserving and automatically logging in to remembered
- * grids. Note that this uses a scheme of encrypted passwords based on a global
- * 'pass phrase' which must be provided for the various operations. In this way,
- * passwords are always encrypted for all operations.
- * <p/>
- * This <code>KeyStore</code> holds a hash of the pass phrase used by the
- * transfer manager user, and can verify the correct pass phrase. Note the
- * actual pass phrase, and any unencrypted password information, is not found in
- * the transfer database.
+ * DAO interface for Access log
  * 
- * @author Mike Conway - DICE (www.irods.org)
+ * @author Mike Conway
  * 
  */
 public interface AccessLogDAO {
 
 	/**
-	 * Save the <code>KeyStore</code> entry in the transfer database
+	 * Save the <code>AccessLog</code> entry in the audit database
 	 * 
-	 * @param keyStore
-	 *            {@link KeyStore} entry containing the hash of the pass phrase
+	 * @param accessLog
+	 *            {@link AccessLog} entry containing the event
 	 * @throws TransferDAOException
 	 */
-	void save(KeyStore keyStore) throws TransferDAOException;
+	void save(AccessLog accessLog) throws EventLoggingException;
 
 	/**
-	 * Find the <code>KeyStore</code> associated with the given key. Note that
-	 * <code>null</code> will be returned if it cannot be found.
+	 * locate the access log entry by ID
 	 * 
 	 * @param id
-	 *            <code>String</code> with the desired key
-	 * @return {@link KeyStore} associated with the key
-	 * @throws TransferDAOException
-	 *             if the record cannot be found
+	 *            <code>Long</code> with the access id
+	 * @return {@link AccessLog} or <code>null</code>
+	 * @throws EventLoggingException
 	 */
-	KeyStore findById(String id) throws TransferDAOException;
+	AccessLog findById(Long id) throws EventLoggingException;
 
 	/**
-	 * Delete the given <code>KeyStore</code>
+	 * Delete the given entry
 	 * 
-	 * @param keyStore
-	 *            {@link KeyStore} to be deleted
-	 * @throws TransferDAOException
+	 * @param accessLog
+	 *            {@link AccessLog} to delete
+	 * @throws EventLoggingException
 	 */
-	void delete(KeyStore keyStore) throws TransferDAOException;
+	void delete(AccessLog accessLog) throws EventLoggingException;
 
 }

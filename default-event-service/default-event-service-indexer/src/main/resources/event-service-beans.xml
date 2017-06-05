@@ -32,7 +32,7 @@
 			value="classpath:event-dao-hibernate-spring.cfg.xml" />
 		<property name="hibernateProperties">
 			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.DerbyDialect</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
 				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.auto_create_schema">true</prop>
 				<prop key="hibernate.hbm2ddl.auto">update</prop>
@@ -59,7 +59,7 @@
 
 	<!-- ========================= BUSINESS OBJECT DEFINITIONS ========================= -->
 
-	<bean id="accesLogDAO" class="org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLogDAOImpl">
+	<bean id="accesLogDAO" class="org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 

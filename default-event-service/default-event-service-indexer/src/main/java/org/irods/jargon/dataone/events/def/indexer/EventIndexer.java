@@ -16,7 +16,7 @@ import org.springframework.context.annotation.ImportResource;
  */
 
 @SpringBootApplication
-@ImportResource("/integration.xml")
+@ImportResource({ "/integration.xml", "/event-dao-hibernate-spring.cfg.xml", "/event-service-beans.xml" })
 public class EventIndexer {
 
 	/**

@@ -10,34 +10,18 @@
 		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- From STDIN To RabbitMQ -->
+	<!-- From STDIN To amqp -->
 
 	<int-stream:stdin-channel-adapter id="consoleIn"
-		channel="toRabbit">
+		channel="toIndexer">
 		<int:poller fixed-delay="1000" max-messages-per-poll="1" />
 	</int-stream:stdin-channel-adapter>
 
-	<int:channel id="toRabbit" />
+	<int:channel id="toIndexer" />
 
 	<int-amqp:outbound-channel-adapter
-		channel="toRabbit" amqp-template="amqpTemplate" exchange-name="si.test.exchange"
-		routing-key="si.test.binding" />
-
-	<!-- From RabbitMQ To STDOUT -->
-
-	<int-amqp:inbound-channel-adapter channel="fromRabbit"
-		queue-names="si.test.queue" connection-factory="connectionFactory" />
-
-	<int:channel id="fromRabbit">
-		<int:interceptors>
-			<int:wire-tap channel="loggingChannel" />
-		</int:interceptors>
-	</int:channel>
-
-	<int:transformer input-channel="fromRabbit" output-channel="consoleOut" expression="'Received: ' + payload" />
-
-	<int-stream:stdout-channel-adapter id="consoleOut"
-		append-newline="true" />
+		channel="toIndexer" amqp-template="amqpTemplate" exchange-name="irods.dataone.exchange"
+		routing-key="irods.dataone.routing" />
 
 	<int:logging-channel-adapter id="loggingChannel" log-full-message="true" logger-name="tapInbound"
 		level="INFO" />
@@ -50,11 +34,11 @@
 
 	<rabbit:admin connection-factory="connectionFactory" />
 
-	<rabbit:queue name="si.test.queue" />
+	<rabbit:queue name="irods.dataone.queue" />
 
-	<rabbit:direct-exchange name="si.test.exchange">
+	<rabbit:direct-exchange name="irods.dataone.exchange">
 		<rabbit:bindings>
-			<rabbit:binding queue="si.test.queue" key="si.test.binding" />
+			<rabbit:binding queue="irods.dataone.queue" key="irods.dataone.binding" />
 		</rabbit:bindings>
 	</rabbit:direct-exchange>
 

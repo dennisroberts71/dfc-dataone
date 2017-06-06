@@ -3,6 +3,8 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +35,8 @@ import org.springframework.messaging.MessagingException;
 @IntegrationComponentScan
 @ImportResource({ "/event-dao-hibernate-spring.cfg.xml", "/event-service-beans.xml" })
 public class Application {
+
+	private static final Logger log = LoggerFactory.getLogger(Application.class);
 
 	/**
 	 * 
@@ -76,7 +80,8 @@ public class Application {
 
 			@Override
 			public void handleMessage(Message<?> message) throws MessagingException {
-				System.out.println(message.getPayload());
+				String jsonRaw = new String((byte[]) message.getPayload());
+				log.info("msg:{}", jsonRaw);
 			}
 
 		};

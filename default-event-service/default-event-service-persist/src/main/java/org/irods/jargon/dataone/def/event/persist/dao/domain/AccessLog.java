@@ -4,9 +4,10 @@
 package org.irods.jargon.dataone.def.event.persist.dao.domain;
 
 import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -43,7 +44,8 @@ public class AccessLog {
 	private String subject;
 
 	@Column(name = "event", nullable = false)
-	private String event;
+	@Enumerated(EnumType.STRING)
+	private EventType event;
 
 	@Column(name = "date_logged")
 	@Temporal(javax.persistence.TemporalType.TIMESTAMP)

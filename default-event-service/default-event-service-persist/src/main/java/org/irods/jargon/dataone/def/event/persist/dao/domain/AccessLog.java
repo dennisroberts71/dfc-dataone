@@ -27,29 +27,29 @@ public class AccessLog {
 	@Column(name = "id")
 	private Long id;
 
-	@Column(columnDefinition = "permanent_id", nullable = true)
+	@Column(name = "permanent_id", nullable = true)
 	private String permanentId;
 
-	@Column(columnDefinition = "ip_address", nullable = true)
+	@Column(name = "ip_address", nullable = true)
 	private String ipAddress;
 
-	@Column(columnDefinition = "irods_path", nullable = true)
+	@Column(name = "irods_path", nullable = true)
 	private String irodsPath;
 
-	@Column(columnDefinition = "user_agent", nullable = true)
+	@Column(name = "user_agent", nullable = true)
 	private String userAgent;
 
-	@Column(columnDefinition = "subject", nullable = true)
+	@Column(name = "subject", nullable = true)
 	private String subject;
 
-	@Column(columnDefinition = "event_type", nullable = false)
-	private String eventType;
+	@Column(name = "event", nullable = false)
+	private String event;
 
 	@Column(name = "date_logged")
 	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
 	private Date dateAdded;
 
-	@Column(columnDefinition = "node_identifier", nullable = false)
+	@Column(name = "node_identifier", nullable = false)
 	private String nodeIdentifier;
 
 	/**
@@ -120,21 +120,6 @@ public class AccessLog {
 	 */
 	public void setSubject(String subject) {
 		this.subject = subject;
-	}
-
-	/**
-	 * @return the eventType
-	 */
-	public String getEventType() {
-		return eventType;
-	}
-
-	/**
-	 * @param eventType
-	 *            the eventType to set
-	 */
-	public void setEventType(String eventType) {
-		this.eventType = eventType;
 	}
 
 	/**
@@ -224,8 +209,8 @@ public class AccessLog {
 		if (subject != null) {
 			builder.append("subject=").append(subject).append(", ");
 		}
-		if (eventType != null) {
-			builder.append("eventType=").append(eventType).append(", ");
+		if (event != null) {
+			builder.append("eventType=").append(event).append(", ");
 		}
 		if (dateAdded != null) {
 			builder.append("dateAdded=").append(dateAdded).append(", ");
@@ -235,6 +220,21 @@ public class AccessLog {
 		}
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * @return the event
+	 */
+	public String getEvent() {
+		return event;
+	}
+
+	/**
+	 * @param event
+	 *            the event to set
+	 */
+	public void setEvent(String event) {
+		this.event = event;
 	}
 
 }

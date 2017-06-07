@@ -97,7 +97,8 @@ public class Application {
 					AccessLog accessLog = new AccessLog();
 					accessLog.setIrodsPath(event.getPath());
 					accessLog.setDateAdded(new Date());
-					accessLog.setEventType("READ");
+					accessLog.setEvent("READ");
+					accessLog.setNodeIdentifier("foo");
 					accessLog.setSubject(event.getAccessor().getName());
 					log.info("access log to write:{}", accessLog);
 					accessLogDAO.save(accessLog);

@@ -3,7 +3,11 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
+import java.util.Date;
+import java.util.UUID;
+
 import org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAO;
+import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
 import org.irods.jargon.dataone.events.EventLoggingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,8 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Master flow core
@@ -81,11 +87,23 @@ public class Application {
 		return new MessageHandler() {
 
 			@Override
+			@Transactional(rollbackFor = { MessagingException.class }, propagation = Propagation.REQUIRED)
+
 			public void handleMessage(Message<?> message) throws MessagingException {
 				EventConverterUtil util = new EventConverterUtil();
 				LoggingEvent event;
 				try {
 					event = util.loggingEventFromPayload((byte[]) message.getPayload());
+					log.info("event:{}", event);
+					AccessLog accessLog = new AccessLog();
+					accessLog.setEntryId(UUID.randomUUID().toString());
+					accessLog.setIrodsPath(event.getPath());
+					accessLog.setDateAdded(new Date());
+					accessLog.setEventType("READ");
+					accessLog.setSubject(event.getAccessor().getName());
+					log.info("access log to write:{}", accessLog);
+					accessLogDAO.save(accessLog);
+					log.info("saved!");
 				} catch (EventLoggingException e) {
 					log.error("error converting message", e);
 					throw new MessagingException("error converting message", e);

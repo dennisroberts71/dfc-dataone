@@ -4,15 +4,12 @@
 package org.irods.jargon.dataone.def.event.persist.dao.domain;
 
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
-
-import org.hibernate.annotations.Type;
 
 /**
  * 
@@ -26,16 +23,17 @@ public class AccessLog {
 	@Id
 	// @GeneratedValue(generator = "entityIdGenerator")
 	// @GenericGenerator(name = "entityIdGenerator", strategy = "uuid2")
-	@Column(columnDefinition = "entry_id", updatable = false)
-	@Type(type = "binary")
-	private UUID entryId;
+	@Column(columnDefinition = "entry_id", nullable = false)
+	private String entryId;
 
 	@Column(columnDefinition = "permanent_id", nullable = true)
-	@Type(type = "binary")
-	private UUID permanentId;
+	private String permanentId;
 
 	@Column(columnDefinition = "ip_address", nullable = true)
 	private String ipAddress;
+
+	@Column(columnDefinition = "irods_path", nullable = true)
+	private String irodsPath;
 
 	@Column(columnDefinition = "user_agent", nullable = true)
 	private String userAgent;
@@ -75,21 +73,10 @@ public class AccessLog {
 	}
 
 	/**
-	 * @return the entryId
-	 */
-	public UUID getEntryId() {
-		return entryId;
-	}
-
-	/**
-	 * @param entryId
-	 *            the entryId to set
-	 */
-	public void setEntryId(UUID entryId) {
-		this.entryId = entryId;
-	}
-
-	/**
+	 * 
+	 * 
+	 * /**
+	 * 
 	 * @return the ipAddress
 	 */
 	public String getIpAddress() {
@@ -165,9 +152,24 @@ public class AccessLog {
 	}
 
 	/**
+	 * @return the entryId
+	 */
+	public String getEntryId() {
+		return entryId;
+	}
+
+	/**
+	 * @param entryId
+	 *            the entryId to set
+	 */
+	public void setEntryId(String entryId) {
+		this.entryId = entryId;
+	}
+
+	/**
 	 * @return the permanentId
 	 */
-	public UUID getPermanentId() {
+	public String getPermanentId() {
 		return permanentId;
 	}
 
@@ -175,8 +177,23 @@ public class AccessLog {
 	 * @param permanentId
 	 *            the permanentId to set
 	 */
-	public void setPermanentId(UUID permanentId) {
+	public void setPermanentId(String permanentId) {
 		this.permanentId = permanentId;
+	}
+
+	/**
+	 * @return the irodsPath
+	 */
+	public String getIrodsPath() {
+		return irodsPath;
+	}
+
+	/**
+	 * @param irodsPath
+	 *            the irodsPath to set
+	 */
+	public void setIrodsPath(String irodsPath) {
+		this.irodsPath = irodsPath;
 	}
 
 	/*
@@ -196,6 +213,9 @@ public class AccessLog {
 		}
 		if (ipAddress != null) {
 			builder.append("ipAddress=").append(ipAddress).append(", ");
+		}
+		if (irodsPath != null) {
+			builder.append("irodsPath=").append(irodsPath).append(", ");
 		}
 		if (userAgent != null) {
 			builder.append("userAgent=").append(userAgent).append(", ");

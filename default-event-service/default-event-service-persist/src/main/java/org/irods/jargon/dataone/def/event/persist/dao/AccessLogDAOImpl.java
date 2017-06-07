@@ -43,7 +43,7 @@ public class AccessLogDAOImpl extends HibernateDaoSupport implements AccessLogDA
 			getSessionFactory().getCurrentSession().saveOrUpdate(accessLog);
 		} catch (Exception e) {
 			log.error("error in save(AccessLog)", e);
-			throw new EventLoggingException("Failed save(TransferItem)", e);
+			throw new EventLoggingException("Failed save(accessLog)", e);
 		}
 
 	}

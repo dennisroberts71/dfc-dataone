@@ -32,7 +32,7 @@
 			value="classpath:event-dao-hibernate-spring.cfg.xml" />
 		<property name="hibernateProperties">
 			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
 				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.auto_create_schema">false</prop>
 				<prop key="hibernate.generate_statistics">false</prop>

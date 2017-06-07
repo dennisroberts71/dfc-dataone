@@ -3,9 +3,6 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author mcc
  *
@@ -14,7 +11,7 @@ public class LoggingEvent {
 
 	private String entity = "";
 	private String path = "";
-	private List<Accessor> accessor = new ArrayList<>();
+	private Accessor accessor;
 
 	/**
 	 * 
@@ -55,7 +52,7 @@ public class LoggingEvent {
 	/**
 	 * @return the accessor
 	 */
-	public List<Accessor> getAccessor() {
+	public Accessor getAccessor() {
 		return accessor;
 	}
 
@@ -63,7 +60,7 @@ public class LoggingEvent {
 	 * @param accessor
 	 *            the accessor to set
 	 */
-	public void setAccessor(List<Accessor> accessor) {
+	public void setAccessor(Accessor accessor) {
 		this.accessor = accessor;
 	}
 
@@ -74,7 +71,6 @@ public class LoggingEvent {
 	 */
 	@Override
 	public String toString() {
-		final int maxLen = 10;
 		StringBuilder builder = new StringBuilder();
 		builder.append("LoggingEvent [");
 		if (entity != null) {
@@ -84,7 +80,7 @@ public class LoggingEvent {
 			builder.append("path=").append(path).append(", ");
 		}
 		if (accessor != null) {
-			builder.append("accessor=").append(accessor.subList(0, Math.min(accessor.size(), maxLen)));
+			builder.append("accessor=").append(accessor);
 		}
 		builder.append("]");
 		return builder.toString();

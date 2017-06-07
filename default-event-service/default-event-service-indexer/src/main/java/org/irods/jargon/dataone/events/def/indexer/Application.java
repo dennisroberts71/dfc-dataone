@@ -3,6 +3,7 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
+import org.irods.jargon.dataone.events.EventLoggingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -80,8 +81,15 @@ public class Application {
 
 			@Override
 			public void handleMessage(Message<?> message) throws MessagingException {
-				String jsonRaw = new String((byte[]) message.getPayload());
-				log.info("msg:{}", jsonRaw);
+				EventConverterUtil util = new EventConverterUtil();
+				LoggingEvent event;
+				try {
+					event = util.loggingEventFromPayload((byte[]) message.getPayload());
+				} catch (EventLoggingException e) {
+					log.error("error converting message", e);
+					throw new MessagingException("error converting message", e);
+				}
+				log.info("msg:{}", event);
 			}
 
 		};

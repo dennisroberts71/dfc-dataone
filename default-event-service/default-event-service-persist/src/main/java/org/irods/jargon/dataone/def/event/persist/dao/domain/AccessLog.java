@@ -34,7 +34,7 @@ public class AccessLog {
 
 	@Column(columnDefinition = "permanent_id", nullable = true)
 	@Type(type = "pg-uuid")
-	private UUID permanent_id;
+	private UUID permanentId;
 
 	@Column(columnDefinition = "ip_address", nullable = true)
 	private String ipAddress;
@@ -89,21 +89,6 @@ public class AccessLog {
 	 */
 	public void setEntryId(UUID entryId) {
 		this.entryId = entryId;
-	}
-
-	/**
-	 * @return the permanent_id
-	 */
-	public UUID getPermanent_id() {
-		return permanent_id;
-	}
-
-	/**
-	 * @param permanent_id
-	 *            the permanent_id to set
-	 */
-	public void setPermanent_id(UUID permanent_id) {
-		this.permanent_id = permanent_id;
 	}
 
 	/**
@@ -181,6 +166,21 @@ public class AccessLog {
 		this.nodeIdentifier = nodeIdentifier;
 	}
 
+	/**
+	 * @return the permanentId
+	 */
+	public UUID getPermanentId() {
+		return permanentId;
+	}
+
+	/**
+	 * @param permanentId
+	 *            the permanentId to set
+	 */
+	public void setPermanentId(UUID permanentId) {
+		this.permanentId = permanentId;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -193,8 +193,8 @@ public class AccessLog {
 		if (entryId != null) {
 			builder.append("entryId=").append(entryId).append(", ");
 		}
-		if (permanent_id != null) {
-			builder.append("permanent_id=").append(permanent_id).append(", ");
+		if (permanentId != null) {
+			builder.append("permanentId=").append(permanentId).append(", ");
 		}
 		if (ipAddress != null) {
 			builder.append("ipAddress=").append(ipAddress).append(", ");

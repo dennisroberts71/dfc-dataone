@@ -3,6 +3,7 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
+import org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAO;
 import org.irods.jargon.dataone.events.EventLoggingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public class Application {
 
 	@Bean
 	@ServiceActivator(inputChannel = "amqpInputChannel")
-	public MessageHandler handler() {
+	public MessageHandler handler(AccessLogDAO accessLogDAO) {
 		return new MessageHandler() {
 
 			@Override

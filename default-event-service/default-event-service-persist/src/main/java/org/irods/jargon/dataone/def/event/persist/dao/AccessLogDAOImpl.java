@@ -4,11 +4,12 @@
 package org.irods.jargon.dataone.def.event.persist.dao;
 
 import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
 import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
 import org.irods.jargon.dataone.events.EventLoggingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Impl of an access log
@@ -17,9 +18,12 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  *
  */
 @SuppressWarnings("deprecation")
-public class AccessLogDAOImpl extends HibernateDaoSupport implements AccessLogDAO {
+public class AccessLogDAOImpl implements AccessLogDAO {
 
 	private static final Logger log = LoggerFactory.getLogger(AccessLogDAOImpl.class);
+
+	@Autowired
+	private SessionFactory sessionFactory;
 
 	/**
 	 * 
@@ -40,7 +44,7 @@ public class AccessLogDAOImpl extends HibernateDaoSupport implements AccessLogDA
 		log.info("save accessLog:{}", accessLog);
 
 		try {
-			getSessionFactory().getCurrentSession().saveOrUpdate(accessLog);
+			sessionFactory.getCurrentSession().saveOrUpdate(accessLog);
 		} catch (Exception e) {
 			log.error("error in save(AccessLog)", e);
 			throw new EventLoggingException("Failed save(accessLog)", e);
@@ -60,7 +64,7 @@ public class AccessLogDAOImpl extends HibernateDaoSupport implements AccessLogDA
 
 		log.info("find accessLog:{}", id);
 
-		Criteria criteria = getSessionFactory().getCurrentSession().createCriteria(AccessLog.class);
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(AccessLog.class);
 		return (AccessLog) criteria.uniqueResult();
 
 	}
@@ -74,14 +78,29 @@ public class AccessLogDAOImpl extends HibernateDaoSupport implements AccessLogDA
 	 */
 	@Override
 	public void delete(AccessLog accessLog) throws EventLoggingException {
-		logger.info("entering delete(AccessLog)");
+		log.info("entering delete(AccessLog)");
 
 		try {
-			getSessionFactory().getCurrentSession().delete(accessLog);
+			sessionFactory.getCurrentSession().delete(accessLog);
 		} catch (Exception e) {
 			log.error("error in delete(AccessLog)", e);
 			throw new EventLoggingException("Failed delete(AccessLog)", e);
 		}
+	}
+
+	/**
+	 * @return the sessionFactory
+	 */
+	public SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+
+	/**
+	 * @param sessionFactory
+	 *            the sessionFactory to set
+	 */
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
 	}
 
 }

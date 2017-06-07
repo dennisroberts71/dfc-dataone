@@ -1,3 +1,50 @@
+## Running
+
+#### update db coordinates
+
+temporary until we pull in props....edit src/main/resources/event.properties for:
+
+* jdbc url
+* user
+* password
+
+#### add amqp queue in rabbitmq console
+
+add irods.dataone.logger as a queue (we'll make that a property l8r)
+
+#### put in the database (though we're still settling this)
+
+#### mvn install to build
+
+#### run it
+
+cd into the default-event-service-indexer project
+
+run mvn spring-boot:run
+
+Off you go! 
+
+#### in amqp console put json into queue
+
+```
+{"entity":"a401d352-4a33-11e7-9d94-1a5a300ff36f","path":"/iplant/home/dennis/foo.md","accessor":{"name":"rods","zone":"iplant"}}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Database setup notes
 
 If you don't have an IRODS-EXT extensions db, add one and a user

@@ -7,6 +7,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -20,11 +22,10 @@ import javax.persistence.Temporal;
 @Table(name = "event_log")
 public class AccessLog {
 
-	@Id
-	// @GeneratedValue(generator = "entityIdGenerator")
-	// @GenericGenerator(name = "entityIdGenerator", strategy = "uuid2")
-	@Column(columnDefinition = "entry_id", nullable = false)
-	private String entryId;
+	@Id()
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "id")
+	private Long id;
 
 	@Column(columnDefinition = "permanent_id", nullable = true)
 	private String permanentId;
@@ -152,21 +153,6 @@ public class AccessLog {
 	}
 
 	/**
-	 * @return the entryId
-	 */
-	public String getEntryId() {
-		return entryId;
-	}
-
-	/**
-	 * @param entryId
-	 *            the entryId to set
-	 */
-	public void setEntryId(String entryId) {
-		this.entryId = entryId;
-	}
-
-	/**
 	 * @return the permanentId
 	 */
 	public String getPermanentId() {
@@ -196,6 +182,21 @@ public class AccessLog {
 		this.irodsPath = irodsPath;
 	}
 
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -205,8 +206,8 @@ public class AccessLog {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("AccessLog [");
-		if (entryId != null) {
-			builder.append("entryId=").append(entryId).append(", ");
+		if (id != null) {
+			builder.append("id=").append(id).append(", ");
 		}
 		if (permanentId != null) {
 			builder.append("permanentId=").append(permanentId).append(", ");

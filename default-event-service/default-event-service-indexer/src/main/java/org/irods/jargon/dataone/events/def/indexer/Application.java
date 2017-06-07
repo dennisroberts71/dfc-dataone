@@ -4,7 +4,6 @@
 package org.irods.jargon.dataone.events.def.indexer;
 
 import java.util.Date;
-import java.util.UUID;
 
 import org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAO;
 import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
@@ -96,7 +95,6 @@ public class Application {
 					event = util.loggingEventFromPayload((byte[]) message.getPayload());
 					log.info("event:{}", event);
 					AccessLog accessLog = new AccessLog();
-					accessLog.setEntryId(UUID.randomUUID().toString());
 					accessLog.setIrodsPath(event.getPath());
 					accessLog.setDateAdded(new Date());
 					accessLog.setEventType("READ");

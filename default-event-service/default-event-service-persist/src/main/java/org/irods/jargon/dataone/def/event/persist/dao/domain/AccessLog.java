@@ -4,15 +4,17 @@
 package org.irods.jargon.dataone.def.event.persist.dao.domain;
 
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 /**
  * 
@@ -24,106 +26,39 @@ import javax.persistence.Temporal;
 public class AccessLog {
 
 	@Id
-	@SequenceGenerator(name = "access_log_id_seq", sequenceName = "access_log_id_seq")
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "access_log_id_seq")
-	@Column(name = "id", unique = true, nullable = false)
-	private Long id;
+	@GeneratedValue(generator = "entityIdGenerator")
+	@GenericGenerator(name = "entityIdGenerator", strategy = "uuid2")
+	@Column(columnDefinition = "entry_id", updatable = false)
+	@Type(type = "pg-uuid")
+	private UUID entryId;
 
-	@Column(name = "file_key", length = 1024, nullable = false)
-	private String fileKey;
+	@Column(columnDefinition = "permanent_id", nullable = true)
+	@Type(type = "pg-uuid")
+	private UUID permanent_id;
 
-	@Column(name = "event_id", length = 30, nullable = true)
-	private String eventId;
+	@Column(columnDefinition = "ip_address", nullable = true)
+	private String ipAddress;
 
-	@Column(name = "event_detail", length = 200, nullable = true)
-	private String eventDetail;
+	@Column(columnDefinition = "user_agent", nullable = true)
+	private String userAgent;
 
-	@Column(name = "access_principal", length = 50, nullable = true)
-	private String accessPrincipal;
+	@Column(columnDefinition = "subject", nullable = true)
+	private String subject;
 
-	@Column(name = "date_added")
+	@Column(columnDefinition = "event_type", nullable = false)
+	private String eventType;
+
+	@Column(name = "date_logged")
 	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
 	private Date dateAdded;
+
+	@Column(columnDefinition = "node_identifier", nullable = false)
+	private String nodeIdentifier;
 
 	/**
 	 * 
 	 */
 	public AccessLog() {
-	}
-
-	/**
-	 * @return the id
-	 */
-	public Long getId() {
-		return id;
-	}
-
-	/**
-	 * @param id
-	 *            the id to set
-	 */
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	/**
-	 * @return the fileKey
-	 */
-	public String getFileKey() {
-		return fileKey;
-	}
-
-	/**
-	 * @param fileKey
-	 *            the fileKey to set
-	 */
-	public void setFileKey(String fileKey) {
-		this.fileKey = fileKey;
-	}
-
-	/**
-	 * @return the eventId
-	 */
-	public String getEventId() {
-		return eventId;
-	}
-
-	/**
-	 * @param eventId
-	 *            the eventId to set
-	 */
-	public void setEventId(String eventId) {
-		this.eventId = eventId;
-	}
-
-	/**
-	 * @return the eventDetail
-	 */
-	public String getEventDetail() {
-		return eventDetail;
-	}
-
-	/**
-	 * @param eventDetail
-	 *            the eventDetail to set
-	 */
-	public void setEventDetail(String eventDetail) {
-		this.eventDetail = eventDetail;
-	}
-
-	/**
-	 * @return the accessPrincipal
-	 */
-	public String getAccessPrincipal() {
-		return accessPrincipal;
-	}
-
-	/**
-	 * @param accessPrincipal
-	 *            the accessPrincipal to set
-	 */
-	public void setAccessPrincipal(String accessPrincipal) {
-		this.accessPrincipal = accessPrincipal;
 	}
 
 	/**
@@ -141,6 +76,111 @@ public class AccessLog {
 		this.dateAdded = dateAdded;
 	}
 
+	/**
+	 * @return the entryId
+	 */
+	public UUID getEntryId() {
+		return entryId;
+	}
+
+	/**
+	 * @param entryId
+	 *            the entryId to set
+	 */
+	public void setEntryId(UUID entryId) {
+		this.entryId = entryId;
+	}
+
+	/**
+	 * @return the permanent_id
+	 */
+	public UUID getPermanent_id() {
+		return permanent_id;
+	}
+
+	/**
+	 * @param permanent_id
+	 *            the permanent_id to set
+	 */
+	public void setPermanent_id(UUID permanent_id) {
+		this.permanent_id = permanent_id;
+	}
+
+	/**
+	 * @return the ipAddress
+	 */
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	/**
+	 * @param ipAddress
+	 *            the ipAddress to set
+	 */
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	/**
+	 * @return the userAgent
+	 */
+	public String getUserAgent() {
+		return userAgent;
+	}
+
+	/**
+	 * @param userAgent
+	 *            the userAgent to set
+	 */
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
+	}
+
+	/**
+	 * @return the subject
+	 */
+	public String getSubject() {
+		return subject;
+	}
+
+	/**
+	 * @param subject
+	 *            the subject to set
+	 */
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	/**
+	 * @return the eventType
+	 */
+	public String getEventType() {
+		return eventType;
+	}
+
+	/**
+	 * @param eventType
+	 *            the eventType to set
+	 */
+	public void setEventType(String eventType) {
+		this.eventType = eventType;
+	}
+
+	/**
+	 * @return the nodeIdentifier
+	 */
+	public String getNodeIdentifier() {
+		return nodeIdentifier;
+	}
+
+	/**
+	 * @param nodeIdentifier
+	 *            the nodeIdentifier to set
+	 */
+	public void setNodeIdentifier(String nodeIdentifier) {
+		this.nodeIdentifier = nodeIdentifier;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -150,23 +190,29 @@ public class AccessLog {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("AccessLog [");
-		if (id != null) {
-			builder.append("id=").append(id).append(", ");
+		if (entryId != null) {
+			builder.append("entryId=").append(entryId).append(", ");
 		}
-		if (fileKey != null) {
-			builder.append("fileKey=").append(fileKey).append(", ");
+		if (permanent_id != null) {
+			builder.append("permanent_id=").append(permanent_id).append(", ");
 		}
-		if (eventId != null) {
-			builder.append("eventId=").append(eventId).append(", ");
+		if (ipAddress != null) {
+			builder.append("ipAddress=").append(ipAddress).append(", ");
 		}
-		if (eventDetail != null) {
-			builder.append("eventDetail=").append(eventDetail).append(", ");
+		if (userAgent != null) {
+			builder.append("userAgent=").append(userAgent).append(", ");
 		}
-		if (accessPrincipal != null) {
-			builder.append("accessPrincipal=").append(accessPrincipal).append(", ");
+		if (subject != null) {
+			builder.append("subject=").append(subject).append(", ");
+		}
+		if (eventType != null) {
+			builder.append("eventType=").append(eventType).append(", ");
 		}
 		if (dateAdded != null) {
-			builder.append("dateAdded=").append(dateAdded);
+			builder.append("dateAdded=").append(dateAdded).append(", ");
+		}
+		if (nodeIdentifier != null) {
+			builder.append("nodeIdentifier=").append(nodeIdentifier);
 		}
 		builder.append("]");
 		return builder.toString();

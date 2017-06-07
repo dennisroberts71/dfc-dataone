@@ -8,12 +8,10 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 /**
@@ -22,18 +20,18 @@ import org.hibernate.annotations.Type;
  *
  */
 @Entity
-@Table(name = "access_log")
+@Table(name = "event_log")
 public class AccessLog {
 
 	@Id
-	@GeneratedValue(generator = "entityIdGenerator")
-	@GenericGenerator(name = "entityIdGenerator", strategy = "uuid2")
+	// @GeneratedValue(generator = "entityIdGenerator")
+	// @GenericGenerator(name = "entityIdGenerator", strategy = "uuid2")
 	@Column(columnDefinition = "entry_id", updatable = false)
-	@Type(type = "pg-uuid")
+	@Type(type = "binary")
 	private UUID entryId;
 
 	@Column(columnDefinition = "permanent_id", nullable = true)
-	@Type(type = "pg-uuid")
+	@Type(type = "binary")
 	private UUID permanentId;
 
 	@Column(columnDefinition = "ip_address", nullable = true)

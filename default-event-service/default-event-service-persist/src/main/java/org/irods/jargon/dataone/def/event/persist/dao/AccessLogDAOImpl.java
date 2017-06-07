@@ -89,6 +89,13 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 	}
 
 	/**
+	 * @return the log
+	 */
+	public static Logger getLog() {
+		return log;
+	}
+
+	/**
 	 * @return the sessionFactory
 	 */
 	public SessionFactory getSessionFactory() {

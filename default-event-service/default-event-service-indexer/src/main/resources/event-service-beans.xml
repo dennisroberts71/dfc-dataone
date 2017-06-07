@@ -25,17 +25,16 @@
 	</bean>
 
 	<bean id="sessionFactory"
-		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
-		<property name="configurationClass" value="org.hibernate.cfg.AnnotationConfiguration" />
+		<!--  <property name="configurationClass" value="org.hibernate.cfg.AnnotationConfiguration" /> -->
 		<property name="configLocation"
 			value="classpath:event-dao-hibernate-spring.cfg.xml" />
 		<property name="hibernateProperties">
 			<props>
 				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
 				<prop key="hibernate.show_sql">false</prop>
-				<prop key="hibernate.auto_create_schema">true</prop>
-				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.auto_create_schema">false</prop>
 				<prop key="hibernate.generate_statistics">false</prop>
 				<prop key="hibernate.c3p0.minPoolSize">4</prop>
 				<prop key="hibernate.c3p0.maxPoolSize">8</prop>

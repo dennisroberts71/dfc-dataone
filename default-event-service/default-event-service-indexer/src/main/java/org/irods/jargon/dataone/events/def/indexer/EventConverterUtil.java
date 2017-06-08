@@ -3,11 +3,15 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.irods.jargon.dataone.events.EventLoggingException;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Date;
 
 /**
  * Utility for JSON conversion
@@ -17,7 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class EventConverterUtil {
 
-	ObjectMapper mapper = new ObjectMapper();
+	private ObjectMapper mapper = new ObjectMapper();
+	private DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd.HH:mm:ss");
 
 	/**
 	 * 
@@ -37,4 +42,13 @@ public class EventConverterUtil {
 
 	}
 
+	public Date dateFromTimestamp(final String timestamp) throws EventLoggingException {
+		DateTime result;
+		try {
+			result = fmt.parseDateTime(timestamp);
+		} catch (IllegalArgumentException e) {
+			throw new EventLoggingException("unable to parse timestamp: " + timestamp, e);
+		}
+		return result.toDate();
+	}
 }

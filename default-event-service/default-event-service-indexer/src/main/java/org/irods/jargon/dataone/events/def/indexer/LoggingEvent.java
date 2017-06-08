@@ -12,6 +12,7 @@ public class LoggingEvent {
 	private String entity = "";
 	private String path = "";
 	private Accessor accessor;
+	private String timestamp;
 
 	/**
 	 * 
@@ -64,6 +65,21 @@ public class LoggingEvent {
 		this.accessor = accessor;
 	}
 
+	/**
+	 * @return the timestamp
+	 */
+	public String getTimestamp() {
+		return timestamp;
+	}
+
+	/**
+	 * @param timestamp
+	 *            the timestamp to set.
+	 */
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -80,7 +96,10 @@ public class LoggingEvent {
 			builder.append("path=").append(path).append(", ");
 		}
 		if (accessor != null) {
-			builder.append("accessor=").append(accessor);
+			builder.append("accessor=").append(accessor).append(", ");
+		}
+		if (timestamp != null) {
+			builder.append("timestamp=").append(timestamp);
 		}
 		builder.append("]");
 		return builder.toString();

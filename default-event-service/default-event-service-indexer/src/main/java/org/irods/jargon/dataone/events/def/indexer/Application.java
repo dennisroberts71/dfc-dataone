@@ -97,7 +97,7 @@ public class Application {
 					log.info("event:{}", event);
 					AccessLog accessLog = new AccessLog();
 					accessLog.setIrodsPath(event.getPath());
-					accessLog.setDateAdded(new Date());
+					accessLog.setDateAdded(util.dateFromTimestamp(event.getTimestamp()));
 					accessLog.setEvent(EventType.READ);
 					accessLog.setNodeIdentifier("foo");
 					accessLog.setSubject(event.getAccessor().getName());

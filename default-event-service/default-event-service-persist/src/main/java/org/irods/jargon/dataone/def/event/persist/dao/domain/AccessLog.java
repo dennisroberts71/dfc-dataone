@@ -3,7 +3,10 @@
  */
 package org.irods.jargon.dataone.def.event.persist.dao.domain;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import java.util.Date;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -24,9 +27,9 @@ import javax.persistence.Temporal;
 public class AccessLog {
 
 	@Id()
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "id")
-	private Long id;
+	@GeneratedValue
+	@Column(name = "id", columnDefinition = "uuid", updatable = false)
+	private UUID id;
 
 	@Column(name = "permanent_id", nullable = true)
 	private String permanentId;
@@ -43,7 +46,7 @@ public class AccessLog {
 	@Column(name = "subject", nullable = true)
 	private String subject;
 
-	@Column(name = "event", nullable = false)
+	@Column(name = "event", columnDefinition = "event_type", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private EventType event;
 
@@ -172,7 +175,7 @@ public class AccessLog {
 	/**
 	 * @return the id
 	 */
-	public Long getId() {
+	public UUID getId() {
 		return id;
 	}
 
@@ -180,7 +183,7 @@ public class AccessLog {
 	 * @param id
 	 *            the id to set
 	 */
-	public void setId(Long id) {
+	public void setId(UUID id) {
 		this.id = id;
 	}
 
@@ -227,7 +230,7 @@ public class AccessLog {
 	/**
 	 * @return the event
 	 */
-	public String getEvent() {
+	public EventType getEvent() {
 		return event;
 	}
 
@@ -235,7 +238,7 @@ public class AccessLog {
 	 * @param event
 	 *            the event to set
 	 */
-	public void setEvent(String event) {
+	public void setEvent(EventType event) {
 		this.event = event;
 	}
 

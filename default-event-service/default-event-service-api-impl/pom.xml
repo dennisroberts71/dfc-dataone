@@ -44,5 +44,10 @@
 			<artifactId>event-service-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>default-event-service-persist</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>

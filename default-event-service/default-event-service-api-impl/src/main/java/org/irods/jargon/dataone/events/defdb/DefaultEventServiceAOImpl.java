@@ -30,7 +30,6 @@ public class DefaultEventServiceAOImpl extends AbstractEventServiceAO {
 	 */
 	public DefaultEventServiceAOImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
 		super(irodsAccount, publicationContext);
-		// TODO Auto-generated constructor stub
 	}
 
 	/*

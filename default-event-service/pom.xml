@@ -10,6 +10,15 @@
 	</parent>
 	<packaging>pom</packaging>
 	<name>Default event service parent</name>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.hibernate.javax.persistence</groupId>
+				<artifactId>hibernate-jpa-2.1-api</artifactId>
+				<version>1.0.0.Final</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<modules>
 		<module>default-event-service-persist</module>
 		<module>default-event-service-indexer</module>

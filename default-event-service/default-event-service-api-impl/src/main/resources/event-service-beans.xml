@@ -62,7 +62,7 @@
 
 	<!-- ========================= BUSINESS OBJECT DEFINITIONS ========================= -->
 
-	<bean id="accesLogDAO"
+	<bean id="accessLogDAO"
 		class="org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>

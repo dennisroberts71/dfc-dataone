@@ -50,8 +50,7 @@ public class DefaultEventServiceAOImpl extends AbstractEventServiceAO {
 	 * java.lang.String, int, int)
 	 */
 	@Override
-	public Log getLogs(Date arg0, Date arg1, EventsEnum arg2, String arg3, int arg4, int arg5) {
-		// TODO Auto-generated method stub
+	public Log getLogs(Date start, Date end, EventsEnum event, String pid, int offset, int limit) {
 		return null;
 	}
 

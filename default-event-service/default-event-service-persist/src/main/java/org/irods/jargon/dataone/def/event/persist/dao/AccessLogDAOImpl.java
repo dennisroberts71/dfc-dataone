@@ -5,11 +5,17 @@ package org.irods.jargon.dataone.def.event.persist.dao;
 
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
 import org.irods.jargon.dataone.events.EventLoggingException;
+import org.irods.jargon.dataone.events.EventsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.awt.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Impl of an access log
@@ -86,6 +92,37 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 			log.error("error in delete(AccessLog)", e);
 			throw new EventLoggingException("Failed delete(AccessLog)", e);
 		}
+	}
+
+	@Override
+	public List<AccessLog> find(Date start, Date end, EventsEnum eventType, String pid, int offset, int limit)
+			throws EventLoggingException {
+		log.info("find start:{}, end:{}, eventType:{}, pid:{}, offset:{}, limit:{}", start, end, eventType, pid,
+				offset, limit);
+
+		List<AccessLog> results;
+		try {
+			Criteria crit = sessionFactory.getCurrentSession().createCriteria(AccessLog.class);
+			if (start != null) {
+				crit.add(Restrictions.ge("dateAdded", start));
+			}
+			if (end != null) {
+				crit.add(Restrictions.le("dateAdded", end));
+			}
+			if (eventType != null) {
+				crit.add(Restrictions.eq("event", eventType));
+			}
+			if (pid != null) {
+				crit.add(Restrictions.eq("permanentId", pid));
+			}
+			crit.setFirstResult(offset);
+			crit.setMaxResults(limit);
+			results = crit.list();
+		} catch (Exception e) {
+			log.error("error in find(start, end, eventType, offset, limit)", e);
+			throw new EventLoggingException("failed find(start, end, eventType, offset, limit)", e);
+		}
+		return results;
 	}
 
 	/**

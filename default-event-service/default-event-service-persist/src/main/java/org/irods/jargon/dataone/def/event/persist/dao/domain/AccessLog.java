@@ -4,6 +4,7 @@
 package org.irods.jargon.dataone.def.event.persist.dao.domain;
 
 import org.hibernate.annotations.ColumnTransformer;
+import org.irods.jargon.dataone.events.EventsEnum;
 
 import java.util.Date;
 import java.util.UUID;
@@ -48,7 +49,7 @@ public class AccessLog {
 
 	@Column(name = "event", columnDefinition = "event_type", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private EventType event;
+	private EventsEnum event;
 
 	@Column(name = "date_logged")
 	@Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -215,7 +216,7 @@ public class AccessLog {
 			builder.append("subject=").append(subject).append(", ");
 		}
 		if (event != null) {
-			builder.append("eventType=").append(event).append(", ");
+			builder.append("event=").append(event).append(", ");
 		}
 		if (dateAdded != null) {
 			builder.append("dateAdded=").append(dateAdded).append(", ");
@@ -230,7 +231,7 @@ public class AccessLog {
 	/**
 	 * @return the event
 	 */
-	public EventType getEvent() {
+	public EventsEnum getEvent() {
 		return event;
 	}
 
@@ -238,7 +239,7 @@ public class AccessLog {
 	 * @param event
 	 *            the event to set
 	 */
-	public void setEvent(EventType event) {
+	public void setEvent(EventsEnum event) {
 		this.event = event;
 	}
 

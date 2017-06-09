@@ -3,12 +3,10 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
-import java.util.Date;
-
 import org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAO;
 import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
-import org.irods.jargon.dataone.def.event.persist.dao.domain.EventType;
 import org.irods.jargon.dataone.events.EventLoggingException;
+import org.irods.jargon.dataone.events.EventsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -98,7 +96,7 @@ public class Application {
 					AccessLog accessLog = new AccessLog();
 					accessLog.setIrodsPath(event.getPath());
 					accessLog.setDateAdded(util.dateFromTimestamp(event.getTimestamp()));
-					accessLog.setEvent(EventType.READ);
+					accessLog.setEvent(EventsEnum.READ);
 					accessLog.setNodeIdentifier("foo");
 					accessLog.setSubject(event.getAccessor().getName());
 					log.info("access log to write:{}", accessLog);

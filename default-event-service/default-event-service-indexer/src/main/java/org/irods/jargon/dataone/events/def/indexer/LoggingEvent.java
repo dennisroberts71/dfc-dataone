@@ -11,7 +11,7 @@ public class LoggingEvent {
 
 	private String entity = "";
 	private String path = "";
-	private Accessor accessor;
+	private Accessor author;
 	private String timestamp;
 
 	/**
@@ -51,18 +51,18 @@ public class LoggingEvent {
 	}
 
 	/**
-	 * @return the accessor
+	 * @return the author
 	 */
-	public Accessor getAccessor() {
-		return accessor;
+	public Accessor getAuthor() {
+		return author;
 	}
 
 	/**
-	 * @param accessor
-	 *            the accessor to set
+	 * @param author
+	 *            the author to set
 	 */
-	public void setAccessor(Accessor accessor) {
-		this.accessor = accessor;
+	public void setAuthor(Accessor author) {
+		this.author = author;
 	}
 
 	/**
@@ -95,8 +95,8 @@ public class LoggingEvent {
 		if (path != null) {
 			builder.append("path=").append(path).append(", ");
 		}
-		if (accessor != null) {
-			builder.append("accessor=").append(accessor).append(", ");
+		if (author != null) {
+			builder.append("author=").append(author).append(", ");
 		}
 		if (timestamp != null) {
 			builder.append("timestamp=").append(timestamp);

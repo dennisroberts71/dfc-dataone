@@ -8,6 +8,6 @@
  sendDataObjectOpen(*Data) =
    let *msg = ipc_jsonDocument(list(mkEntityField(*Data),
                                     mkPathField($objPath),
-                                    mkUserObject('accessor', $userNameClient, $rodsZoneClient)))
+                                    mkUserObject('author', $userNameClient, $rodsZoneClient)))
    in sendMsg(DATA_OBJECT_TYPE ++ '.open', *msg)
  

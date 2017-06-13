@@ -27,7 +27,7 @@ Off you go!
 #### in amqp console put json into queue
 
 ```
-{"entity":"a401d352-4a33-11e7-9d94-1a5a300ff36f","path":"/iplant/home/dennis/foo.md","accessor":{"name":"rods","zone":"iplant"}}
+{"entity":"a401d352-4a33-11e7-9d94-1a5a300ff36f","path":"/iplant/home/dennis/foo.md","author":{"name":"rods","zone":"iplant"}}
 
 ```
 

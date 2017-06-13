@@ -98,7 +98,7 @@ public class Application {
 					accessLog.setDateAdded(util.dateFromTimestamp(event.getTimestamp()));
 					accessLog.setEvent(EventsEnum.READ);
 					accessLog.setNodeIdentifier("foo");
-					accessLog.setSubject(event.getAccessor().getName());
+					accessLog.setSubject(event.getAuthor().getName());
 					log.info("access log to write:{}", accessLog);
 					accessLogDAO.save(accessLog);
 					log.info("saved!");

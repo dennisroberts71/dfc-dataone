@@ -3,6 +3,9 @@
  */
 package org.irods.jargon.dataone.def.event.persist.dao;
 
+import java.util.Date;
+import java.util.List;
+
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
@@ -13,17 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.awt.*;
-import java.util.Date;
-import java.util.List;
-
 /**
  * Impl of an access log
  * 
  * @author mcc
  *
  */
-@SuppressWarnings("deprecation")
 public class AccessLogDAOImpl implements AccessLogDAO {
 
 	private static final Logger log = LoggerFactory.getLogger(AccessLogDAOImpl.class);
@@ -94,11 +92,12 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<AccessLog> find(Date start, Date end, EventsEnum eventType, String pid, int offset, int limit)
 			throws EventLoggingException {
-		log.info("find start:{}, end:{}, eventType:{}, pid:{}, offset:{}, limit:{}", start, end, eventType, pid,
-				offset, limit);
+		log.info("find start:{}, end:{}, eventType:{}, pid:{}, offset:{}, limit:{}", start, end, eventType, pid, offset,
+				limit);
 
 		List<AccessLog> results;
 		try {

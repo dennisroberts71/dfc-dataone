@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.events.defdb;
 
@@ -18,62 +18,65 @@ import org.irods.jargon.dataone.events.AbstractEventServiceAO;
 import org.irods.jargon.dataone.events.EventsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Persistence based event service
- * 
+ *
  * @author mcc
  *
  */
 public class DefaultEventServiceAOImpl extends AbstractEventServiceAO {
 
-	private AccessLogDAO accessLogDAO;
 	private static final Logger log = LoggerFactory.getLogger(DefaultEventServiceAOImpl.class);
+	private final AccessLogDAO accessLogDAO;
 
 	/**
 	 * @param irodsAccount
 	 * @param publicationContext
 	 */
-	public DefaultEventServiceAOImpl(IRODSAccount irodsAccount, PublicationContext publicationContext) {
+	public DefaultEventServiceAOImpl(final IRODSAccount irodsAccount, final PublicationContext publicationContext,
+			final AccessLogDAO accessLogDAO) {
 		super(irodsAccount, publicationContext);
-		init();
+		if (accessLogDAO == null) {
+			throw new IllegalArgumentException("null accessLogDAO");
+		}
+		this.accessLogDAO = accessLogDAO;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.irods.jargon.dataone.events.AbstractEventServiceAO#getLogs(java.util.
 	 * Date, java.util.Date, org.irods.jargon.dataone.events.EventsEnum,
 	 * java.lang.String, int, int)
 	 */
 	@Override
-	public Log getLogs(Date start, Date end, EventsEnum event, String pid, int offset, int limit) {
+	public Log getLogs(final Date start, final Date end, final EventsEnum event, final String pid, final int offset,
+			final int limit) {
 		return null;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.irods.jargon.dataone.events.AbstractEventServiceAO#recordEvent(org.
 	 * dataone.service.types.v1.Event, org.dataone.service.types.v1.Identifier,
 	 * java.lang.String)
 	 */
 	@Override
-	public void recordEvent(Event arg0, Identifier arg1, String arg2)
+	public void recordEvent(final Event arg0, final Identifier arg1, final String arg2)
 			throws InvalidArgumentException, JargonException, ServiceFailure {
 		// TODO Auto-generated method stub
 
 	}
 
-	private void init() {
-		ApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "event-service-beans.xml", "event-dao-hibernate-spring.cfg.xml" });
-		this.accessLogDAO = (AccessLogDAO) context.getBean("accessLogDAO");
-		log.info("successfully loaded DAO");
+	/**
+	 * @return the accessLogDAO
+	 */
+	public AccessLogDAO getAccessLogDAO() {
+		return accessLogDAO;
 	}
 
 }

@@ -1,7 +1,5 @@
 package org.irods.jargon.dataone.domain;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -9,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 import org.dataone.service.types.v1.Schedule;
+import org.irods.jargon.dataone.utils.PropertiesLoader;
 
 @XmlAccessorType(XmlAccessType.NONE)
 public class MNSchedule {
@@ -33,36 +32,17 @@ public class MNSchedule {
 	}
 
 	private void initializeProperties() {
-		Properties prop = new Properties();
-		InputStream input = null;
+		PropertiesLoader loader = new PropertiesLoader();
+		Properties prop = loader.getProperties();
 
-		try {
+		hour = prop.getProperty("irods.dataone.sync.schedule.hour");
+		mday = prop.getProperty("irods.dataone.sync.schedule.mday");
+		min = prop.getProperty("irods.dataone.sync.schedule.min");
+		mon = prop.getProperty("irods.dataone.sync.schedule.mon");
+		sec = prop.getProperty("irods.dataone.sync.schedule.sec");
+		wday = prop.getProperty("irods.dataone.sync.schedule.wday");
+		year = prop.getProperty("irods.dataone.sync.schedule.year");
 
-			String filename = "d1client.properties";
-			input = getClass().getClassLoader().getResourceAsStream(filename);
-
-			// load a properties file
-			prop.load(input);
-
-			hour = prop.getProperty("irods.dataone.sync.schedule.hour");
-			mday = prop.getProperty("irods.dataone.sync.schedule.mday");
-			min = prop.getProperty("irods.dataone.sync.schedule.min");
-			mon = prop.getProperty("irods.dataone.sync.schedule.mon");
-			sec = prop.getProperty("irods.dataone.sync.schedule.sec");
-			wday = prop.getProperty("irods.dataone.sync.schedule.wday");
-			year = prop.getProperty("irods.dataone.sync.schedule.year");
-
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	// public String getHour() {

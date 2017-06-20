@@ -1,7 +1,5 @@
 package org.irods.jargon.dataone.domain;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -19,6 +17,7 @@ import org.dataone.service.types.v1.Service;
 import org.dataone.service.types.v1.Services;
 import org.dataone.service.types.v1.Subject;
 import org.dataone.service.types.v1.Synchronization;
+import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,41 +59,23 @@ public class MNNode {
 	}
 
 	private void initializeProperties() {
-		Properties prop = new Properties();
-		InputStream input = null;
+		PropertiesLoader loader = new PropertiesLoader();
+		Properties prop = loader.getProperties();
 
-		try {
-			String filename = "/etc/irods-ext/d1client.properties";
-			input = getClass().getClassLoader().getResourceAsStream(filename);
+		replicate = prop.getProperty("irods.dataone.replicate");
+		synchronize = prop.getProperty("irods.dataone.synchronize");
+		type = prop.getProperty("irods.dataone.type");
+		// TODO: make sure proper exceptions are caught and handled
 
-			// load a properties file
-			prop.load(input);
+		identifier = prop.getProperty("irods.dataone.identifier");
+		name = prop.getProperty("irods.dataone.name");
+		description = prop.getProperty("irods.dataone.description");
+		baseURL = prop.getProperty("irods.dataone.baseurl");
+		services = initServices(prop);
+		synchronization = initSychronization(prop);
+		// this.subject = initSubjects(prop);
+		// this.contactSubject = initContactSubjects(prop);
 
-			replicate = prop.getProperty("irods.dataone.replicate");
-			synchronize = prop.getProperty("irods.dataone.synchronize");
-			type = prop.getProperty("irods.dataone.type");
-			// TODO: make sure proper exceptions are caught and handled
-
-			identifier = prop.getProperty("irods.dataone.identifier");
-			name = prop.getProperty("irods.dataone.name");
-			description = prop.getProperty("irods.dataone.description");
-			baseURL = prop.getProperty("irods.dataone.baseurl");
-			services = initServices(prop);
-			synchronization = initSychronization(prop);
-			// this.subject = initSubjects(prop);
-			// this.contactSubject = initContactSubjects(prop);
-
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	private List<String> initContactSubjects(final Properties prop) {

@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @XmlRootElement(name = "node")
-@XmlType(propOrder = { "identifier", "name", "description", "baseURL",
-		"services", "synchronization", "ping", "subject", "contactSubject" })
+@XmlType(propOrder = { "identifier", "name", "description", "baseURL", "services", "synchronization", "ping", "subject",
+		"contactSubject" })
 public class MNNode {
 
 	private final String serviceKey = "irods.dataone.service.";
@@ -64,7 +64,7 @@ public class MNNode {
 		InputStream input = null;
 
 		try {
-			String filename = "d1client.properties";
+			String filename = "/etc/irods-ext/d1client.properties";
 			input = getClass().getClassLoader().getResourceAsStream(filename);
 
 			// load a properties file
@@ -114,7 +114,7 @@ public class MNNode {
 	}
 
 	private List<MNService> initServices(final Properties prop) {
-		List<MNService> services = new ArrayList<MNService>();
+		List<MNService> services = new ArrayList<>();
 
 		Enumeration<?> keys = prop.propertyNames();
 		while (keys.hasMoreElements()) {
@@ -123,12 +123,9 @@ public class MNNode {
 				String serviceName = prop.getProperty(key);
 				MNService service = new MNService();
 				service.setName(serviceName);
-				String isServiceAvailableKey = serviceKey
-						+ serviceName.toLowerCase();
-				String isServiceAvailableValue = prop
-						.getProperty(isServiceAvailableKey);
-				service.setAvailable(Boolean
-						.parseBoolean(isServiceAvailableValue));
+				String isServiceAvailableKey = serviceKey + serviceName.toLowerCase();
+				String isServiceAvailableValue = prop.getProperty(isServiceAvailableKey);
+				service.setAvailable(Boolean.parseBoolean(isServiceAvailableValue));
 				String verKey = isServiceAvailableKey + ".version";
 				service.setVersion(prop.getProperty(verKey));
 				services.add(service);
@@ -272,7 +269,7 @@ public class MNNode {
 		if (node.getServices() != null) {
 			Services services = node.getServices();
 			List<Service> serviceList = services.getServiceList();
-			this.services = new ArrayList<MNService>();
+			this.services = new ArrayList<>();
 
 			for (Service s : serviceList) {
 				MNService mnService = new MNService();
@@ -295,7 +292,7 @@ public class MNNode {
 
 		if (node.getSubjectList() != null) {
 			List<Subject> subjectList = node.getSubjectList();
-			subject = new ArrayList<String>();
+			subject = new ArrayList<>();
 
 			for (Subject s : subjectList) {
 				subject.add(s.getValue());
@@ -304,7 +301,7 @@ public class MNNode {
 
 		if (node.getContactSubjectList() != null) {
 			List<Subject> subjectList = node.getContactSubjectList();
-			contactSubject = new ArrayList<String>();
+			contactSubject = new ArrayList<>();
 
 			for (Subject s : subjectList) {
 				contactSubject.add(s.getValue());

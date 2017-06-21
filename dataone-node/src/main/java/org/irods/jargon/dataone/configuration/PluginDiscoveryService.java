@@ -63,6 +63,9 @@ public class PluginDiscoveryService {
 
 	public DataOneEventServiceAO instanceEventService(IRODSAccount irodsAccount) throws PluginNotFoundException {
 		log.info("instanceEventService()");
+		log.info("dataOneEventServiceFactory:{}", dataOneEventServiceFactory);
+		log.info("publicationContext:{}", getPublicationContext());
+		log.info("irodsAccount:{}", irodsAccount);
 		return dataOneEventServiceFactory.instance(getPublicationContext(), irodsAccount);
 	}
 

@@ -33,7 +33,7 @@ public class PluginDiscoveryServiceTest {
 	public void testInstanceEventService() throws Exception {
 		IRODSAccount dummyAccount = new IRODSAccount("xxx", 1247, "xxx", "xxx", "xxx", "xxx", "xxx");
 		PublicationContext publicationContext = new PublicationContext();
-		File rescFile = LocalFileUtils.getClasspathResourceAsFile("/dummyjars");
+		File rescFile = new File("/home/mcc/d1plugin");
 		Assert.assertNotNull("no file path", rescFile);
 		RestConfiguration restConfiguration = new RestConfiguration();
 		restConfiguration.setPluginJarLocation(rescFile.getAbsolutePath());
@@ -49,7 +49,7 @@ public class PluginDiscoveryServiceTest {
 	public void testInstanceUniqueIdService() throws Exception {
 		IRODSAccount dummyAccount = new IRODSAccount("xxx", 1247, "xxx", "xxx", "xxx", "xxx", "xxx");
 		PublicationContext publicationContext = new PublicationContext();
-		File rescFile = LocalFileUtils.getClasspathResourceAsFile("/dummyjars");
+		File rescFile = new File("/home/mcc/d1plugin");
 		Assert.assertNotNull("no file path", rescFile);
 		RestConfiguration restConfiguration = new RestConfiguration();
 		restConfiguration.setPluginJarLocation(rescFile.getAbsolutePath());
@@ -65,7 +65,7 @@ public class PluginDiscoveryServiceTest {
 	public void testInstanceRepoService() throws Exception {
 		IRODSAccount dummyAccount = new IRODSAccount("xxx", 1247, "xxx", "xxx", "xxx", "xxx", "xxx");
 		PublicationContext publicationContext = new PublicationContext();
-		File rescFile = LocalFileUtils.getClasspathResourceAsFile("/dummyjars");
+		File rescFile = new File("/home/mcc/d1plugin");
 		Assert.assertNotNull("no file path", rescFile);
 		RestConfiguration restConfiguration = new RestConfiguration();
 		restConfiguration.setPluginJarLocation(rescFile.getAbsolutePath());

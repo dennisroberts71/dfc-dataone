@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultEventServiceAOImpl extends AbstractEventServiceAO {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultEventServiceAOImpl.class);
-	private final AccessLogDAO accessLogDAO;
+	private AccessLogDAO accessLogDAO;
 
 	/**
 	 * @param irodsAccount

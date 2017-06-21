@@ -17,7 +17,6 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.dataone.events.AbstractDataOneEventServiceFactory;
 import org.irods.jargon.dataone.events.DataOneEventServiceAO;
 import org.irods.jargon.dataone.events.DataOneEventServiceFactory;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoFactory;
@@ -186,7 +185,7 @@ public class PluginDiscoveryService {
 		}
 
 		log.info("repo factory...");
-		Class<AbstractDataOneEventServiceFactory> clazzRepo = loadImplClass(AbstractDataOneRepoFactory.class);
+		Class<AbstractDataOneRepoFactory> clazzRepo = loadImplClass(AbstractDataOneRepoFactory.class);
 		try {
 			Constructor<?> ctor = clazzRepo.getConstructor();
 			dataOneRepoServiceFactory = (DataOneRepoServiceFactory) ctor.newInstance(new Object[] {});

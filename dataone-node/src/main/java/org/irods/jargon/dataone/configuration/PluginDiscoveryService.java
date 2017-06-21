@@ -11,17 +11,18 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.dataone.events.AbstractDataOneEventServiceFactory;
 import org.irods.jargon.dataone.events.DataOneEventServiceAO;
 import org.irods.jargon.dataone.events.DataOneEventServiceFactory;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoFactory;
 import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
 import org.irods.jargon.dataone.reposervice.DataOneRepoServiceFactory;
+import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.irods.jargon.pid.pidservice.AbstractDataOnePidFactory;
 import org.irods.jargon.pid.pidservice.DataOnePidServiceFactory;
 import org.irods.jargon.pid.pidservice.UniqueIdAO;
@@ -150,19 +151,41 @@ public class PluginDiscoveryService {
 		}
 
 		log.info("event factory...");
-		Class<AbstractDataOneEventServiceFactory> clazzEvent = loadImplClass(AbstractDataOneEventServiceFactory.class);
+		/*
+		 * Class<AbstractDataOneEventServiceFactory> clazzEvent =
+		 * loadImplClass(AbstractDataOneEventServiceFactory.class); try {
+		 * Constructor<?> ctor = clazzEvent.getConstructor();
+		 * dataOneEventServiceFactory = (DataOneEventServiceFactory)
+		 * ctor.newInstance(new Object[] {});
+		 * log.info("dataOneEventServiceFactory success"); } catch
+		 * (NoSuchMethodException | SecurityException | InstantiationException |
+		 * IllegalAccessException | IllegalArgumentException |
+		 * InvocationTargetException e) {
+		 * log.error("cannot find appropriate plugin", e); throw new
+		 * PluginNotFoundException(e); }
+		 */
+
+		PropertiesLoader propertiesLoader = new PropertiesLoader();
+		Properties props = propertiesLoader.getProperties();
+		String eventFactoryClassName = props.getProperty("plugin.factory.event");
+		if (eventFactoryClassName == null || eventFactoryClassName.isEmpty()) {
+			log.error("cannot find appropriate plugin class name config in properties");
+			throw new PluginNotFoundException("cannot find event factory plugin class name in properties");
+		}
+
+		log.info("load event factory class:{}", eventFactoryClassName);
 		try {
-			Constructor<?> ctor = clazzEvent.getConstructor();
-			dataOneEventServiceFactory = (DataOneEventServiceFactory) ctor.newInstance(new Object[] {});
-			log.info("dataOneEventServiceFactory success");
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
+			Class eventClass = Class.forName(eventFactoryClassName.trim());
+			dataOneEventServiceFactory = (DataOneEventServiceFactory) eventClass.newInstance();
+			log.info("event factory created");
+
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			log.error("cannot find appropriate plugin", e);
 			throw new PluginNotFoundException(e);
 		}
 
 		log.info("repo factory...");
-		Class<AbstractDataOneEventServiceFactory> clazzRepo = loadImplClass(AbstractDataOneRepoFactory.class);
+		Class<AbstractDataOneRepoFactory> clazzRepo = loadImplClass(AbstractDataOneRepoFactory.class);
 		try {
 			Constructor<?> ctor = clazzRepo.getConstructor();
 			dataOneRepoServiceFactory = (DataOneRepoServiceFactory) ctor.newInstance(new Object[] {});

@@ -156,6 +156,12 @@
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
 		</dependency>
+		<!--  site specific deps -->
+		<dependency>
+			<groupId>org.irods</groupId>
+			<artifactId>default-event-service-api-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

@@ -6,8 +6,6 @@ package org.irods.jargon.dataone.events;
 import java.util.Date;
 
 import org.dataone.service.exceptions.ServiceFailure;
-import org.dataone.service.types.v1.Event;
-import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.InvalidArgumentException;
@@ -53,11 +51,10 @@ public abstract class AbstractEventServiceAO extends AbstractDataOnePlugin imple
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.irods.jargon.dataone.events.EventServiceAO#recordEvent(org.dataone
-	 * .service.types.v1.Event, org.dataone.service.types.v1.Identifier,
-	 * java.lang.String)
+	 * org.irods.jargon.dataone.events.DataOneEventServiceAO#recordEvent(org.
+	 * irods.jargon.dataone.events.EventData)
 	 */
 	@Override
-	public abstract void recordEvent(Event event, Identifier id, String description)
+	public abstract void recordEvent(EventData eventData)
 			throws InvalidArgumentException, JargonException, ServiceFailure;
 }

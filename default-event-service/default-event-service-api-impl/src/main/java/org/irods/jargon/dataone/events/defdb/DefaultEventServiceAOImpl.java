@@ -6,15 +6,15 @@ package org.irods.jargon.dataone.events.defdb;
 import java.util.Date;
 
 import org.dataone.service.exceptions.ServiceFailure;
-import org.dataone.service.types.v1.Event;
-import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAO;
+import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
 import org.irods.jargon.dataone.events.AbstractEventServiceAO;
+import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.events.EventsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,18 +57,19 @@ public class DefaultEventServiceAOImpl extends AbstractEventServiceAO {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * org.irods.jargon.dataone.events.AbstractEventServiceAO#recordEvent(org.
-	 * dataone.service.types.v1.Event, org.dataone.service.types.v1.Identifier,
-	 * java.lang.String)
-	 */
 	@Override
-	public void recordEvent(final Event arg0, final Identifier arg1, final String arg2)
+	public void recordEvent(final EventData eventData)
 			throws InvalidArgumentException, JargonException, ServiceFailure {
-		// TODO Auto-generated method stub
+
+		log.info("recordEvent()");
+
+		if (eventData == null) {
+			throw new IllegalArgumentException("null eventData");
+		}
+
+		log.info("eventData:{}", eventData);
+
+		AccessLog accessLog = new AccessLog();
 
 	}
 

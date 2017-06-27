@@ -43,11 +43,13 @@ import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
+import org.irods.jargon.dataone.configuration.ConfigConstants;
 import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
 import org.irods.jargon.dataone.configuration.PluginNotFoundException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.DataOneEventServiceAO;
+import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
@@ -560,8 +562,6 @@ public class MNReadImpl implements MNRead {
 
 		Identifier pid = null;
 		IRODSAccount irodsAccount;
-		DataObject dataObject;
-
 		if (syncFailed.getPid() != null) {
 			pid = new Identifier();
 			pid.setValue(syncFailed.getPid());
@@ -569,6 +569,7 @@ public class MNReadImpl implements MNRead {
 			throw new ServiceFailure("2161", "The identifier cannot be null.");
 		}
 
+		DataObject dataObject;
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
@@ -580,9 +581,21 @@ public class MNReadImpl implements MNRead {
 					"The identifier specified by " + syncFailed.getPid() + " was not found on this node.");
 		}
 
+		// TODO: mcc - see
+		// https://github.com/DICE-UNC/dfc-dataone/blob/master/src/main/java/org/irods/jargon/dataone/events/EventLogAOElasticSearchImpl.java
+
 		try {
 			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
-			eventServiceAO.recordEvent(Event.SYNCHRONIZATION_FAILED, pid, syncFailed.getDescription());
+			EventData eventData = new EventData();
+			eventData.setDescription("DataONE replication");
+			eventData.setEvent(Event.SYNCHRONIZATION_FAILED);
+			eventData.setId(pid);
+			eventData.setIrodsPath(dataObject.getAbsolutePath());
+			eventData.setNodeIdentifier(
+					publicationContext.getAdditionalProperties().getProperty(ConfigConstants.PROPERTY_NODE_IDENTIFIER));
+			eventData.setUserAgent(irodsAccount.getUserName());
+
+			eventServiceAO.recordEvent(eventData);
 
 		} catch (PluginNotFoundException | JargonException e) {
 			log.error("failed to log synchronization failed event: {}", e.toString());

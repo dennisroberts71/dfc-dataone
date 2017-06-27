@@ -3,8 +3,6 @@ package org.irods.jargon.dataone.events;
 import java.util.Date;
 
 import org.dataone.service.exceptions.ServiceFailure;
-import org.dataone.service.types.v1.Event;
-import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.Log;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
@@ -28,20 +26,18 @@ public interface DataOneEventServiceAO {
 	 * @param count
 	 * @return {@link Log} with the log data
 	 */
-	public Log getLogs(Date fromDate, Date toDate, EventsEnum event,
-			String pidFilter, int startIdx, int count);
+	public Log getLogs(Date fromDate, Date toDate, EventsEnum event, String pidFilter, int startIdx, int count);
 
 	/**
-	 * Add a given event to the log data
+	 * Add a given event to the log
 	 * 
-	 * @param event
-	 * @param id
-	 * @param description
+	 * @param eventData
+	 *            {@link EventData} encapsulating all the potential metadata
+	 *            about this event
 	 * @throws InvalidArgumentException
 	 * @throws JargonException
 	 * @throws ServiceFailure
 	 */
-	public void recordEvent(Event event, Identifier id, String description)
-			throws InvalidArgumentException, JargonException, ServiceFailure;
+	public void recordEvent(EventData eventData) throws InvalidArgumentException, JargonException, ServiceFailure;
 
 }

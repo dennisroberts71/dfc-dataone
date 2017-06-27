@@ -48,7 +48,9 @@ import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
+import org.irods.jargon.dataone.configuration.ConfigConstants;
 import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
 import org.irods.jargon.dataone.configuration.PluginNotFoundException;
 import org.irods.jargon.dataone.configuration.PublicationContext;
@@ -59,9 +61,11 @@ import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.domain.MNObjectList;
 import org.irods.jargon.dataone.domain.MNSystemMetadata;
 import org.irods.jargon.dataone.events.DataOneEventServiceAO;
+import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
 import org.irods.jargon.dataone.tier1.MNReadImpl;
 import org.irods.jargon.dataone.utils.ISO8601;
+import org.irods.jargon.pid.pidservice.UniqueIdAO;
 import org.jboss.resteasy.annotations.providers.jaxb.json.Mapped;
 import org.jboss.resteasy.annotations.providers.jaxb.json.XmlNsMap;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -200,7 +204,19 @@ public class MemberNodeService {
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
-			eventServiceAO.recordEvent(Event.READ, id, "DataONE replication");
+			UniqueIdAO uniqueIdAO = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			DataObject dataObject = uniqueIdAO.getDataObjectFromIdentifier(id);
+
+			EventData eventData = new EventData();
+			eventData.setDescription("DataONE replication");
+			eventData.setEvent(Event.READ);
+			eventData.setId(id);
+			eventData.setIrodsPath(dataObject.getAbsolutePath());
+			eventData.setNodeIdentifier(this.getPublicationContext().getAdditionalProperties()
+					.getProperty(ConfigConstants.PROPERTY_NODE_IDENTIFIER));
+			eventData.setUserAgent(irodsAccount.getUserName());
+
+			eventServiceAO.recordEvent(eventData);
 
 		} catch (PluginNotFoundException | JargonException e) {
 			logger.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);
@@ -251,7 +267,18 @@ public class MemberNodeService {
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
-			eventServiceAO.recordEvent(Event.READ, id, "DataONE replication");
+			UniqueIdAO uniqueIdAO = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			DataObject dataObject = uniqueIdAO.getDataObjectFromIdentifier(id);
+			EventData eventData = new EventData();
+			eventData.setDescription("DataONE replication");
+			eventData.setEvent(Event.REPLICATE);
+			eventData.setId(id);
+			eventData.setIrodsPath(dataObject.getAbsolutePath());
+			eventData.setNodeIdentifier(this.getPublicationContext().getAdditionalProperties()
+					.getProperty(ConfigConstants.PROPERTY_NODE_IDENTIFIER));
+			eventData.setUserAgent(irodsAccount.getUserName());
+
+			eventServiceAO.recordEvent(eventData);
 
 		} catch (PluginNotFoundException | JargonException e) {
 			logger.error("Unable to log EVENT: {} for data object id: {}", Event.READ, pid);

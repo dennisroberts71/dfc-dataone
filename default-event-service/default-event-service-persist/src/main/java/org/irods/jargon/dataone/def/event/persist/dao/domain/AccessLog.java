@@ -1,25 +1,24 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.def.event.persist.dao.domain;
 
-import org.hibernate.annotations.ColumnTransformer;
-import org.irods.jargon.dataone.events.EventsEnum;
-
 import java.util.Date;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 
+import org.irods.jargon.dataone.events.EventsEnum;
+
 /**
- * 
+ *
  * @author mcc
  *
  */
@@ -59,7 +58,7 @@ public class AccessLog {
 	private String nodeIdentifier;
 
 	/**
-	 * 
+	 *
 	 */
 	public AccessLog() {
 	}
@@ -75,15 +74,15 @@ public class AccessLog {
 	 * @param dateAdded
 	 *            the dateAdded to set
 	 */
-	public void setDateAdded(Date dateAdded) {
+	public void setDateAdded(final Date dateAdded) {
 		this.dateAdded = dateAdded;
 	}
 
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * /**
-	 * 
+	 *
 	 * @return the ipAddress
 	 */
 	public String getIpAddress() {
@@ -94,7 +93,7 @@ public class AccessLog {
 	 * @param ipAddress
 	 *            the ipAddress to set
 	 */
-	public void setIpAddress(String ipAddress) {
+	public void setIpAddress(final String ipAddress) {
 		this.ipAddress = ipAddress;
 	}
 
@@ -109,7 +108,7 @@ public class AccessLog {
 	 * @param userAgent
 	 *            the userAgent to set
 	 */
-	public void setUserAgent(String userAgent) {
+	public void setUserAgent(final String userAgent) {
 		this.userAgent = userAgent;
 	}
 
@@ -124,7 +123,7 @@ public class AccessLog {
 	 * @param subject
 	 *            the subject to set
 	 */
-	public void setSubject(String subject) {
+	public void setSubject(final String subject) {
 		this.subject = subject;
 	}
 
@@ -139,7 +138,7 @@ public class AccessLog {
 	 * @param nodeIdentifier
 	 *            the nodeIdentifier to set
 	 */
-	public void setNodeIdentifier(String nodeIdentifier) {
+	public void setNodeIdentifier(final String nodeIdentifier) {
 		this.nodeIdentifier = nodeIdentifier;
 	}
 
@@ -154,7 +153,7 @@ public class AccessLog {
 	 * @param permanentId
 	 *            the permanentId to set
 	 */
-	public void setPermanentId(String permanentId) {
+	public void setPermanentId(final String permanentId) {
 		this.permanentId = permanentId;
 	}
 
@@ -169,7 +168,7 @@ public class AccessLog {
 	 * @param irodsPath
 	 *            the irodsPath to set
 	 */
-	public void setIrodsPath(String irodsPath) {
+	public void setIrodsPath(final String irodsPath) {
 		this.irodsPath = irodsPath;
 	}
 
@@ -184,13 +183,13 @@ public class AccessLog {
 	 * @param id
 	 *            the id to set
 	 */
-	public void setId(UUID id) {
+	public void setId(final UUID id) {
 		this.id = id;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -239,7 +238,7 @@ public class AccessLog {
 	 * @param event
 	 *            the event to set
 	 */
-	public void setEvent(EventsEnum event) {
+	public void setEvent(final EventsEnum event) {
 		this.event = event;
 	}
 

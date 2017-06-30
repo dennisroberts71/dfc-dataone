@@ -8,6 +8,7 @@ import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.dataone.reposervice.model.DataOneObject;
 
 /**
  * Abstraction of management of the DataOne repository (objects to list,
@@ -17,6 +18,23 @@ import org.irods.jargon.core.pub.domain.DataObject;
  *
  */
 public interface DataOneRepoServiceAO {
+
+	/**
+	 * Looks up the DataOne object corresponding to an identifier.
+	 *
+	 * @param id the identifier to look up.
+	 * @return The DataOne object corresponding to the identifier or null if not found.
+	 * @throws JargonException
+	 */
+	DataOneObject getObject(final Identifier id) throws JargonException;
+
+	/**
+	 * Returns the configured checksum algorithm.
+	 *
+	 * @return the checksum algorithm.
+	 * @throws JargonException
+	 */
+	String getChecksumAlgorithm() throws JargonException;
 
 	/**
 	 * Returns a complete list of Unique Identifiers that are associated with

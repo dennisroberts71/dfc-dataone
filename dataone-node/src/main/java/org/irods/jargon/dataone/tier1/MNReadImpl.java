@@ -43,17 +43,17 @@ import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
-import org.irods.jargon.dataone.configuration.ConfigConstants;
-import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
-import org.irods.jargon.dataone.configuration.PluginNotFoundException;
-import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
-import org.irods.jargon.dataone.events.DataOneEventServiceAO;
+import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
+import org.irods.jargon.dataone.plugin.ConfigConstants;
+import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
+import org.irods.jargon.dataone.plugin.PluginNotFoundException;
+import org.irods.jargon.dataone.plugin.PublicationContext;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
-import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
-import org.irods.jargon.pid.pidservice.UniqueIdAO;
+import org.irods.jargon.pid.pidservice.AbstractDataOnePidServiceAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +92,7 @@ public class MNReadImpl implements MNRead {
 		Date lastModified;
 		BigInteger serialVersion;
 		IRODSAccount irodsAccount;
-		DataOneRepoServiceAO repoService;
+		AbstractDataOneRepoServiceAO repoService;
 
 		// first try and find data object for this id
 		try {
@@ -106,7 +106,7 @@ public class MNReadImpl implements MNRead {
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
 			dataObject = pidService.getDataObjectFromIdentifier(id);
 
 		} catch (Exception e) {
@@ -160,7 +160,7 @@ public class MNReadImpl implements MNRead {
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
 			dataObject = pidService.getDataObjectFromIdentifier(id);
 
 			path = dataObject.getAbsolutePath();
@@ -285,7 +285,7 @@ public class MNReadImpl implements MNRead {
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
 			dataObject = pidService.getDataObjectFromIdentifier(id);
 
 			path = dataObject.getAbsolutePath();
@@ -347,7 +347,7 @@ public class MNReadImpl implements MNRead {
 		IRODSAccount irodsAccount;
 		Checksum checksum = new Checksum();
 
-		DataOneRepoServiceAO repoService;
+		AbstractDataOneRepoServiceAO repoService;
 
 		// first try and find data object for this id
 		try {
@@ -361,7 +361,7 @@ public class MNReadImpl implements MNRead {
 		// first try and find data object for this id
 		try {
 
-			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
 			dataObject = pidService.getDataObjectFromIdentifier(id);
 
 		} catch (Exception ex) {
@@ -472,7 +472,7 @@ public class MNReadImpl implements MNRead {
 		DataObjectListResponse response = new DataObjectListResponse();
 		List<ObjectInfo> objectInfoList = new ArrayList<>();
 		ObjectList objectList = new ObjectList();
-		DataOneRepoServiceAO repoService;
+		AbstractDataOneRepoServiceAO repoService;
 
 		// first try and find data object for this id
 		try {
@@ -525,7 +525,7 @@ public class MNReadImpl implements MNRead {
 
 			Identifier id;
 			try {
-				UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+				AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
 				id = pidService.getIdentifierFromDataObject(dObject);
 			} catch (JargonException | PluginNotFoundException e) {
 				log.error("could not convert data object id to identifier: {}", e.toString());
@@ -573,7 +573,7 @@ public class MNReadImpl implements MNRead {
 		try {
 			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 
-			UniqueIdAO pidService = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
 			dataObject = pidService.getDataObjectFromIdentifier(pid);
 
 		} catch (Exception ex) {
@@ -585,7 +585,7 @@ public class MNReadImpl implements MNRead {
 		// https://github.com/DICE-UNC/dfc-dataone/blob/master/src/main/java/org/irods/jargon/dataone/events/EventLogAOElasticSearchImpl.java
 
 		try {
-			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
+			AbstractDataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
 			EventData eventData = new EventData();
 			eventData.setDescription("DataONE replication");
 			eventData.setEvent(Event.SYNCHRONIZATION_FAILED);

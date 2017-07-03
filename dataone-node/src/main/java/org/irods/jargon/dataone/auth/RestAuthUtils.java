@@ -16,7 +16,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.dataone.configuration.RestConfiguration;
+import org.irods.jargon.dataone.plugin.RestConfiguration;
 import org.irods.jargon.dataone.utils.RestTestingProperties;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.irods.jargon.testutils.TestingUtilsException;

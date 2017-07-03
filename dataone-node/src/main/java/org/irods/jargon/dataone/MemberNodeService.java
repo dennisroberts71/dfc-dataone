@@ -50,22 +50,22 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
-import org.irods.jargon.dataone.configuration.ConfigConstants;
-import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
-import org.irods.jargon.dataone.configuration.PluginNotFoundException;
-import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNError;
 import org.irods.jargon.dataone.domain.MNLog;
 import org.irods.jargon.dataone.domain.MNNode;
 import org.irods.jargon.dataone.domain.MNObjectList;
 import org.irods.jargon.dataone.domain.MNSystemMetadata;
-import org.irods.jargon.dataone.events.DataOneEventServiceAO;
+import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
+import org.irods.jargon.dataone.plugin.ConfigConstants;
+import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
+import org.irods.jargon.dataone.plugin.PluginNotFoundException;
+import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.tier1.MNCoreImpl;
 import org.irods.jargon.dataone.tier1.MNReadImpl;
 import org.irods.jargon.dataone.utils.ISO8601;
-import org.irods.jargon.pid.pidservice.UniqueIdAO;
+import org.irods.jargon.pid.pidservice.AbstractDataOnePidServiceAO;
 import org.jboss.resteasy.annotations.providers.jaxb.json.Mapped;
 import org.jboss.resteasy.annotations.providers.jaxb.json.XmlNsMap;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -203,9 +203,9 @@ public class MemberNodeService {
 		try {
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
-			UniqueIdAO uniqueIdAO = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
-			DataObject dataObject = uniqueIdAO.getDataObjectFromIdentifier(id);
+			AbstractDataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
+			AbstractDataOnePidServiceAO pidServiceAO = pluginDiscoveryService.instancePidService(irodsAccount);
+			DataObject dataObject = pidServiceAO.getDataObjectFromIdentifier(id);
 
 			EventData eventData = new EventData();
 			eventData.setDescription("DataONE replication");
@@ -266,8 +266,8 @@ public class MemberNodeService {
 		try {
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-			DataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
-			UniqueIdAO uniqueIdAO = pluginDiscoveryService.instanceUniqueIdService(irodsAccount);
+			AbstractDataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
+			AbstractDataOnePidServiceAO uniqueIdAO = pluginDiscoveryService.instancePidService(irodsAccount);
 			DataObject dataObject = uniqueIdAO.getDataObjectFromIdentifier(id);
 			EventData eventData = new EventData();
 			eventData.setDescription("DataONE replication");

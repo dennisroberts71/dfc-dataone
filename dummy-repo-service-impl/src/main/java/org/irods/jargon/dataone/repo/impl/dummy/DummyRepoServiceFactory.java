@@ -4,15 +4,15 @@
 package org.irods.jargon.dataone.repo.impl.dummy;
 
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.dataone.configuration.PublicationContext;
-import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoFactory;
-import org.irods.jargon.dataone.reposervice.DataOneRepoServiceAO;
+import org.irods.jargon.dataone.plugin.PublicationContext;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
+import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceFactory;
 
 /**
  * @author mcc
  *
  */
-public class DummyRepoServiceFactory extends AbstractDataOneRepoFactory {
+public class DummyRepoServiceFactory extends AbstractDataOneRepoServiceFactory {
 
 	/**
 	 * 
@@ -30,7 +30,7 @@ public class DummyRepoServiceFactory extends AbstractDataOneRepoFactory {
 	 * org.irods.jargon.core.connection.IRODSAccount)
 	 */
 	@Override
-	public DataOneRepoServiceAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount) {
+	public AbstractDataOneRepoServiceAO instance(PublicationContext publicationContext, IRODSAccount irodsAccount) {
 		return new DummyRepoServiceImpl(irodsAccount, publicationContext);
 	}
 

@@ -23,11 +23,11 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.EnvironmentalInfoAO;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
-import org.irods.jargon.dataone.configuration.PluginDiscoveryService;
-import org.irods.jargon.dataone.configuration.PluginNotFoundException;
-import org.irods.jargon.dataone.configuration.PublicationContext;
-import org.irods.jargon.dataone.events.DataOneEventServiceAO;
+import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventsEnum;
+import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
+import org.irods.jargon.dataone.plugin.PluginNotFoundException;
+import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +80,7 @@ public class MNCoreImpl implements MNCore {
 		try {
 			IRODSAccount irodsAccount = RestAuthUtils
 					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-			DataOneEventServiceAO eventService = pluginDiscoveryService.instanceEventService(irodsAccount);
+			AbstractDataOneEventServiceAO eventService = pluginDiscoveryService.instanceEventService(irodsAccount);
 			return eventService.getLogs(fromDate, toDate, eventsEnum, pidFilter, startIdx, count);
 		} catch (PluginNotFoundException e) {
 			log.error("error processing event plugin", e);

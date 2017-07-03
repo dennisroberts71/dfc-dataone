@@ -127,24 +127,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.irods</groupId>
-			<artifactId>pid-service-api</artifactId>
+			<artifactId>dataone-plugin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.irods</groupId>
-			<artifactId>repo-service-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.irods</groupId>
-			<artifactId>event-service-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.irods</groupId>
-			<artifactId>dataone-utils</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+		
 		<!-- <dependency> <groupId>org.irods.jargon.springboot</groupId> <artifactId>resteasy-spring-boot-starter</artifactId> 
 			<exclusions> <exclusion> <groupId>ch.qos.logback</groupId> <artifactId>logback-classic</artifactId> 
 			</exclusion> </exclusions> </dependency> -->

@@ -46,7 +46,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.irods</groupId>
-			<artifactId>repo-service-api</artifactId>
+			<artifactId>dataone-plugin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

@@ -10,10 +10,10 @@ import org.dataone.service.types.v1.Log;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.dataone.configuration.PublicationContext;
-import org.irods.jargon.dataone.events.AbstractEventServiceAO;
+import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.events.EventsEnum;
+import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * @author mconway
  *
  */
-public class DummyEventServiceAOImpl extends AbstractEventServiceAO {
+public class DummyEventServiceAOImpl extends AbstractDataOneEventServiceAO {
 
 	public static final Logger log = LoggerFactory.getLogger(DummyEventServiceAOImpl.class);
 

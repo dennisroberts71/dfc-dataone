@@ -17,13 +17,13 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.InvalidArgumentException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.exception.JargonRuntimeException;
-import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAO;
 import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
-import org.irods.jargon.dataone.events.AbstractEventServiceAO;
+import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.events.EventLoggingException;
 import org.irods.jargon.dataone.events.EventsEnum;
+import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author mcc
  *
  */
-public class DefaultEventServiceAOImpl extends AbstractEventServiceAO {
+public class DefaultEventServiceAOImpl extends AbstractDataOneEventServiceAO {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultEventServiceAOImpl.class);
 	private AccessLogDAO accessLogDAO;

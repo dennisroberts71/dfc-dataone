@@ -2,8 +2,8 @@ package org.irods.jargon.dataone.events.defdb;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.dataone.configuration.PublicationContext;
 import org.irods.jargon.dataone.def.event.persist.dao.AccessLogDAO;
+import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

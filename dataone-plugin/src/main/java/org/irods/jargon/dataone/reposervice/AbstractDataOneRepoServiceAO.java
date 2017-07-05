@@ -12,6 +12,7 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.dataone.model.DataOneObject;
 import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 

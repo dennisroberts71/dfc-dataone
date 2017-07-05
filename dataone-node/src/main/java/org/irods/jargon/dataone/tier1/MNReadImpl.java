@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
 import org.dataone.service.exceptions.InvalidToken;
@@ -46,6 +47,7 @@ import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
+import org.irods.jargon.dataone.model.DataOneObject;
 import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.plugin.ConfigConstants;
 import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
@@ -70,78 +72,85 @@ public class MNReadImpl implements MNRead {
 	 * @param pluginDiscoveryService
 	 */
 	public MNReadImpl(final PublicationContext publicationContext,
-			final PluginDiscoveryService pluginDiscoveryService) {
+					  final PluginDiscoveryService pluginDiscoveryService) {
 		super();
 		this.publicationContext = publicationContext;
 		this.pluginDiscoveryService = pluginDiscoveryService;
+	}
+
+	private IRODSAccount getIRODSAccount() throws ServiceFailure {
+		try {
+			return RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
+		} catch (Exception ex) {
+			log.error("Error getting iRODS Account: {}", ex.toString());
+			throw new ServiceFailure("1390", ex.getMessage());
+		}
+	}
+
+	private AbstractDataOneRepoServiceAO getRepoService() throws ServiceFailure {
+		return getRepoService(getIRODSAccount());
+	}
+
+	private AbstractDataOneRepoServiceAO getRepoService(IRODSAccount irodsAccount) throws ServiceFailure {
+		try {
+			return pluginDiscoveryService.instanceRepoService(irodsAccount);
+		} catch (Exception ex) {
+			log.error("Error getting repo service instance: {}", ex.toString());
+			throw new ServiceFailure("1390", ex.getMessage());
+		}
+	}
+
+	private AbstractDataOnePidServiceAO getPidService() throws ServiceFailure {
+		return getPidService(getIRODSAccount());
+	}
+
+	private AbstractDataOnePidServiceAO getPidService(IRODSAccount irodsAccount) throws ServiceFailure {
+		try {
+			return pluginDiscoveryService.instancePidService(irodsAccount);
+		} catch (Exception ex) {
+			log.error("Error getting PID service instance: {}", ex.toString());
+			throw new ServiceFailure("1390", ex.getMessage());
+		}
+	}
+
+	private DataOneObject getDataOneObject(AbstractDataOnePidServiceAO pidService, Identifier id)
+			throws ServiceFailure {
+		try {
+			return pidService.getObject(id);
+		} catch (Exception ex) {
+			log.error("Error looking up DataOne object: {}", ex.getMessage());
+			throw new ServiceFailure("1390", ex.getMessage());
+		}
+	}
+
+	private void validateIdentifier(Identifier id) throws NotFound {
+		if (id == null || id.getValue().isEmpty()) {
+			log.error("id is null or empty");
+			throw new NotFound("1402", "invalid DataOne object id");
+		}
 	}
 
 	@Override
 	public DescribeResponse describe(final Identifier id)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 
-		if (id == null || id.getValue().isEmpty()) {
-			log.error("id is null or empty");
-			throw new NotFound("1402", "invalid iRODS data object id");
-		}
+		// Validate the identifier.
+		validateIdentifier(id);
 
-		DataObject dataObject = new DataObject();
-		Checksum checksum = new Checksum();
-		ObjectFormatIdentifier formatIdentifier = new ObjectFormatIdentifier();
-		BigInteger contentLength;
-		Date lastModified;
-		BigInteger serialVersion;
-		IRODSAccount irodsAccount;
-		AbstractDataOneRepoServiceAO repoService;
-
-		// first try and find data object for this id
-		try {
-			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-			repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
-		} catch (Exception ex) {
-			log.error("{}", ex.toString());
-			throw new ServiceFailure("1390", ex.getMessage());
-		}
-
-		try {
-			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-
-			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
-			dataObject = pidService.getDataObjectFromIdentifier(id);
-
-		} catch (Exception e) {
-			log.info("cannot find id: {}", id.getValue());
+		// Look up the DataOne object.
+		AbstractDataOnePidServiceAO pidService = getPidService();
+		DataOneObject dataOneObject = getDataOneObject(pidService, id);
+		if (dataOneObject == null) {
 			throw new NotFound("1380", "The specified object does not exist on this node.");
 		}
 
+		// Return the description.
 		try {
-			Long contentLengthLong = dataObject.getDataSize();
-			String contentLengthStr = contentLengthLong.toString();
-			contentLength = new BigInteger(contentLengthStr);
-
-			// lastModified = dataObject.getUpdatedAt();
-			lastModified = repoService.getLastModifiedDateForDataObject(dataObject);
-
-			String format = repoService.dataObjectFormat(dataObject);
-			formatIdentifier.setValue(format);
-
-			String csum = dataObject.getChecksum();
-			if (csum == null) {
-				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
-				// throw new NotFound("404", "1420");
-			} else {
-				checksum.setValue(csum);
-				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
-			}
-
-			serialVersion = getSerialVersion();
-
-		} catch (Exception e) {
-			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
-			throw new ServiceFailure("1390", e.getMessage());
+			return dataOneObject.describe();
+		} catch (Exception ex) {
+			log.error("Error obtaining DataOne object description: {}", ex.getMessage());
+			throw new ServiceFailure("1390", ex.getMessage());
 		}
-
-		return new DescribeResponse(formatIdentifier, contentLength, lastModified, checksum, serialVersion);
 	}
 
 	@Override
@@ -152,65 +161,33 @@ public class MNReadImpl implements MNRead {
 
 	public void streamObject(final HttpServletResponse response, final Identifier id) throws ServiceFailure, NotFound {
 
-		DataObject dataObject;
-		String path;
-		IRODSAccount irodsAccount;
-		IRODSFile irodsFile;
-		// first try and find data object for this id
-		try {
-			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-
-			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
-			dataObject = pidService.getDataObjectFromIdentifier(id);
-
-			path = dataObject.getAbsolutePath();
-			irodsFile = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
-					.instanceIRODSFile(path);
-
-			if (!irodsFile.exists()) {
-				log.info("file does not exist");
-				throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
-			}
-
-		} catch (Exception ex) {
-			log.info("file does not exist");
-			throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
+		// Validate the response object.
+		if (response == null) {
+			throw new NullPointerException("No response object provided.");
 		}
 
-		try {
-			InputStream stream = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
-					.instanceIRODSFileInputStream(irodsFile);
-			int contentLength = (int) irodsFile.length();
-			log.info("contentLength={}", contentLength);
+		// Look up the DataOne object.
+		AbstractDataOnePidServiceAO pidService = getPidService();
+		DataOneObject dataOneObject = getDataOneObject(pidService, id);
+		if (dataOneObject == null) {
+			throw new NotFound("1030", "The specified object does not exist on this node.");
+		}
 
+		// Build the response.
+		try {
 			response.setContentType("application/octet-stream");
-			response.setHeader("Content-Disposition", "attachment;filename=" + dataObject.getDataName());
-			response.setContentLength(contentLength);
-			// response.addHeader("Vary", "Accept-Encoding");
-			log.info("response: {}", response.toString());
+			response.setContentLength((int) dataOneObject.getSize());
+			response.setHeader("Content-Disposition", "attachment;filename=" + dataOneObject.getName());
 
-			OutputStream output = new BufferedOutputStream(response.getOutputStream());
-
-			int readBytes = 0;
-			byte[] buffer = new byte[4096];
-
-			while ((readBytes = stream.read(buffer, 0, 4096)) != -1) { //
-				log.info("readBytes={}", readBytes);
-				output.write(buffer, 0, readBytes);
-			}
-			output.flush();
-			if (stream != null) {
-				stream.close();
-			}
-			if (output != null) {
-				output.close();
-			}
-
-		} catch (Exception e) {
-			log.error("Cannot stream iRODS object: {}", path);
-			throw new ServiceFailure("1030", "unable to stream iRODS data object");
+			// Copy the object contents to the output stream.
+			InputStream stream = dataOneObject.getInputStream();
+			IOUtils.copy(stream, response.getOutputStream());
+			IOUtils.closeQuietly(stream);
+			IOUtils.closeQuietly(response.getOutputStream());
+		} catch (Exception ex) {
+			log.error("Error streaming DataOne object: {}", ex.getMessage());
+			throw new ServiceFailure("1030", "Unable to stream object.");
 		}
-
 	}
 
 	@Override
@@ -373,9 +350,9 @@ public class MNReadImpl implements MNRead {
 			String csum = dataObject.getChecksum();
 			if (csum == null) {
 				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath()); // throw
-																								// new
-																								// NotFound("404",
-																								// "1420");
+				// new
+				// NotFound("404",
+				// "1420");
 			} else {
 				checksum.setValue(csum);
 				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
@@ -465,7 +442,7 @@ public class MNReadImpl implements MNRead {
 
 	@Override
 	public ObjectList listObjects(final Date fromDate, final Date toDate, final ObjectFormatIdentifier formatId,
-			final Boolean replicaStatus, final Integer start, final Integer count)
+								  final Boolean replicaStatus, final Integer start, final Integer count)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 
 		IRODSAccount irodsAccount;
@@ -551,7 +528,7 @@ public class MNReadImpl implements MNRead {
 
 	@Override
 	public ObjectList listObjects(final Session arg0, final Date arg1, final Date arg2,
-			final ObjectFormatIdentifier arg3, final Boolean arg4, final Integer arg5, final Integer arg6)
+								  final ObjectFormatIdentifier arg3, final Boolean arg4, final Integer arg5, final Integer arg6)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 		throw new NotImplemented("1521", "this service has not been implemented");
 	}
@@ -619,23 +596,23 @@ public class MNReadImpl implements MNRead {
 		List<Permission> permissions = new ArrayList<>();
 		FilePermissionEnum fpEnum = p.getFilePermissionEnum();
 		switch (fpEnum) {
-		case READ:
-			permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-			break;
+			case READ:
+				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
+				break;
 
-		case WRITE:
-			permissions.add(Permission.READ);
-			permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-			break;
+			case WRITE:
+				permissions.add(Permission.READ);
+				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
+				break;
 
-		case OWN:
-			permissions.add(Permission.READ);
-			permissions.add(Permission.WRITE);
-			permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-			break;
-		default:
-			permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-			break;
+			case OWN:
+				permissions.add(Permission.READ);
+				permissions.add(Permission.WRITE);
+				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
+				break;
+			default:
+				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
+				break;
 		}
 		return permissions;
 	}

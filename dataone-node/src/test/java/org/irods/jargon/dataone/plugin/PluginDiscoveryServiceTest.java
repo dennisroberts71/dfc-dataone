@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.utils.LocalFileUtils;
+import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;

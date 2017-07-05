@@ -20,7 +20,7 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.connection.auth.AuthResponse;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.dataone.plugin.RestConfiguration;
+import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

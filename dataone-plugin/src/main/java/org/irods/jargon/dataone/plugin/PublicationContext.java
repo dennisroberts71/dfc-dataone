@@ -8,6 +8,7 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

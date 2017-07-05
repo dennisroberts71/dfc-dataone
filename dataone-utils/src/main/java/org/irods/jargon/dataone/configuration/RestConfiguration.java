@@ -1,4 +1,4 @@
-package org.irods.jargon.dataone.plugin;
+package org.irods.jargon.dataone.configuration;
 
 /**
  * Pojo containing configuration information

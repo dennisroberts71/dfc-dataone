@@ -3,6 +3,7 @@ package org.irods.jargon.dataone.model;
 import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.DescribeResponse;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
@@ -54,8 +55,41 @@ public class FileDataOneObject implements DataOneObject {
 	}
 
 	@Override
-	public long getSize() throws JargonException, PluginNotFoundException {
-		return dataObject.getDataSize();
+	public ObjectFormatIdentifier getFormat() throws JargonException, PluginNotFoundException {
+		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
+
+		// Determine the format.
+		ObjectFormatIdentifier result = new ObjectFormatIdentifier();
+		result.setValue(repoService.dataObjectFormat(dataObject));
+
+		return result;
+	}
+
+	@Override
+	public BigInteger getSize() throws JargonException, PluginNotFoundException {
+		return BigInteger.valueOf(dataObject.getDataSize());
+	}
+
+	@Override
+	public Checksum getChecksum() throws JargonException, PluginNotFoundException {
+		Checksum checksum = new Checksum();
+
+		// Determine the checksum.
+		String csum = dataObject.getChecksum();
+		if (csum == null) {
+			log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
+		} else {
+			checksum.setValue(csum);
+			checksum.setAlgorithm(CommonConfig.getChecksumAlgorithm(ctx));
+		}
+
+		return checksum;
+	}
+
+	@Override
+	public Date getLastModifiedDate() throws JargonException, PluginNotFoundException {
+		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
+		return repoService.getLastModifiedDateForDataObject(dataObject);
 	}
 
 	@Override
@@ -69,34 +103,7 @@ public class FileDataOneObject implements DataOneObject {
 
 	@Override
 	public DescribeResponse describe() throws JargonException, PluginNotFoundException {
-
-		// Look up the repo service.
-		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
-
-		// Determine the format identifier.
-		ObjectFormatIdentifier formatIdentifier = new ObjectFormatIdentifier();
-		formatIdentifier.setValue(repoService.dataObjectFormat(dataObject));
-
-		// Determine the content length.
-		BigInteger contentLength = new BigInteger(new Long(getSize()).toString());
-
-		// Determine the last modified time.
-		Date lastModified = repoService.getLastModifiedDateForDataObject(dataObject);
-
-		// Get the checksum.
-		Checksum checksum = new Checksum();
-		String csum = dataObject.getChecksum();
-		if (csum == null) {
-			log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
-		} else {
-			checksum.setValue(csum);
-			checksum.setAlgorithm(CommonConfig.getChecksumAlgorithm(ctx));
-		}
-
-		// Get the serial version.
-		BigInteger serialVersion = getSerialVersion();
-
-		return new DescribeResponse(formatIdentifier, contentLength, lastModified, checksum, serialVersion);
+		return new DescribeResponse(getFormat(), getSize(), getLastModifiedDate(), getChecksum(), getSerialVersion());
 	}
 
 	private BigInteger getSerialVersion() {

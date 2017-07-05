@@ -1,10 +1,15 @@
 package org.irods.jargon.dataone.model;
 
+import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.DescribeResponse;
+import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.plugin.PluginNotFoundException;
 
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.Date;
 
 /**
  * @author Dennis Roberts - CyVerse
@@ -13,7 +18,13 @@ public interface DataOneObject {
 
 	String getName() throws JargonException, PluginNotFoundException;
 
-	long getSize() throws JargonException, PluginNotFoundException;
+	ObjectFormatIdentifier getFormat() throws JargonException, PluginNotFoundException;
+
+	BigInteger getSize() throws JargonException, PluginNotFoundException;
+
+	Checksum getChecksum() throws JargonException, PluginNotFoundException;
+
+	Date getLastModifiedDate() throws JargonException, PluginNotFoundException;
 
 	InputStream getInputStream() throws JargonException, PluginNotFoundException;
 

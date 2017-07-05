@@ -161,10 +161,11 @@ public class MNReadImpl implements MNRead {
 
 	public void streamObject(final HttpServletResponse response, final Identifier id) throws ServiceFailure, NotFound {
 
-		// Validate the response object.
+		// Validate the parameters.
 		if (response == null) {
 			throw new NullPointerException("No response object provided.");
 		}
+		validateIdentifier(id);
 
 		// Look up the DataOne object.
 		AbstractDataOnePidServiceAO pidService = getPidService();
@@ -176,7 +177,7 @@ public class MNReadImpl implements MNRead {
 		// Build the response.
 		try {
 			response.setContentType("application/octet-stream");
-			response.setContentLength((int) dataOneObject.getSize());
+			response.setContentLength(dataOneObject.getSize().intValue());
 			response.setHeader("Content-Disposition", "attachment;filename=" + dataOneObject.getName());
 
 			// Copy the object contents to the output stream.
@@ -244,50 +245,25 @@ public class MNReadImpl implements MNRead {
 	public Checksum getChecksum(final Identifier id, final String algorithm)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
 
-		if (id == null || id.getValue().isEmpty()) {
-			throw new NotFound("1420", "invalid iRODS data object id");
-		}
-
+		// Validate the parameters.
+		validateIdentifier(id);
 		if (algorithm == null || algorithm.isEmpty()) {
 			throw new NotFound("1420", "invalid checksum algorithm provided");
 		}
 
-		Checksum checksum = new Checksum();
+		// Look up the DataOne object.
+		AbstractDataOnePidServiceAO pidService = getPidService();
+		DataOneObject dataOneObject = getDataOneObject(pidService, id);
+		if (dataOneObject == null) {
+			throw new NotFound("1020", "The specified object does not exist on this node.");
+		}
 
-		DataObject dataObject;
-		String path;
-		IRODSAccount irodsAccount;
-		IRODSFile irodsFile;
-		// first try and find data object for this id
 		try {
-			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-
-			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
-			dataObject = pidService.getDataObjectFromIdentifier(id);
-
-			path = dataObject.getAbsolutePath();
-			irodsFile = publicationContext.getIrodsAccessObjectFactory().getIRODSFileFactory(irodsAccount)
-					.instanceIRODSFile(path);
-
-			if (!irodsFile.exists()) {
-				log.info("file does not exist");
-				throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
-			}
-
+			return dataOneObject.getChecksum();
 		} catch (Exception ex) {
-			log.info("file does not exist");
-			throw new NotFound("1020", "No data object could be found for given PID:" + id.getValue());
+			log.error("Error obtaining checksum for DataOne object: {}", ex.getMessage());
+			throw new ServiceFailure("1020", "Unable to retrieve checksum.");
 		}
-
-		String csum = dataObject.getChecksum();
-		if (csum == null) {
-			log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
-			throw new NotFound("1410", "Checksum does not exist for data object id provided");
-		}
-		checksum.setValue(csum);
-		checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
-
-		return checksum;
 	}
 
 	@Override

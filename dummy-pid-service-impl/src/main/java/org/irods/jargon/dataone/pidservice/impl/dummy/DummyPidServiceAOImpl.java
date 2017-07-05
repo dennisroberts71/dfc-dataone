@@ -4,8 +4,8 @@ import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.plugin.PublicationContext;
-import org.irods.jargon.pid.pidservice.AbstractDataOnePidServiceAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.irods.jargon.pid.pidservice;
+package org.irods.jargon.dataone.pidservice;
 
 import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.connection.IRODSAccount;

@@ -129,7 +129,7 @@
 		</repository>
 	</repositories>
 	<modules>
-		<module>dataone-context</module>
+		<module>dataone-plugin</module>
 		<module>dataone-node</module>
 		<module>dummy-repo-service-impl</module>
 		<module>dataone-utils</module>

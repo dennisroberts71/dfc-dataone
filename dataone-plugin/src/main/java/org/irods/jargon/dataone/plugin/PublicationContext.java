@@ -22,15 +22,18 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class PublicationContext {
+	public static final Logger log = LoggerFactory.getLogger(PublicationContext.class);
+
 	@Autowired
 	private IRODSAccessObjectFactory irodsAccessObjectFactory;
 
 	@Autowired
 	private RestConfiguration restConfiguration;
 
-	private Properties additionalProperties;
+	@Autowired
+	private PluginDiscoveryService pluginDiscoveryService;
 
-	public static final Logger log = LoggerFactory.getLogger(PublicationContext.class);
+	private Properties additionalProperties;
 
 	@PostConstruct
 	public void init() {
@@ -83,6 +86,21 @@ public class PublicationContext {
 	 */
 	public void setAdditionalProperties(Properties additionalProperties) {
 		this.additionalProperties = additionalProperties;
+	}
+
+	/**
+	 * @return the pluginDiscoveryService
+	 */
+	public PluginDiscoveryService getPluginDiscoveryService() {
+		return pluginDiscoveryService;
+	}
+
+	/**
+	 * @param pluginDiscoveryService
+	 *            the pluginDiscoveryService to set
+	 */
+	public void setPluginDiscoveryService(PluginDiscoveryService pluginDiscoveryService) {
+		this.pluginDiscoveryService = pluginDiscoveryService;
 	}
 
 }

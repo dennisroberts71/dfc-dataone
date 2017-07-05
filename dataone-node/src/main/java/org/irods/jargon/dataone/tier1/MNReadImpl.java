@@ -46,6 +46,7 @@ import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
+import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.plugin.ConfigConstants;
 import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
 import org.irods.jargon.dataone.plugin.PluginNotFoundException;
@@ -53,7 +54,6 @@ import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
 import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
-import org.irods.jargon.pid.pidservice.AbstractDataOnePidServiceAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

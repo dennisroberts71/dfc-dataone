@@ -4,9 +4,9 @@
 package org.irods.jargon.dataone.pidservice.impl.dummy;
 
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.dataone.pidservice.AbstractDataOnePidFactory;
+import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.plugin.PublicationContext;
-import org.irods.jargon.pid.pidservice.AbstractDataOnePidFactory;
-import org.irods.jargon.pid.pidservice.AbstractDataOnePidServiceAO;
 
 /**
  * @author mcc

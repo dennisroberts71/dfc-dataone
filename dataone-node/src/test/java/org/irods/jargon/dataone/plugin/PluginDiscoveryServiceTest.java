@@ -5,8 +5,8 @@ import java.io.File;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
+import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
-import org.irods.jargon.pid.pidservice.AbstractDataOnePidServiceAO;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -39,5 +39,6 @@
 
 	<beans:bean id="springFilter"
 		class="org.irods.jargon.dataone.auth.BasicAuthFilter" />
+		
 
 </beans:beans>

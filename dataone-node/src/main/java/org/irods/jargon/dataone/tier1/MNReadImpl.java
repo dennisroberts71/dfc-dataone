@@ -1,50 +1,14 @@
 package org.irods.jargon.dataone.tier1;
 
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
-import org.dataone.service.exceptions.InsufficientResources;
-import org.dataone.service.exceptions.InvalidRequest;
-import org.dataone.service.exceptions.InvalidToken;
-import org.dataone.service.exceptions.NotAuthorized;
-import org.dataone.service.exceptions.NotFound;
-import org.dataone.service.exceptions.NotImplemented;
-import org.dataone.service.exceptions.ServiceFailure;
-import org.dataone.service.exceptions.SynchronizationFailed;
+import org.dataone.service.exceptions.*;
 import org.dataone.service.mn.tier1.v1.MNRead;
-import org.dataone.service.types.v1.AccessPolicy;
-import org.dataone.service.types.v1.AccessRule;
-import org.dataone.service.types.v1.Checksum;
-import org.dataone.service.types.v1.DescribeResponse;
-import org.dataone.service.types.v1.Event;
-import org.dataone.service.types.v1.Identifier;
-import org.dataone.service.types.v1.NodeReference;
-import org.dataone.service.types.v1.ObjectFormatIdentifier;
-import org.dataone.service.types.v1.ObjectInfo;
-import org.dataone.service.types.v1.ObjectList;
-import org.dataone.service.types.v1.Permission;
-import org.dataone.service.types.v1.ReplicationPolicy;
-import org.dataone.service.types.v1.Session;
-import org.dataone.service.types.v1.Subject;
-import org.dataone.service.types.v1.SystemMetadata;
+import org.dataone.service.types.v1.*;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.protovalues.FilePermissionEnum;
-import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.domain.DataObject;
-import org.irods.jargon.core.pub.domain.UserFilePermission;
-import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
-import org.irods.jargon.dataone.domain.MNPermissionEnum;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.model.DataOneObject;
@@ -58,6 +22,13 @@ import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class MNReadImpl implements MNRead {
 
@@ -288,126 +259,23 @@ public class MNReadImpl implements MNRead {
 	@Override
 	public SystemMetadata getSystemMetadata(final Identifier id)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure, NotFound {
-		if (id == null || id.getValue().isEmpty()) {
-			throw new InvalidToken("1402", "invalid iRODS data object id");
-		}
 
-		SystemMetadata metadata = new SystemMetadata();
-		// TODO: hardcode version to 1 for now
-		metadata.setSerialVersion(getSerialVersion());
+		// Validate the parameters.
+		validateIdentifier(id);
 
-		DataObject dataObject;
-		IRODSAccount irodsAccount;
-		Checksum checksum = new Checksum();
-
-		AbstractDataOneRepoServiceAO repoService;
-
-		// first try and find data object for this id
-		try {
-			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-			repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
-		} catch (Exception ex) {
-			log.error("{}", ex.toString());
-			throw new ServiceFailure("1390", ex.getMessage());
-		}
-
-		// first try and find data object for this id
-		try {
-
-			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
-			dataObject = pidService.getDataObjectFromIdentifier(id);
-
-		} catch (Exception ex) {
-			log.info("file does not exist");
-			throw new NotFound("1060", "No metadata could be found for given PID:" + id.getValue());
+		// Look up the DataOne object.
+		AbstractDataOnePidServiceAO pidService = getPidService();
+		DataOneObject dataOneObject = getDataOneObject(pidService, id);
+		if (dataOneObject == null) {
+			throw new NotFound("1060", "The specified object does not exist on this node.");
 		}
 
 		try {
-			String csum = dataObject.getChecksum();
-			if (csum == null) {
-				log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath()); // throw
-				// new
-				// NotFound("404",
-				// "1420");
-			} else {
-				checksum.setValue(csum);
-				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
-			}
-
-			String format = repoService.dataObjectFormat(dataObject);
-
-			metadata.setIdentifier(id);
-			ObjectFormatIdentifier formatId = new ObjectFormatIdentifier();
-			formatId.setValue(format);
-			metadata.setFormatId(formatId);
-
-			Long dataSizeLong = new Long(dataObject.getDataSize());
-			String dataSizeStr = dataSizeLong.toString();
-			metadata.setSize(new BigInteger(dataSizeStr));
-			metadata.setChecksum(checksum);
-
-			String dataOwner = "uid=" + dataObject.getDataOwnerName();
-			Subject submitter = new Subject();
-			submitter.setValue(dataOwner);
-			metadata.setSubmitter(submitter);
-
-			Subject rightsHolder = new Subject();
-			rightsHolder.setValue(dataOwner);
-			metadata.setRightsHolder(rightsHolder);
-
-			DataObjectAO dataObjectAO = publicationContext.getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount);
-			List<UserFilePermission> permissions = dataObjectAO
-					.listPermissionsForDataObject(dataObject.getAbsolutePath());
-			if (permissions != null) {
-				AccessPolicy accessPolicy = new AccessPolicy();
-				for (UserFilePermission permission : permissions) {
-					AccessRule rule = new AccessRule();
-					Subject subject = new Subject();
-
-					// in DataONE - anonymous translates to public
-					// TODO: also may need to make translation for "public" to
-					// "authenticatedUser"
-					if (permission.getUserName().equals("anonymous")) {
-						subject.setValue("public");
-					} else {
-						subject.setValue("uid=" + permission.getUserName());
-					}
-					rule.addSubject(subject);
-					List<Permission> d1Premissions = getD1Permission(permission);
-					for (Permission d1Premission : d1Premissions) {
-						rule.addPermission(d1Premission);
-					}
-					accessPolicy.addAllow(rule);
-				}
-				metadata.setAccessPolicy(accessPolicy);
-			}
-
-			ReplicationPolicy replicationPolicy = new ReplicationPolicy();
-			replicationPolicy.setReplicationAllowed(false);
-			metadata.setReplicationPolicy(replicationPolicy);
-
-			// Add support for obsoletes or obsoletedBy?
-
-			// Use AVU epoch date //
-			metadata.setDateUploaded(dataObject.getCreatedAt()); //
-			metadata.setDateSysMetadataModified(dataObject.getUpdatedAt());
-			Date startDate = repoService.getLastModifiedDateForDataObject(dataObject);
-			metadata.setDateSysMetadataModified(startDate);
-			metadata.setDateUploaded(startDate);
-
-			NodeReference nodeReference = new NodeReference();
-			nodeReference.setValue(properties.getProperty("irods.dataone.identifier"));
-			metadata.setOriginMemberNode(nodeReference);
-			metadata.setAuthoritativeMemberNode(nodeReference);
-
+			return dataOneObject.getSystemMetadata();
 		} catch (Exception e) {
-			log.error("Cannot access iRODS object: {}", dataObject.getAbsolutePath());
+			log.error("Unable to get system metadata: {}", e.getMessage());
 			throw new ServiceFailure("1090", e.getMessage());
 		}
-
-		// first try and find data object for this id
-
-		return metadata;
 	}
 
 	@Override
@@ -562,35 +430,6 @@ public class MNReadImpl implements MNRead {
 	public boolean synchronizationFailed(final Session arg0, final SynchronizationFailed arg1)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 		throw new NotImplemented("2160", "this service has not been implemented");
-	}
-
-	// need to return every DataONE permission implied by iRODS permissions i.e.
-	// write would require read and write to be listed as DataONE permissions
-	// and
-	// own would include read, write, and changePermission
-	private List<Permission> getD1Permission(final UserFilePermission p) {
-		List<Permission> permissions = new ArrayList<>();
-		FilePermissionEnum fpEnum = p.getFilePermissionEnum();
-		switch (fpEnum) {
-			case READ:
-				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-				break;
-
-			case WRITE:
-				permissions.add(Permission.READ);
-				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-				break;
-
-			case OWN:
-				permissions.add(Permission.READ);
-				permissions.add(Permission.WRITE);
-				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-				break;
-			default:
-				permissions.add(MNPermissionEnum.valueForDataOne(fpEnum));
-				break;
-		}
-		return permissions;
 	}
 
 	private BigInteger getSerialVersion() {

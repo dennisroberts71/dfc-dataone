@@ -1,24 +1,26 @@
 package org.irods.jargon.dataone.model;
 
-import org.dataone.service.types.v1.Checksum;
-import org.dataone.service.types.v1.DescribeResponse;
-import org.dataone.service.types.v1.ObjectFormatIdentifier;
-import org.dataone.service.types.v1.SystemMetadata;
+import org.dataone.service.types.v1.*;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.dataone.config.CommonConfig;
 import org.irods.jargon.dataone.plugin.PluginNotFoundException;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
+import org.irods.jargon.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Dennis Roberts - CyVerse
@@ -28,9 +30,11 @@ public class FileDataOneObject implements DataOneObject {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final IRODSAccount account;
 	private final PublicationContext ctx;
+	private final Identifier id;
 	private final DataObject dataObject;
 
-	public FileDataOneObject(final PublicationContext ctx, final IRODSAccount account, final DataObject dataObject) {
+	public FileDataOneObject(final PublicationContext ctx, final IRODSAccount account, final Identifier id,
+							 final DataObject dataObject) {
 
 		if (account == null) {
 			throw new NullPointerException("No iRODS account provided.");
@@ -40,12 +44,17 @@ public class FileDataOneObject implements DataOneObject {
 			throw new NullPointerException("No publication context provided.");
 		}
 
+		if (id == null || id.getValue() == null || id.getValue().isEmpty()) {
+			throw new NullPointerException("No identifier provided.");
+		}
+
 		if (dataObject == null) {
 			throw new NullPointerException("No data object provided.");
 		}
 
 		this.account = account;
 		this.ctx = ctx;
+		this.id = id;
 		this.dataObject = dataObject;
 	}
 
@@ -87,6 +96,55 @@ public class FileDataOneObject implements DataOneObject {
 	}
 
 	@Override
+	public Subject getSubmitter() throws JargonException, PluginNotFoundException {
+		return getOwnerSubject();
+	}
+
+	@Override
+	public Subject getRightsHolder() throws JargonException, PluginNotFoundException {
+		return getOwnerSubject();
+	}
+
+	@Override
+	public AccessPolicy getAccessPolicy() throws JargonException, PluginNotFoundException {
+
+		// Look up the data object permissions.
+		DataObjectAO dataObjectAO = ctx.getIrodsAccessObjectFactory().getDataObjectAO(account);
+		List<UserFilePermission> perms = dataObjectAO.listPermissionsForDataObject(dataObject.getAbsolutePath());
+		if (perms == null) {
+			perms = new ArrayList<>();
+		}
+
+		// Build the access policy.
+		AccessPolicy result = new AccessPolicy();
+		for (UserFilePermission perm : perms) {
+			AccessRule rule = new AccessRule();
+			Subject subject = new Subject();
+
+			if (perm.getUserName().equals("anonymous")) {
+				subject.setValue("public");
+			} else {
+				subject.setValue("uid=" + perm.getUserName());
+			}
+			rule.addSubject(subject);
+			List<Permission> d1Permissions = PermissionUtils.getDataOnePermission(perm);
+			for (Permission d1Permission : d1Permissions) {
+				rule.addPermission(d1Permission);
+			}
+			result.addAllow(rule);
+		}
+
+		return result;
+	}
+
+	@Override
+	public ReplicationPolicy getReplicationPolicy() throws JargonException, PluginNotFoundException {
+		ReplicationPolicy result = new ReplicationPolicy();
+		result.setReplicationAllowed(false);
+		return result;
+	}
+
+	@Override
 	public Date getLastModifiedDate() throws JargonException, PluginNotFoundException {
 		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
 		return repoService.getLastModifiedDateForDataObject(dataObject);
@@ -106,8 +164,34 @@ public class FileDataOneObject implements DataOneObject {
 		return new DescribeResponse(getFormat(), getSize(), getLastModifiedDate(), getChecksum(), getSerialVersion());
 	}
 
+	@Override
+	public SystemMetadata getSystemMetadata() throws JargonException, PluginNotFoundException {
+		SystemMetadata result = new SystemMetadata();
+		result.setSerialVersion(getSerialVersion());
+		result.setIdentifier(id);
+		result.setFormatId(getFormat());
+		result.setSize(getSize());
+		result.setChecksum(getChecksum());
+		result.setSubmitter(getSubmitter());
+		result.setRightsHolder(getRightsHolder());
+		result.setAccessPolicy(getAccessPolicy());
+		result.setReplicationPolicy(getReplicationPolicy());
+		result.setDateUploaded(dataObject.getCreatedAt());
+		result.setDateSysMetadataModified(getLastModifiedDate());
+		result.setDateUploaded(getLastModifiedDate());
+		result.setOriginMemberNode(CommonConfig.getNodeReference(ctx));
+		result.setAuthoritativeMemberNode(CommonConfig.getNodeReference(ctx));
+		return result;
+	}
+
 	private BigInteger getSerialVersion() {
 		// TODO: hardcode version to 1 for now
 		return new BigInteger(new Long(1).toString());
+	}
+
+	private Subject getOwnerSubject() {
+		Subject result = new Subject();
+		result.setValue("uid=" + dataObject.getDataOwnerName());
+		return result;
 	}
 }

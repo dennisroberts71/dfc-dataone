@@ -1,6 +1,16 @@
 package org.irods.jargon.dataone.model;
 
-import org.dataone.service.types.v1.*;
+import org.dataone.service.types.v1.AccessPolicy;
+import org.dataone.service.types.v1.AccessRule;
+import org.dataone.service.types.v1.Checksum;
+import org.dataone.service.types.v1.DescribeResponse;
+import org.dataone.service.types.v1.Identifier;
+import org.dataone.service.types.v1.ObjectFormatIdentifier;
+import org.dataone.service.types.v1.ObjectInfo;
+import org.dataone.service.types.v1.Permission;
+import org.dataone.service.types.v1.ReplicationPolicy;
+import org.dataone.service.types.v1.Subject;
+import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataObjectAO;

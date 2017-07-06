@@ -86,7 +86,7 @@ public class FileDataOneObject implements DataOneObject {
 
 		// Determine the format.
 		ObjectFormatIdentifier result = new ObjectFormatIdentifier();
-		result.setValue(repoService.dataObjectFormat(dataObject));
+		result.setValue(repoService.getFormat(dataObject));
 
 		return result;
 	}

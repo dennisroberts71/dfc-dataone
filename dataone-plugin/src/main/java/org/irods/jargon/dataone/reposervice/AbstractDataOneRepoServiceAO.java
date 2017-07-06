@@ -50,5 +50,7 @@ public abstract class AbstractDataOneRepoServiceAO extends AbstractDataOnePlugin
 
 	public abstract Date getLastModifiedDate(Collection collection) throws JargonException;
 
-	public abstract String dataObjectFormat(DataObject dataObject) throws FileNotFoundException, JargonException;
+	public abstract String getFormat(DataObject dataObject) throws JargonException;
+
+	public abstract String getFormat(Collection collection) throws JargonException;
 }

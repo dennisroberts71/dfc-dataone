@@ -6,30 +6,24 @@ import org.dataone.service.mn.tier1.v1.MNRead;
 import org.dataone.service.types.v1.*;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
+import org.irods.jargon.dataone.config.CommonConfig;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.model.DataOneObject;
-import org.irods.jargon.dataone.model.DataOneObjectListResponse;
 import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
-import org.irods.jargon.dataone.plugin.ConfigConstants;
 import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
 import org.irods.jargon.dataone.plugin.PluginNotFoundException;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
-import org.irods.jargon.dataone.reposervice.DataObjectListResponse;
 import org.irods.jargon.dataone.utils.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class MNReadImpl implements MNRead {
 
@@ -82,6 +76,15 @@ public class MNReadImpl implements MNRead {
 		} catch (Exception ex) {
 			log.error("Error getting PID service instance: {}", ex.toString());
 			throw new ServiceFailure("1390", ex.getMessage());
+		}
+	}
+
+	private AbstractDataOneEventServiceAO getEventService(IRODSAccount irodsAccount) throws ServiceFailure {
+		try {
+			return pluginDiscoveryService.instanceEventService(irodsAccount);
+		} catch (Exception ex) {
+			log.error("Error getting event service instance: {}", ex.toString());
+			throw new ServiceFailure("2161", ex.getMessage());
 		}
 	}
 
@@ -312,45 +315,37 @@ public class MNReadImpl implements MNRead {
 	public boolean synchronizationFailed(final SynchronizationFailed syncFailed)
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 
-		Identifier pid = null;
-		IRODSAccount irodsAccount;
-		if (syncFailed.getPid() != null) {
-			pid = new Identifier();
-			pid.setValue(syncFailed.getPid());
-		} else {
-			throw new ServiceFailure("2161", "The identifier cannot be null.");
+		// Validate the arguments.
+		if (syncFailed == null) {
+			throw new ServiceFailure("2161", "The synchronization failed object cannot be null.");
+		}
+		if (syncFailed.getPid() == null || syncFailed.getPid().isEmpty()) {
+			throw new ServiceFailure("2161", "The identifier cannot be null or empty.");
 		}
 
-		DataObject dataObject;
-		try {
-			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-
-			AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
-			dataObject = pidService.getDataObjectFromIdentifier(pid);
-
-		} catch (Exception ex) {
-			throw new ServiceFailure("2161",
-					"The identifier specified by " + syncFailed.getPid() + " was not found on this node.");
+		// Look up the data object.
+		IRODSAccount account = getIRODSAccount();
+		Identifier id = new Identifier();
+		id.setValue(syncFailed.getPid());
+		AbstractDataOnePidServiceAO pidService = getPidService(account);
+		DataOneObject dataOneObject = getDataOneObject(pidService, id);
+		if (dataOneObject == null) {
+			throw new ServiceFailure("2161", "The specified object does not exist on this node.");
 		}
 
-		// TODO: mcc - see
-		// https://github.com/DICE-UNC/dfc-dataone/blob/master/src/main/java/org/irods/jargon/dataone/events/EventLogAOElasticSearchImpl.java
-
+		// Log the event.
+		AbstractDataOneEventServiceAO eventService = getEventService(account);
 		try {
-			AbstractDataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
 			EventData eventData = new EventData();
-			eventData.setDescription("DataONE replication");
+			eventData.setDescription("DataOne replication");
 			eventData.setEvent(Event.SYNCHRONIZATION_FAILED);
-			eventData.setId(pid);
-			eventData.setIrodsPath(dataObject.getAbsolutePath());
-			eventData.setNodeIdentifier(
-					publicationContext.getAdditionalProperties().getProperty(ConfigConstants.PROPERTY_NODE_IDENTIFIER));
-			eventData.setUserAgent(irodsAccount.getUserName());
-
-			eventServiceAO.recordEvent(eventData);
-
+			eventData.setId(id);
+			eventData.setIrodsPath(dataOneObject.getPath());
+			eventData.setNodeIdentifier(CommonConfig.getDataOneNodeId(publicationContext));
+			eventData.setUserAgent(account.getUserName());
+			eventService.recordEvent(eventData);
 		} catch (PluginNotFoundException | JargonException e) {
-			log.error("failed to log synchronization failed event: {}", e.toString());
+			log.error("Failed to log Synchronization Failure event: {}", e.toString());
 			throw new ServiceFailure("2161", "Failed to log Synchronization Failure event");
 		}
 
@@ -362,12 +357,4 @@ public class MNReadImpl implements MNRead {
 			throws InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 		throw new NotImplemented("2160", "this service has not been implemented");
 	}
-
-	private BigInteger getSerialVersion() {
-		// TODO: hardcode version to 1 for now
-		Long verLong = new Long(1);
-		String verStr = verLong.toString();
-		return new BigInteger(verStr);
-	}
-
 }

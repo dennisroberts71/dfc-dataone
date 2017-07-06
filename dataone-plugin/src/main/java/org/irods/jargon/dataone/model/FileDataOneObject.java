@@ -61,6 +61,11 @@ public class FileDataOneObject implements DataOneObject {
 	}
 
 	@Override
+	public String getPath() throws JargonException, PluginNotFoundException {
+		return dataObject.getAbsolutePath();
+	}
+
+	@Override
 	public String getName() throws JargonException, PluginNotFoundException {
 		return dataObject.getDataName();
 	}

@@ -13,6 +13,8 @@ import java.util.Date;
  */
 public interface DataOneObject {
 
+	String getPath() throws JargonException, PluginNotFoundException;
+
 	String getName() throws JargonException, PluginNotFoundException;
 
 	ObjectFormatIdentifier getFormat() throws JargonException, PluginNotFoundException;

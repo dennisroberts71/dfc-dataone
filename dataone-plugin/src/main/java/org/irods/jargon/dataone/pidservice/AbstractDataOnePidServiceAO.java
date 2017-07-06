@@ -34,9 +34,30 @@ public abstract class AbstractDataOnePidServiceAO extends AbstractDataOnePlugin 
 		super(irodsAccount, publicationContext);
 	}
 
+	/**
+	 * Determines the identifier for a {@link DataObject}.
+	 *
+	 * @param dataObject the {@link DataObject}.
+	 * @return the corresponding identifier.
+	 * @throws JargonException
+	 */
 	public abstract Identifier getIdentifier(DataObject dataObject) throws JargonException;
 
+	/**
+	 * Determines the identifier for a {@link Collection}
+	 *
+	 * @param collection the {@link Collection}
+	 * @return the corresponding identifier.
+	 * @throws JargonException
+	 */
 	public abstract Identifier getIdentifier(Collection collection) throws JargonException;
 
+	/**
+	 * Retrieves the DataOne object corresponding to an identifier.
+	 *
+	 * @param identifier the identifier.
+	 * @return the corresponding DataOne object.
+	 * @throws JargonException
+	 */
 	public abstract DataOneObject getObject(Identifier identifier) throws JargonException;
 }

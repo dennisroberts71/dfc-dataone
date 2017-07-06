@@ -33,6 +33,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * A DataOne object that is stored as a {@link DataObject} in iRODS.
+ *
  * @author Dennis Roberts - CyVerse
  */
 public class FileDataOneObject implements DataOneObject {

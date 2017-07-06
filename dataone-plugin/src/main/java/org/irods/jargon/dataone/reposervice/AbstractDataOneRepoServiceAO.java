@@ -40,17 +40,69 @@ public abstract class AbstractDataOneRepoServiceAO extends AbstractDataOnePlugin
 		super(irodsAccount, publicationContext);
 	}
 
+	/**
+	 * Retrieves a list of DataOne objects matching the given parameters.
+	 *
+	 * @param fromDate
+	 *            the start date for the search.
+	 * @param toDate
+	 *            the end date for the search.
+	 * @param formatId
+	 *            the format identifier for the search.
+	 * @param replicaStatus
+	 *            the replica status for the search.
+	 * @param start
+	 *            the start index for paged searches.
+	 * @param count
+	 *            the maximum number of results for paged searches.
+	 * @return a possibly partial list of matching DataOne objects.
+	 * @throws JargonException
+	 */
 	public abstract DataOneObjectListResponse getExposedObjects(Date fromDate, Date toDate,
 			ObjectFormatIdentifier formatId, Boolean replicaStatus, Integer start, Integer count)
 			throws JargonException;
 
+	/**
+	 * Retrieves the entire list of identifiers that have been exposed to DataOne.
+	 *
+	 * @return the list of identifiers.
+	 * @throws JargonException
+	 */
 	public abstract List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException;
 
+	/**
+	 * Retrieves the most recent modification date for a {@link DataObject}.
+	 *
+	 * @param dataObject the {@link DataObject}
+	 * @return the most recent modification date.
+	 * @throws JargonException
+	 */
 	public abstract Date getLastModifiedDate(DataObject dataObject) throws JargonException;
 
+	/**
+	 * Retrieves the most recent modification date for a {@link Collection}.
+	 *
+	 * @param collection the {@link Collection}.
+	 * @return the most recent modification date.
+	 * @throws JargonException
+	 */
 	public abstract Date getLastModifiedDate(Collection collection) throws JargonException;
 
+	/**
+	 * Retrieves the format of a {@link DataObject}.
+	 *
+	 * @param dataObject the {@link DataObject}
+	 * @return a string containing the corresponding MIME type.
+	 * @throws JargonException
+	 */
 	public abstract String getFormat(DataObject dataObject) throws JargonException;
 
+	/**
+	 * Retrieves the format of a {@link Collection}.
+	 *
+	 * @param collection the {@link Collection}.
+	 * @return a string containing the corresponding MIME type.
+	 * @throws JargonException
+	 */
 	public abstract String getFormat(Collection collection) throws JargonException;
 }

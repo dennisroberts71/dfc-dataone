@@ -48,7 +48,6 @@ import org.dataone.service.types.v1.ObjectList;
 import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNError;
@@ -58,6 +57,7 @@ import org.irods.jargon.dataone.domain.MNObjectList;
 import org.irods.jargon.dataone.domain.MNSystemMetadata;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
+import org.irods.jargon.dataone.model.DataOneObject;
 import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.plugin.ConfigConstants;
 import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
@@ -205,13 +205,13 @@ public class MemberNodeService {
 					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 			AbstractDataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
 			AbstractDataOnePidServiceAO pidServiceAO = pluginDiscoveryService.instancePidService(irodsAccount);
-			DataObject dataObject = pidServiceAO.getDataObjectFromIdentifier(id);
+			DataOneObject dataOneObject = pidServiceAO.getObject(id);
 
 			EventData eventData = new EventData();
 			eventData.setDescription("DataONE replication");
 			eventData.setEvent(Event.READ);
 			eventData.setId(id);
-			eventData.setIrodsPath(dataObject.getAbsolutePath());
+			eventData.setIrodsPath(dataOneObject.getPath());
 			eventData.setNodeIdentifier(this.getPublicationContext().getAdditionalProperties()
 					.getProperty(ConfigConstants.PROPERTY_NODE_IDENTIFIER));
 			eventData.setUserAgent(irodsAccount.getUserName());
@@ -268,12 +268,12 @@ public class MemberNodeService {
 					.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
 			AbstractDataOneEventServiceAO eventServiceAO = pluginDiscoveryService.instanceEventService(irodsAccount);
 			AbstractDataOnePidServiceAO uniqueIdAO = pluginDiscoveryService.instancePidService(irodsAccount);
-			DataObject dataObject = uniqueIdAO.getDataObjectFromIdentifier(id);
+			DataOneObject dataOneObject = uniqueIdAO.getObject(id);
 			EventData eventData = new EventData();
 			eventData.setDescription("DataONE replication");
 			eventData.setEvent(Event.REPLICATE);
 			eventData.setId(id);
-			eventData.setIrodsPath(dataObject.getAbsolutePath());
+			eventData.setIrodsPath(dataOneObject.getPath());
 			eventData.setNodeIdentifier(this.getPublicationContext().getAdditionalProperties()
 					.getProperty(ConfigConstants.PROPERTY_NODE_IDENTIFIER));
 			eventData.setUserAgent(irodsAccount.getUserName());

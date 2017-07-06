@@ -6,6 +6,7 @@ package org.irods.jargon.dataone.pidservice;
 import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.model.DataOneObject;
 import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
@@ -33,9 +34,9 @@ public abstract class AbstractDataOnePidServiceAO extends AbstractDataOnePlugin 
 		super(irodsAccount, publicationContext);
 	}
 
-	public abstract Identifier getIdentifierFromDataObject(DataObject dataObject) throws JargonException;
+	public abstract Identifier getIdentifier(DataObject dataObject) throws JargonException;
 
-	public abstract DataObject getDataObjectFromIdentifier(Identifier identifier) throws JargonException;
+	public abstract Identifier getIdentifier(Collection collection) throws JargonException;
 
 	public abstract DataOneObject getObject(Identifier identifier) throws JargonException;
 }

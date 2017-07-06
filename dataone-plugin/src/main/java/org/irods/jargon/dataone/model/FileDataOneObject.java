@@ -176,7 +176,7 @@ public class FileDataOneObject implements DataOneObject {
 	@Override
 	public Date getLastModifiedDate() throws JargonException, PluginNotFoundException {
 		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
-		return repoService.getLastModifiedDateForDataObject(dataObject);
+		return repoService.getLastModifiedDate(dataObject);
 	}
 
 	@Override

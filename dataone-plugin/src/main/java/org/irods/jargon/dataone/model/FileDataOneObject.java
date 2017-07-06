@@ -27,6 +27,8 @@ import java.util.List;
  */
 public class FileDataOneObject implements DataOneObject {
 
+	private static final String DEFAULT_FORMAT = "application/octet-stream";
+
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final IRODSAccount account;
 	private final PublicationContext ctx;
@@ -72,6 +74,18 @@ public class FileDataOneObject implements DataOneObject {
 		result.setValue(repoService.dataObjectFormat(dataObject));
 
 		return result;
+	}
+
+	@Override
+	public ObjectFormatIdentifier getFormat(String defaultFormat) throws JargonException, PluginNotFoundException {
+		try {
+			return getFormat();
+		} catch (Exception e) {
+			log.warn("failed to determine object format: {}", e.toString());
+			ObjectFormatIdentifier result = new ObjectFormatIdentifier();
+			result.setValue(defaultFormat);
+			return result;
+		}
 	}
 
 	@Override
@@ -182,6 +196,17 @@ public class FileDataOneObject implements DataOneObject {
 		result.setOriginMemberNode(CommonConfig.getNodeReference(ctx));
 		result.setAuthoritativeMemberNode(CommonConfig.getNodeReference(ctx));
 		return result;
+	}
+
+	@Override
+	public ObjectInfo getObjectInfo() throws JargonException, PluginNotFoundException {
+		ObjectInfo objectInfo = new ObjectInfo();
+		objectInfo.setChecksum(getChecksum());
+		objectInfo.setFormatId(getFormat(DEFAULT_FORMAT));
+		objectInfo.setDateSysMetadataModified(getLastModifiedDate());
+		objectInfo.setIdentifier(id);
+		objectInfo.setSize(getSize());
+		return objectInfo;
 	}
 
 	private BigInteger getSerialVersion() {

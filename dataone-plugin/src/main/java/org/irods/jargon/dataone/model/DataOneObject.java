@@ -17,6 +17,8 @@ public interface DataOneObject {
 
 	ObjectFormatIdentifier getFormat() throws JargonException, PluginNotFoundException;
 
+	ObjectFormatIdentifier getFormat(String defaultFormat) throws JargonException, PluginNotFoundException;
+
 	BigInteger getSize() throws JargonException, PluginNotFoundException;
 
 	Checksum getChecksum() throws JargonException, PluginNotFoundException;
@@ -36,4 +38,6 @@ public interface DataOneObject {
 	DescribeResponse describe() throws JargonException, PluginNotFoundException;
 
 	SystemMetadata getSystemMetadata() throws JargonException, PluginNotFoundException;
+
+	ObjectInfo getObjectInfo() throws JargonException, PluginNotFoundException;
 }

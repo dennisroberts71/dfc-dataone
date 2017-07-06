@@ -12,6 +12,7 @@ import org.irods.jargon.dataone.auth.RestAuthUtils;
 import org.irods.jargon.dataone.events.AbstractDataOneEventServiceAO;
 import org.irods.jargon.dataone.events.EventData;
 import org.irods.jargon.dataone.model.DataOneObject;
+import org.irods.jargon.dataone.model.DataOneObjectListResponse;
 import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.plugin.ConfigConstants;
 import org.irods.jargon.dataone.plugin.PluginDiscoveryService;
@@ -289,85 +290,15 @@ public class MNReadImpl implements MNRead {
 								  final Boolean replicaStatus, final Integer start, final Integer count)
 			throws InvalidRequest, InvalidToken, NotAuthorized, NotImplemented, ServiceFailure {
 
-		IRODSAccount irodsAccount;
-		DataObjectListResponse response = new DataObjectListResponse();
-		List<ObjectInfo> objectInfoList = new ArrayList<>();
-		ObjectList objectList = new ObjectList();
-		AbstractDataOneRepoServiceAO repoService;
-
-		// first try and find data object for this id
+		// Get the list of DataOne objects.
+		AbstractDataOneRepoServiceAO repoService = getRepoService();
 		try {
-			irodsAccount = RestAuthUtils.getIRODSAccountFromBasicAuthValues(publicationContext.getRestConfiguration());
-
-			repoService = pluginDiscoveryService.instanceRepoService(irodsAccount);
-			response = repoService.getListOfDataoneExposedDataObjects(fromDate, toDate, formatId, replicaStatus, start,
-					count);
-		} catch (Exception ex) {
-			log.error("{}", ex.toString());
-			throw new ServiceFailure("1580", "Could not retrieve list of data objects");
+			return repoService.getExposedObjects(fromDate, toDate, formatId, replicaStatus, start, count)
+					.toObjectList();
+		} catch (Exception e) {
+			log.error("Unable to list DataOne objects: {}", e.toString());
+			throw new ServiceFailure("1580", "Could not retrieve list of DataOne objects");
 		}
-
-		List<DataObject> dataObjects = response.getDataObjects();
-
-		for (DataObject dObject : dataObjects) {
-
-			ObjectInfo oInfo = new ObjectInfo();
-
-			if (dObject.getChecksum() != null) {
-				Checksum checksum = new Checksum();
-				checksum.setValue(dObject.getChecksum());
-				checksum.setAlgorithm(properties.getProperty("irods.dataone.chksum-algorithm"));
-				oInfo.setChecksum(checksum);
-			}
-
-			String format = null;
-			try {
-				format = repoService.dataObjectFormat(dObject);
-
-			} catch (Exception e1) {
-				log.error(e1.toString());
-				log.error("cannot retrieve mime type for object:{} setting to application/octet-stream",
-						dObject.getAbsolutePath());
-				format = "application/octet-stream";
-			}
-
-			ObjectFormatIdentifier fId = new ObjectFormatIdentifier();
-			fId.setValue(format);
-			oInfo.setFormatId(fId);
-
-			Date startDate = new Date();
-			try {
-				startDate = repoService.getLastModifiedDateForDataObject(dObject);
-			} catch (Exception e1) {
-				log.error(e1.toString());
-				log.error("cannot retrieve start date for object: {}", dObject.getAbsolutePath());
-			}
-			oInfo.setDateSysMetadataModified(startDate);
-
-			Identifier id;
-			try {
-				AbstractDataOnePidServiceAO pidService = pluginDiscoveryService.instancePidService(irodsAccount);
-				id = pidService.getIdentifierFromDataObject(dObject);
-			} catch (JargonException | PluginNotFoundException e) {
-				log.error("could not convert data object id to identifier: {}", e.toString());
-				throw new ServiceFailure("1580", "Could not retrieve list of data objects");
-			}
-			oInfo.setIdentifier(id);
-
-			Long dataSizeLong = new Long(dObject.getDataSize());
-			String dataSizeStr = dataSizeLong.toString();
-			oInfo.setSize(new BigInteger(dataSizeStr));
-			objectInfoList.add(oInfo);
-
-		}
-
-		objectList.setObjectInfoList(objectInfoList);
-		objectList.setTotal(response.getTotal());
-		objectList.setCount(objectInfoList.size());
-		objectList.setStart(start);
-
-		return objectList;
-
 	}
 
 	@Override

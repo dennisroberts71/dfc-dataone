@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.irods.jargon.dataone.reposervice;
 
@@ -13,13 +13,14 @@ import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.model.DataOneObject;
+import org.irods.jargon.dataone.model.DataOneObjectListResponse;
 import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 
 /**
  * Abstract implementation of a dataone repo service. This service is in charge
  * of coordinating data objects that are to be provided to DataONE polling
- * 
+ *
  * @author mconway
  *
  */
@@ -27,7 +28,7 @@ public abstract class AbstractDataOneRepoServiceAO extends AbstractDataOnePlugin
 
 	/**
 	 * Default constructor with required values
-	 * 
+	 *
 	 * @param irodsAccount
 	 *            {@link IRODSAccount} for the current iRODS connection
 	 * @param publicationContext
@@ -37,6 +38,10 @@ public abstract class AbstractDataOneRepoServiceAO extends AbstractDataOnePlugin
 	public AbstractDataOneRepoServiceAO(IRODSAccount irodsAccount, PublicationContext publicationContext) {
 		super(irodsAccount, publicationContext);
 	}
+
+	public abstract DataOneObjectListResponse getExposedObjects(Date fromDate, Date toDate,
+			ObjectFormatIdentifier formatId, Boolean replicaStatus, Integer start, Integer count)
+			throws JargonException;
 
 	public abstract List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException;
 

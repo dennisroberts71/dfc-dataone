@@ -1,4 +1,4 @@
-package org.irods.jargon.dataone.domain;
+package org.irods.jargon.dataone.util;
 
 import org.dataone.service.types.v1.Permission;
 import org.irods.jargon.core.protovalues.FilePermissionEnum;

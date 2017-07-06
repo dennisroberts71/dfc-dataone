@@ -35,23 +35,38 @@ public abstract class AbstractDataOneEventServiceAO extends AbstractDataOnePlugi
 		super(irodsAccount, publicationContext);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.irods.jargon.dataone.events.EventServiceAO#getLogs(java.util.Date,
-	 * java.util.Date, org.irods.jargon.dataone.events.EventsEnum,
-	 * java.lang.String, int, int)
+	/**
+	 * Retrieves the log entries matching the given parameters.
+	 *
+	 * @param fromDate
+	 *            the starting date for the search
+	 * @param toDate
+	 *            the ending date for the search
+	 * @param event
+	 *            the type of event to search for
+	 * @param pidFilter
+	 *            the permanent identifier to search for
+	 * @param startIdx
+	 *            the starting index for paged searches
+	 * @param count
+	 *            the maximum number of results for paged searches
+	 * @return
+	 *             the set of matching log entries.
 	 */
 	public abstract Log getLogs(Date fromDate, Date toDate, EventsEnum event, String pidFilter, int startIdx,
 			int count);
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.irods.jargon.dataone.events.DataOneEventServiceAO#recordEvent(org.
-	 * irods.jargon.dataone.events.EventData)
+	/**
+	 * Records an event.
+	 *
+	 * @param eventData
+	 *            the event data to record.
+	 * @throws InvalidArgumentException
+	 *            if the event data is incorrect
+	 * @throws JargonException
+	 *            if an error occurs while retrieving information from iRODS
+	 * @throws ServiceFailure
+	 *            if the attempt to record the event fails
 	 */
 	public abstract void recordEvent(EventData eventData)
 			throws InvalidArgumentException, JargonException, ServiceFailure;

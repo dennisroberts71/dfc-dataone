@@ -29,6 +29,7 @@ public class DefaultEventServiceFactory extends AbstractDataOneEventServiceFacto
 				new String[] { "event-service-beans.xml", "event-dao-hibernate-spring.cfg.xml" });
 		log.info("applicationContext built");
 		AccessLogDAO accessLogDAO = (AccessLogDAO) context.getBean("accessLogDAO");
+		log.info("loaced accessLogDAO:{}", accessLogDAO);
 		log.info("successfully loaded DAO");
 		return accessLogDAO;
 	}

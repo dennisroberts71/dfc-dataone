@@ -15,6 +15,8 @@ import org.irods.jargon.dataone.events.EventsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Impl of an access log
@@ -22,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author mcc
  *
  */
+@Transactional(rollbackFor = { Exception.class }, propagation = Propagation.REQUIRED)
+
 public class AccessLogDAOImpl implements AccessLogDAO {
 
 	private static final Logger log = LoggerFactory.getLogger(AccessLogDAOImpl.class);
@@ -125,13 +129,6 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 	}
 
 	/**
-	 * @return the log
-	 */
-	public static Logger getLog() {
-		return log;
-	}
-
-	/**
 	 * @return the sessionFactory
 	 */
 	public SessionFactory getSessionFactory() {
@@ -143,6 +140,7 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 	 *            the sessionFactory to set
 	 */
 	public void setSessionFactory(SessionFactory sessionFactory) {
+		log.info("sessionFactory being set:{}", sessionFactory);
 		this.sessionFactory = sessionFactory;
 	}
 

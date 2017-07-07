@@ -77,6 +77,7 @@ public class DefaultEventServiceAOImpl extends AbstractDataOneEventServiceAO {
 			throw new JargonRuntimeException(e.getMessage());
 		}
 		for (AccessLog resultEntry : queryResult) {
+			log.info("resultEntry:{}", resultEntry);
 			logEntry = new LogEntry();
 			logEntry.setDateLogged(resultEntry.getDateAdded());
 			logEntry.setEntryId(resultEntry.getId().toString());

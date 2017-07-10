@@ -81,10 +81,20 @@ public class DefaultEventServiceAOImpl extends AbstractDataOneEventServiceAO {
 			logEntry = new LogEntry();
 			logEntry.setDateLogged(resultEntry.getDateAdded());
 			logEntry.setEntryId(resultEntry.getId().toString());
-			logEntry.setEvent(Event.valueOf(resultEntry.getEvent().toString()));
-			Identifier identifier = new Identifier();
-			identifier.setValue(resultEntry.getPermanentId().toString());
-			logEntry.setIdentifier(identifier);
+
+			if (resultEntry.getEvent() == null) {
+				log.warn("event is null!");
+			} else {
+				logEntry.setEvent(Event.valueOf(resultEntry.getEvent().toString()));
+			}
+
+			if (resultEntry.getPermanentId() == null) {
+				log.warn("identifier is null");
+			} else {
+				Identifier identifier = new Identifier();
+				identifier.setValue(resultEntry.getPermanentId().toString());
+				logEntry.setIdentifier(identifier);
+			}
 			logEntry.setIpAddress(resultEntry.getIpAddress());
 
 			if (resultEntry.getNodeIdentifier() == null || resultEntry.getNodeIdentifier().isEmpty()) {

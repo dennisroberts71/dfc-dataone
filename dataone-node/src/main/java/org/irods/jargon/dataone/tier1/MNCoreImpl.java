@@ -88,6 +88,8 @@ public class MNCoreImpl implements MNCore {
 		} catch (JargonException e) {
 			log.error("error processing event ", e);
 			throw new ServiceFailure("1490", "retrieval of log records failed");
+		} finally {
+			publicationContext.getIrodsAccessObjectFactory().closeSessionAndEatExceptions();
 		}
 
 	}
@@ -113,6 +115,8 @@ public class MNCoreImpl implements MNCore {
 			log.error("getCapabilities: iRODS server is not running");
 			ping.setSuccess(false);
 			node.setState(NodeState.DOWN);
+		} finally {
+			publicationContext.getIrodsAccessObjectFactory().closeSessionAndEatExceptions();
 		}
 
 		// get properties

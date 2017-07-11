@@ -11,4 +11,4 @@ CMD ["java", "-jar", "default-event-service-indexer-4.2.1.0-SNAPSHOT.jar"]
 
 # build: docker build -t diceunc/dataone-indexer:4.2.1.0 .
 
-# run:  docker run -i  -p 8080:8080 -v /etc/irods-ext:/etc/irods-ext   -v /home/mcc/webdavcert:/tmp/cert --add-host irods420.irodslocal:172.16.250.101 diceunc/dataone-indexer:4.2.1.0
+# run:  docker run -i  -p 8080:8080 -v /etc/irods-ext:/etc/irods-ext   -v /home/mcc/webdavcert:/tmp/cert --add-host irods420.irodslocal:172.16.250.101 --add-host amqp.local:172.17.0.1 diceunc/dataone-indexer:4.2.1.0

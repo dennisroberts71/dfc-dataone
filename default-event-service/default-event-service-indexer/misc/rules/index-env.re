@@ -4,9 +4,9 @@
 
 ipc_AMQP_HOST = amqphosthere
 ipc_AMQP_PORT = amqpporthere
-ipc_AMQP_USER = amqpuserhere
-ipc_AMQP_PASSWORD = amqppassword
+ipc_AMQP_USER = irods
+ipc_AMQP_PASSWORD = irods
 ipc_AMQP_EPHEMERAL = false
 
-ipc_RODSADMIN = '{{ irods.admin }}'
+ipc_RODSADMIN = rods
 ipc_RE_HOST = 'localhost'

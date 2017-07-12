@@ -88,7 +88,7 @@ public class FileDataOneObject implements DataOneObject {
 
 		// Determine the format.
 		ObjectFormatIdentifier result = new ObjectFormatIdentifier();
-		result.setValue(repoService.getFormat(dataObject));
+		result.setValue(repoService.getFormat(dataObject.getAbsolutePath()));
 
 		return result;
 	}
@@ -178,7 +178,7 @@ public class FileDataOneObject implements DataOneObject {
 	@Override
 	public Date getLastModifiedDate() throws JargonException, PluginNotFoundException {
 		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
-		return repoService.getLastModifiedDate(dataObject);
+		return repoService.getLastModifiedDate(dataObject.getAbsolutePath());
 	}
 
 	@Override

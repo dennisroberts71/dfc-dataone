@@ -71,38 +71,20 @@ public abstract class AbstractDataOneRepoServiceAO extends AbstractDataOnePlugin
 	public abstract List<Identifier> getListOfDataoneExposedIdentifiers() throws JargonException;
 
 	/**
-	 * Retrieves the most recent modification date for a {@link DataObject}.
+	 * Retrieves the most recent modification date for a path.
 	 *
-	 * @param dataObject the {@link DataObject}
+	 * @param path the path to the data object or collection.
 	 * @return the most recent modification date.
 	 * @throws JargonException
 	 */
-	public abstract Date getLastModifiedDate(DataObject dataObject) throws JargonException;
+	public abstract Date getLastModifiedDate(String path) throws JargonException;
 
 	/**
-	 * Retrieves the most recent modification date for a {@link Collection}.
+	 * Retrieves the format of a data object or collection.
 	 *
-	 * @param collection the {@link Collection}.
-	 * @return the most recent modification date.
-	 * @throws JargonException
-	 */
-	public abstract Date getLastModifiedDate(Collection collection) throws JargonException;
-
-	/**
-	 * Retrieves the format of a {@link DataObject}.
-	 *
-	 * @param dataObject the {@link DataObject}
+	 * @param path the path to the data object or collection.
 	 * @return a string containing the corresponding MIME type.
 	 * @throws JargonException
 	 */
-	public abstract String getFormat(DataObject dataObject) throws JargonException;
-
-	/**
-	 * Retrieves the format of a {@link Collection}.
-	 *
-	 * @param collection the {@link Collection}.
-	 * @return a string containing the corresponding MIME type.
-	 * @throws JargonException
-	 */
-	public abstract String getFormat(Collection collection) throws JargonException;
+	public abstract String getFormat(String path) throws JargonException;
 }

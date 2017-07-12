@@ -40,22 +40,12 @@ public class DummyRepoServiceImpl extends AbstractDataOneRepoServiceAO {
 	}
 
 	@Override
-	public Date getLastModifiedDate(DataObject dataObject) throws JargonException {
+	public Date getLastModifiedDate(String path) throws JargonException {
 		return new Date();
 	}
 
 	@Override
-	public Date getLastModifiedDate(Collection collection) throws JargonException {
-		return new Date();
-	}
-
-	@Override
-	public String getFormat(DataObject dataObject) throws JargonException {
-		return "";
-	}
-
-	@Override
-	public String getFormat(Collection collection) throws JargonException {
+	public String getFormat(String path) throws JargonException {
 		return "";
 	}
 }

@@ -21,12 +21,7 @@ public class DummyPidServiceAOImpl extends AbstractDataOnePidServiceAO {
 	}
 
 	@Override
-	public Identifier getIdentifier(DataObject dataObject) throws JargonException {
-		return getFakeIdentifier();
-	}
-
-	@Override
-	public Identifier getIdentifier(Collection collection) throws JargonException {
+	public Identifier getIdentifier(String path) throws JargonException {
 		return getFakeIdentifier();
 	}
 

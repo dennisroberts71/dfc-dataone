@@ -6,8 +6,6 @@ package org.irods.jargon.dataone.pidservice;
 import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.domain.Collection;
-import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.model.DataOneObject;
 import org.irods.jargon.dataone.plugin.AbstractDataOnePlugin;
 import org.irods.jargon.dataone.plugin.PublicationContext;
@@ -35,22 +33,13 @@ public abstract class AbstractDataOnePidServiceAO extends AbstractDataOnePlugin 
 	}
 
 	/**
-	 * Determines the identifier for a {@link DataObject}.
+	 * Determines the identifier for a path.
 	 *
-	 * @param dataObject the {@link DataObject}.
+	 * @param path the path to the collection or data object.
 	 * @return the corresponding identifier.
 	 * @throws JargonException
 	 */
-	public abstract Identifier getIdentifier(DataObject dataObject) throws JargonException;
-
-	/**
-	 * Determines the identifier for a {@link Collection}
-	 *
-	 * @param collection the {@link Collection}
-	 * @return the corresponding identifier.
-	 * @throws JargonException
-	 */
-	public abstract Identifier getIdentifier(Collection collection) throws JargonException;
+	public abstract Identifier getIdentifier(String path) throws JargonException;
 
 	/**
 	 * Retrieves the DataOne object corresponding to an identifier.

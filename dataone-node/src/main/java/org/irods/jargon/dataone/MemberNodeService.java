@@ -80,7 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Named
 @Path("/mn/v1")
-public class MemberNodeService {
+public class /**/MemberNodeService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 

@@ -9,4 +9,4 @@ ipc_AMQP_PASSWORD = irods
 ipc_AMQP_EPHEMERAL = false
 
 ipc_RODSADMIN = rods
-ipc_RE_HOST = 'localhost'
+ipc_RE_HOST = localhost	

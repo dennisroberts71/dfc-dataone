@@ -1,11 +1,15 @@
 # IPC specific AMQP rules
 
+@include 'index-env'
+
+
 # Sends a message to a given AMQP topic exchange
 #
 # PARAMETERS:
 #   *Key - The topic of the message
 #   *Msg - The message to send
 #
+
 ipc_amqpSend(*Key, *Msg) {
   *ephemeralArg = str(ipc_AMQP_EPHEMERAL);
   *keyArg = execCmdArg(*Key);

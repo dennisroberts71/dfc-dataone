@@ -1,5 +1,6 @@
 package org.irods.jargon.dataone.model;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
@@ -12,12 +13,15 @@ import org.irods.jargon.core.pub.domain.UserFilePermission;
 import org.irods.jargon.dataone.plugin.PluginNotFoundException;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
+import org.irods.jargon.zipservice.api.JargonZipServiceImpl;
+import org.irods.jargon.zipservice.api.ZipServiceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -95,16 +99,21 @@ public class CollectionDataOneObject extends AbstractDataOneObject {
 
 	@Override
 	public BigInteger getSize() throws JargonException, PluginNotFoundException {
-		// TODO: implement me
-		return BigInteger.valueOf(1);
+		JargonZipServiceImpl zipService = getJargonZipService();
+		List<String> paths = Collections.singletonList(collection.getAbsolutePath());
+		return BigInteger.valueOf(zipService.computeBundleSizeInBytes(paths));
 	}
 
 	@Override
 	public Checksum getChecksum() throws JargonException, PluginNotFoundException {
 		Checksum checksum = new Checksum();
 
-		// TODO: implement me
-		checksum.setValue("FAKE");
+		// Calculate the checksum.
+		try {
+			checksum.setValue(DigestUtils.md5Hex(getInputStream()));
+		} catch (IOException e) {
+			throw new JargonException(e);
+		}
 
 		return checksum;
 	}
@@ -133,14 +142,19 @@ public class CollectionDataOneObject extends AbstractDataOneObject {
 
 	@Override
 	public InputStream getInputStream() throws JargonException, PluginNotFoundException {
-
-		// TODO: implement me
-		return new ByteArrayInputStream(new byte[]{});
+		JargonZipServiceImpl zipService = getJargonZipService();
+		List<String> paths = Collections.singletonList(collection.getAbsolutePath());
+		return zipService.obtainBundleAsInputStreamGivenPaths(paths);
 	}
 
 	private Subject getOwnerSubject() {
 		Subject result = new Subject();
 		result.setValue("uid" + collection.getCollectionOwnerName());
 		return result;
+	}
+
+	private JargonZipServiceImpl getJargonZipService() {
+		ZipServiceConfiguration config = new ZipServiceConfiguration();
+		return new JargonZipServiceImpl(config, ctx.getIrodsAccessObjectFactory(), account);
 	}
 }

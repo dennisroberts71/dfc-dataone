@@ -16,6 +16,11 @@
 			<artifactId>jargon-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-zipservice</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- <dependency> <groupId>org.irods.jargon</groupId> <artifactId>data-profile</artifactId> 
 			</dependency> -->
 		<dependency>

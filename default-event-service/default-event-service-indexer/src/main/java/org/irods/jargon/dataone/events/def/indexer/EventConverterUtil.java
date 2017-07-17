@@ -3,15 +3,15 @@
  */
 package org.irods.jargon.dataone.events.def.indexer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Date;
 
 import org.irods.jargon.dataone.events.EventLoggingException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.io.IOException;
-import java.util.Date;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Utility for JSON conversion
@@ -43,6 +43,15 @@ public class EventConverterUtil {
 	}
 
 	public Date dateFromTimestamp(final String timestamp) throws EventLoggingException {
+
+		/*
+		 * If no date is supplied, generate one from the 'now' time
+		 */
+
+		if (timestamp == null || timestamp.isEmpty()) {
+			return new Date();
+		}
+
 		DateTime result;
 		try {
 			result = fmt.parseDateTime(timestamp);

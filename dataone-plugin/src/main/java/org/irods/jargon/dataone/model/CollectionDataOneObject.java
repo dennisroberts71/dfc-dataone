@@ -1,43 +1,43 @@
 package org.irods.jargon.dataone.model;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.dataone.service.types.v1.Checksum;
 import org.dataone.service.types.v1.Identifier;
 import org.dataone.service.types.v1.ObjectFormatIdentifier;
 import org.dataone.service.types.v1.Subject;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.DataObjectAO;
-import org.irods.jargon.core.pub.domain.DataObject;
+import org.irods.jargon.core.pub.CollectionAO;
+import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.UserFilePermission;
-import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.pub.io.IRODSFileFactory;
-import org.irods.jargon.dataone.config.CommonConfig;
 import org.irods.jargon.dataone.plugin.PluginNotFoundException;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
+import org.irods.jargon.zipservice.api.JargonZipServiceImpl;
+import org.irods.jargon.zipservice.api.ZipServiceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 /**
- * A DataOne object that is stored as a {@link DataObject} in iRODS.
- *
  * @author Dennis Roberts - CyVerse
  */
-public class FileDataOneObject extends AbstractDataOneObject {
+public class CollectionDataOneObject extends AbstractDataOneObject {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final IRODSAccount account;
 	private final PublicationContext ctx;
 	private final Identifier id;
-	private final DataObject dataObject;
+	private final Collection collection;
 
-	public FileDataOneObject(final PublicationContext ctx, final IRODSAccount account, final Identifier id,
-							 final DataObject dataObject) {
+	public CollectionDataOneObject(final PublicationContext ctx, final IRODSAccount account, final Identifier id,
+								   final Collection collection) {
 
 		if (account == null) {
 			throw new NullPointerException("No iRODS account provided.");
@@ -51,19 +51,14 @@ public class FileDataOneObject extends AbstractDataOneObject {
 			throw new NullPointerException("No identifier provided.");
 		}
 
-		if (dataObject == null) {
-			throw new NullPointerException("No data object provided.");
+		if (collection == null) {
+			throw new NullPointerException("No collection provided.");
 		}
 
-		this.account = account;
 		this.ctx = ctx;
+		this.account = account;
 		this.id = id;
-		this.dataObject = dataObject;
-	}
-
-	@Override
-	protected Logger getLog() {
-		return log;
+		this.collection = collection;
 	}
 
 	@Override
@@ -77,13 +72,18 @@ public class FileDataOneObject extends AbstractDataOneObject {
 	}
 
 	@Override
+	protected Logger getLog() {
+		return log;
+	}
+
+	@Override
 	public String getPath() throws JargonException, PluginNotFoundException {
-		return dataObject.getAbsolutePath();
+		return collection.getAbsolutePath();
 	}
 
 	@Override
 	public String getName() throws JargonException, PluginNotFoundException {
-		return dataObject.getDataName();
+		return collection.getCollectionName();
 	}
 
 	@Override
@@ -92,27 +92,27 @@ public class FileDataOneObject extends AbstractDataOneObject {
 
 		// Determine the format.
 		ObjectFormatIdentifier result = new ObjectFormatIdentifier();
-		result.setValue(repoService.getFormat(dataObject.getAbsolutePath()));
+		result.setValue(repoService.getFormat(collection.getAbsolutePath()));
 
 		return result;
 	}
 
 	@Override
 	public BigInteger getSize() throws JargonException, PluginNotFoundException {
-		return BigInteger.valueOf(dataObject.getDataSize());
+		JargonZipServiceImpl zipService = getJargonZipService();
+		List<String> paths = Collections.singletonList(collection.getAbsolutePath());
+		return BigInteger.valueOf(zipService.computeBundleSizeInBytes(paths));
 	}
 
 	@Override
 	public Checksum getChecksum() throws JargonException, PluginNotFoundException {
 		Checksum checksum = new Checksum();
 
-		// Determine the checksum.
-		String csum = dataObject.getChecksum();
-		if (csum == null) {
-			log.info("checksum does not exist for file: {}", dataObject.getAbsolutePath());
-		} else {
-			checksum.setValue(csum);
-			checksum.setAlgorithm(CommonConfig.getChecksumAlgorithm(ctx));
+		// Calculate the checksum.
+		try {
+			checksum.setValue(DigestUtils.md5Hex(getInputStream()));
+		} catch (IOException e) {
+			throw new JargonException(e);
 		}
 
 		return checksum;
@@ -129,29 +129,32 @@ public class FileDataOneObject extends AbstractDataOneObject {
 	}
 
 	@Override
-	protected List<UserFilePermission> getPermissions() throws JargonException {
-		DataObjectAO dataObjectAO = ctx.getIrodsAccessObjectFactory().getDataObjectAO(account);
-		return dataObjectAO.listPermissionsForDataObject(dataObject.getAbsolutePath());
+	public List<UserFilePermission> getPermissions() throws JargonException {
+		CollectionAO collectionAO = ctx.getIrodsAccessObjectFactory().getCollectionAO(account);
+		return collectionAO.listPermissionsForCollection(collection.getAbsolutePath());
 	}
 
 	@Override
 	public Date getLastModifiedDate() throws JargonException, PluginNotFoundException {
 		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
-		return repoService.getLastModifiedDate(dataObject.getAbsolutePath());
+		return repoService.getLastModifiedDate(collection.getAbsolutePath());
 	}
 
 	@Override
 	public InputStream getInputStream() throws JargonException, PluginNotFoundException {
-
-		// Get the input stream.
-		IRODSFileFactory fileFactory = ctx.getIrodsAccessObjectFactory().getIRODSFileFactory(account);
-		IRODSFile file = fileFactory.instanceIRODSFile(dataObject.getAbsolutePath());
-		return fileFactory.instanceIRODSFileInputStream(file);
+		JargonZipServiceImpl zipService = getJargonZipService();
+		List<String> paths = Collections.singletonList(collection.getAbsolutePath());
+		return zipService.obtainBundleAsInputStreamGivenPaths(paths);
 	}
 
 	private Subject getOwnerSubject() {
 		Subject result = new Subject();
-		result.setValue("uid=" + dataObject.getDataOwnerName());
+		result.setValue("uid" + collection.getCollectionOwnerName());
 		return result;
+	}
+
+	private JargonZipServiceImpl getJargonZipService() {
+		ZipServiceConfiguration config = new ZipServiceConfiguration();
+		return new JargonZipServiceImpl(config, ctx.getIrodsAccessObjectFactory(), account);
 	}
 }

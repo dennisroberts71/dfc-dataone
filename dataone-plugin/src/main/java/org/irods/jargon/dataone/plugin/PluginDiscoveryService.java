@@ -108,8 +108,6 @@ public class PluginDiscoveryService {
 	 * Initialize publisher based on (required) configuration
 	 * 
 	 * @throws PluginNotFoundException
-	 * 
-	 * @throws PublicationException
 	 */
 
 	@PostConstruct

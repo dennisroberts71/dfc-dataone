@@ -43,8 +43,8 @@ public class DataOneObjectListResponse {
 		if (start < 0) {
 			throw new IllegalArgumentException("The start index must not be negative.");
 		}
-		if (start >= total) {
-			throw new IllegalArgumentException("The start index must be less than the total.");
+		if (start > total) {
+			throw new IllegalArgumentException("The start index must not be greater than the total.");
 		}
 
 		this.dataOneObjects = dataOneObjects;

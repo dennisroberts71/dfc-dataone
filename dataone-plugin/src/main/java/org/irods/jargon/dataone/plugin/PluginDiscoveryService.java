@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -45,8 +46,9 @@ import org.xeustechnologies.jcl.context.JclContext;
  */
 @Component
 public class PluginDiscoveryService {
-	private JarClassLoader jcl;
 	private List<URL> urls = new ArrayList<>();
+	private List<ClassLoader> classLoaders = new ArrayList<>();
+
 	@Autowired
 	private PublicationContext publicationContext;
 
@@ -86,7 +88,7 @@ public class PluginDiscoveryService {
 		 */
 
 		ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-		configurationBuilder.setUrls(urls).addClassLoader(JclContext.get()).addScanners(new SubTypesScanner(),
+		configurationBuilder.setUrls(urls).addClassLoaders(classLoaders).addScanners(new SubTypesScanner(),
 				new TypeAnnotationsScanner());
 		Reflections reflections = new Reflections(configurationBuilder);
 
@@ -147,19 +149,16 @@ public class PluginDiscoveryService {
 		}
 
 		log.info("event factory...");
-		/*
-		 * Class<AbstractDataOneEventServiceFactory> clazzEvent =
-		 * loadImplClass(AbstractDataOneEventServiceFactory.class); try {
-		 * Constructor<?> ctor = clazzEvent.getConstructor();
-		 * dataOneEventServiceFactory = (DataOneEventServiceFactory)
-		 * ctor.newInstance(new Object[] {});
-		 * log.info("dataOneEventServiceFactory success"); } catch
-		 * (NoSuchMethodException | SecurityException | InstantiationException |
-		 * IllegalAccessException | IllegalArgumentException |
-		 * InvocationTargetException e) {
-		 * log.error("cannot find appropriate plugin", e); throw new
-		 * PluginNotFoundException(e); }
-		 */
+		Class<AbstractDataOneEventServiceFactory> clazzEvent = loadImplClass(AbstractDataOneEventServiceFactory.class);
+		try {
+			Constructor<?> ctor = clazzEvent.getConstructor();
+			dataOneEventServiceFactory = (AbstractDataOneEventServiceFactory) ctor.newInstance();
+			log.info("event factory created");
+		} catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			log.error("cannot find appropriate plugin", e);
+			throw new PluginNotFoundException(e);
+		}
 
 		PropertiesLoader propertiesLoader = new PropertiesLoader();
 		Properties props = propertiesLoader.getProperties();
@@ -167,17 +166,6 @@ public class PluginDiscoveryService {
 		if (eventFactoryClassName == null || eventFactoryClassName.isEmpty()) {
 			log.error("cannot find appropriate plugin class name config in properties");
 			throw new PluginNotFoundException("cannot find event factory plugin class name in properties");
-		}
-
-		log.info("load event factory class:{}", eventFactoryClassName);
-		try {
-			@SuppressWarnings("rawtypes")
-			Class eventClass = Class.forName(eventFactoryClassName.trim());
-			dataOneEventServiceFactory = (AbstractDataOneEventServiceFactory) eventClass.newInstance();
-			log.info("event factory created");
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-			log.error("cannot find appropriate plugin", e);
-			throw new PluginNotFoundException(e);
 		}
 
 		log.info("repo factory...");
@@ -198,10 +186,7 @@ public class PluginDiscoveryService {
 
 	private void loadCandidateClasspaths(String libDir) {
 
-		/*
-		 * See https://github.com/kamranzafar/JCL for usage of JCL
-		 */
-
+		// Build the list of URIs.
 		File dependencyDirectory = new File(libDir);
 		File[] files = dependencyDirectory.listFiles();
 		ArrayList<URI> uris = new ArrayList<>();
@@ -212,25 +197,21 @@ public class PluginDiscoveryService {
 			}
 		}
 
-		log.info("creating jar class loader...");
-		jcl = new JarClassLoader();
-
+		// Convert the URIs to URLs.
 		for (URI uri : uris) {
 			log.info("adding uri for jar:{}", uri);
 			try {
-				jcl.add(uri.toURL());
-				urls.add(uri.toURL()); // testing outside jcl FIXME: decide!
+				urls.add(uri.toURL());
 			} catch (MalformedURLException e) {
 				log.error("malformed url for jar file:{}", uri, e);
 				throw new PluginRuntimeException("error loading jar file", e);
 			}
 		}
 
-		if (JclContext.get() == null) {
-			DefaultContextLoader context = new DefaultContextLoader(jcl);
-			context.loadContext();
+		// Build the list of class loaders.
+		for (URL url : urls) {
+		 	classLoaders.add(new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader()));
 		}
-
 	}
 
 	/**

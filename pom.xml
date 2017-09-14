@@ -127,6 +127,11 @@
 				<checksumPolicy>warn</checksumPolicy>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>maven.dataone.org</id>
+			<name>maven.dataone.org</name>
+			<url>http://maven.dataone.org/</url>
+		</repository>
 	</repositories>
 	<modules>
 		<module>dataone-plugin</module>

@@ -19,7 +19,7 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.configuration.RestConfiguration;
 import org.irods.jargon.dataone.utils.RestTestingProperties;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
-import org.irods.jargon.testutils.TestingUtilsException;
+import org.irods.jargon.testutils.TestConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,11 +68,11 @@ public class RestAuthUtils {
 	 * @param irodsAccount
 	 * @param testingProperties
 	 * @return
-	 * @throws TestingUtilsException
+	 * @throws TestConfigurationException
 	 */
 	public static DefaultHttpClientAndContext httpClientSetup(
 			final IRODSAccount irodsAccount, final Properties testingProperties)
-					throws TestingUtilsException {
+					throws TestConfigurationException {
 
 		if (irodsAccount == null) {
 			throw new IllegalArgumentException("null irodsAccount");

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.irods.jargon.testutils.TestingUtilsException;
+import org.irods.jargon.testutils.TestConfigurationException;
 
 /**
  * Utilities to load testing properties from a properties file
@@ -26,14 +26,14 @@ public class DataOneTestHelper {
 	 * @param testingProperties
 	 * @param key
 	 * @return
-	 * @throws TestingUtilsException
+	 * @throws TestConfigurationException
 	 */
 	public int getPropertyValueAsInt(final Properties testingProperties,
-			final String key) throws TestingUtilsException {
+			final String key) throws TestConfigurationException {
 		String propVal = (String) testingProperties.get(key);
 
 		if (propVal == null || propVal.length() == 0) {
-			throw new TestingUtilsException(
+			throw new TestConfigurationException(
 					"missing or invalid value in test-dataone.properties");
 		}
 
@@ -42,7 +42,7 @@ public class DataOneTestHelper {
 		try {
 			retVal = Integer.parseInt(propVal);
 		} catch (NumberFormatException nfe) {
-			throw new TestingUtilsException(
+			throw new TestConfigurationException(
 					"port is in valid format to convert to int:" + propVal, nfe);
 		}
 
@@ -54,9 +54,9 @@ public class DataOneTestHelper {
 	 * testing.properties file on the code path
 	 *
 	 * @return <code>Properties</code> class with the test values
-	 * @throws TestingUtilsException
+	 * @throws TestConfigurationException
 	 */
-	public Properties getTestProperties() throws TestingUtilsException {
+	public Properties getTestProperties() throws TestConfigurationException {
 		ClassLoader loader = this.getClass().getClassLoader();
 		InputStream in = loader.getResourceAsStream("test-dataone.properties");
 		Properties properties = new Properties();
@@ -64,7 +64,7 @@ public class DataOneTestHelper {
 		try {
 			properties.load(in);
 		} catch (IOException ioe) {
-			throw new TestingUtilsException(
+			throw new TestConfigurationException(
 					"error loading test-dataone properties", ioe);
 		} finally {
 			try {

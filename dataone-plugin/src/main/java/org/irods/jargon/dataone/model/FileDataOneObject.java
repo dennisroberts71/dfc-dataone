@@ -35,9 +35,10 @@ public class FileDataOneObject extends AbstractDataOneObject {
 	private final PublicationContext ctx;
 	private final Identifier id;
 	private final DataObject dataObject;
+	private final Date lastModified;
 
 	public FileDataOneObject(final PublicationContext ctx, final IRODSAccount account, final Identifier id,
-							 final DataObject dataObject) {
+							 final Date lastModified, final DataObject dataObject) {
 
 		if (account == null) {
 			throw new NullPointerException("No iRODS account provided.");
@@ -51,6 +52,10 @@ public class FileDataOneObject extends AbstractDataOneObject {
 			throw new NullPointerException("No identifier provided.");
 		}
 
+		if (lastModified == null) {
+			throw new NullPointerException("No last modified date provided.");
+		}
+
 		if (dataObject == null) {
 			throw new NullPointerException("No data object provided.");
 		}
@@ -58,6 +63,7 @@ public class FileDataOneObject extends AbstractDataOneObject {
 		this.account = account;
 		this.ctx = ctx;
 		this.id = id;
+		this.lastModified = lastModified;
 		this.dataObject = dataObject;
 	}
 
@@ -136,8 +142,7 @@ public class FileDataOneObject extends AbstractDataOneObject {
 
 	@Override
 	public Date getLastModifiedDate() throws JargonException, PluginNotFoundException {
-		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
-		return repoService.getLastModifiedDate(dataObject.getAbsolutePath());
+		return lastModified;
 	}
 
 	@Override

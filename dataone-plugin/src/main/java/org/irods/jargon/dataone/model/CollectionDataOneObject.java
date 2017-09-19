@@ -15,6 +15,7 @@ import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.irods.jargon.dataone.reposervice.AbstractDataOneRepoServiceAO;
 import org.irods.jargon.zipservice.api.JargonZipServiceImpl;
 import org.irods.jargon.zipservice.api.ZipServiceConfiguration;
+import org.mockito.internal.matchers.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +35,13 @@ public class CollectionDataOneObject extends AbstractDataOneObject {
 	private final IRODSAccount account;
 	private final PublicationContext ctx;
 	private final Identifier id;
+	private final Date lastModified;
 	private final Collection collection;
 
 	public CollectionDataOneObject(final PublicationContext ctx, final IRODSAccount account, final Identifier id,
-								   final Collection collection) {
+								   final Date lastModified, final Collection collection) {
 
-		if (account == null) {
+ 		if (account == null) {
 			throw new NullPointerException("No iRODS account provided.");
 		}
 
@@ -51,6 +53,10 @@ public class CollectionDataOneObject extends AbstractDataOneObject {
 			throw new NullPointerException("No identifier provided.");
 		}
 
+		if (lastModified == null) {
+ 			throw new NullPointerException("No last modified date provided.");
+		}
+
 		if (collection == null) {
 			throw new NullPointerException("No collection provided.");
 		}
@@ -58,6 +64,7 @@ public class CollectionDataOneObject extends AbstractDataOneObject {
 		this.ctx = ctx;
 		this.account = account;
 		this.id = id;
+		this.lastModified = lastModified;
 		this.collection = collection;
 	}
 
@@ -136,8 +143,7 @@ public class CollectionDataOneObject extends AbstractDataOneObject {
 
 	@Override
 	public Date getLastModifiedDate() throws JargonException, PluginNotFoundException {
-		AbstractDataOneRepoServiceAO repoService = ctx.getPluginDiscoveryService().instanceRepoService(account);
-		return repoService.getLastModifiedDate(collection.getAbsolutePath());
+		return lastModified;
 	}
 
 	@Override

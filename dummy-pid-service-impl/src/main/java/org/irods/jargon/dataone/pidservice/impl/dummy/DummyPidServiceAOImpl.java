@@ -3,7 +3,6 @@ package org.irods.jargon.dataone.pidservice.impl.dummy;
 import org.dataone.service.types.v1.Identifier;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.domain.DataObject;
 import org.irods.jargon.dataone.model.DataOneObject;
 import org.irods.jargon.dataone.model.FileDataOneObject;
@@ -11,6 +10,8 @@ import org.irods.jargon.dataone.pidservice.AbstractDataOnePidServiceAO;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Date;
 
 public class DummyPidServiceAOImpl extends AbstractDataOnePidServiceAO {
 
@@ -27,7 +28,8 @@ public class DummyPidServiceAOImpl extends AbstractDataOnePidServiceAO {
 
 	@Override
 	public DataOneObject getObject(Identifier identifier) throws JargonException {
-		return new FileDataOneObject(getPublicationContext(), getIrodsAccount(), identifier, new DataObject());
+		return new FileDataOneObject(getPublicationContext(), getIrodsAccount(), identifier, new Date(),
+				new DataObject());
 	}
 
 	private Identifier getFakeIdentifier() {

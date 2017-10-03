@@ -3,8 +3,11 @@ LABEL organization="RENCI"
 LABEL maintainer="michael_conway@unc.edu"
 LABEL description="iRODS DataONE Connector event logging service"
 
-COPY target/default-event-service-indexer-4.2.1.0-SNAPSHOT.jar /default-event-service-indexer.jar
-COPY target/lib /
+COPY target/default-event-service-indexer-4.2.1.0-SNAPSHOT.jar /opt/dataone/indexer/default-event-service-indexer.jar
+COPY target/lib /opt/dataone/indexer/lib
+
+WORKDIR /opt/dataone/indexer
+
 CMD ["java", "-jar", "default-event-service-indexer.jar"]
 
 

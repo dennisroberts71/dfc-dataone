@@ -16,7 +16,11 @@
 
 	<!-- Infrastructure -->
 
-	<rabbit:connection-factory id="connectionFactory" host="${amqp.host}" port="${amqp.port}]"/>
+	<rabbit:connection-factory id="connectionFactory"
+							   host="${amqp.host}"
+							   port="${amqp.port}"
+							   username="${amqp.username}"
+							   password="${amqp.password}"/>
 
 	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" />
 

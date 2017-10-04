@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootApplication
 @EnableIntegration
 @IntegrationComponentScan
-@ImportResource({ "/event-dao-hibernate-spring.cfg.xml", "/event-service-beans.xml" })
+@ImportResource({ "/event-dao-hibernate-spring.cfg.xml", "/event-service-beans.xml", "/integration.xml" })
 public class Application {
 
 	private static final Logger log = LoggerFactory.getLogger(Application.class);

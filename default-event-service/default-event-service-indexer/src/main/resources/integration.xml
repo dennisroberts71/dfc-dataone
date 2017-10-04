@@ -9,7 +9,8 @@
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
 		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
 	<context:property-placeholder
 		location="file:///etc/irods-ext/default-event-indexer.properties" />
@@ -19,8 +20,9 @@
 	<rabbit:connection-factory id="connectionFactory"
 							   host="${amqp.host}"
 							   port="${amqp.port}"
+							   virtual-host="${amqp.vhost}"
 							   username="${amqp.username}"
-							   password="${amqp.password}"/>
+							   password="${amqp.password}" />
 
 	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" />
 

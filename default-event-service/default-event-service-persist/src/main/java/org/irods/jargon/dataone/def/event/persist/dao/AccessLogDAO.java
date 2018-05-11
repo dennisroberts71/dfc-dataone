@@ -67,4 +67,21 @@ public interface AccessLogDAO {
 	 */
 	List<AccessLog> find(Date start, Date end, EventsEnum eventType, String pid, int offset, int limit)
 			throws EventLoggingException;
+
+	/**
+	 * Counts a set of access log entries.
+	 *
+	 * @param start
+	 *            the start date for the search, if any
+	 * @param end
+	 *            the end date for the search, if any
+	 * @param eventType
+	 *            the selected event type, if any
+	 * @param pid
+	 *            the permanent identifier, if any
+	 *
+	 * @return the total number of matching events
+	 * @throws EventLoggingException if an error occurs in the query
+	 */
+	int count(Date start, Date end, EventsEnum eventtype, String pid) throws EventLoggingException;
 }

@@ -18,6 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
 /**
  * Impl of an access log
  * 
@@ -126,6 +130,27 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 			throw new EventLoggingException("failed find(start, end, eventType, offset, limit)", e);
 		}
 		return results;
+	}
+
+	@Override
+	public int count(Date start, Date end, EventsEnum eventType, String pid)
+			throws EventLoggingException {
+		log.info("count start:{}, end:{}, eventType:{}, pid:{}", start, end, eventType, pid);
+
+		int result = 0;
+		try {
+			CriteriaBuilder builder = sessionFactory.getCriteriaBuilder();
+			CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+			criteria.select(builder.count(criteria.from(AccessLog.class)));
+			Root<AccessLog> root = criteria.from(AccessLog.class);
+			if (start != null) {
+				criteria.where()
+			}
+		} catch (Exception e) {
+			log.error("error in count(start, end, eventType, pid", e);
+			throw new EventLoggingException("failed count(start, end, eventType, pid)", e);
+		}
+		return result;
 	}
 
 	/**

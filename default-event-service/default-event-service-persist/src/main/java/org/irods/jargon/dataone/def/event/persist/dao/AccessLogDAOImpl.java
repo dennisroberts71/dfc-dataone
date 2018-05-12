@@ -3,11 +3,9 @@
  */
 package org.irods.jargon.dataone.def.event.persist.dao;
 
-import java.util.Date;
-import java.util.List;
-
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.irods.jargon.dataone.def.event.persist.dao.domain.AccessLog;
 import org.irods.jargon.dataone.events.EventLoggingException;
@@ -18,9 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Impl of an access log
@@ -100,6 +97,23 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 		}
 	}
 
+	private Criteria accessLogBaseQuery(Date start, Date end, EventsEnum eventType, String pid) {
+		Criteria crit = sessionFactory.getCurrentSession().createCriteria(AccessLog.class);
+		if (start != null) {
+            crit.add(Restrictions.ge("dateAdded", start));
+        }
+		if (end != null) {
+            crit.add(Restrictions.le("dateAdded", end));
+        }
+		if (eventType != null) {
+            crit.add(Restrictions.eq("event", eventType));
+        }
+		if (pid != null) {
+            crit.add(Restrictions.eq("permanentId", pid));
+        }
+		return crit;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<AccessLog> find(Date start, Date end, EventsEnum eventType, String pid, int offset, int limit)
@@ -109,19 +123,7 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 
 		List<AccessLog> results;
 		try {
-			Criteria crit = sessionFactory.getCurrentSession().createCriteria(AccessLog.class);
-			if (start != null) {
-				crit.add(Restrictions.ge("dateAdded", start));
-			}
-			if (end != null) {
-				crit.add(Restrictions.le("dateAdded", end));
-			}
-			if (eventType != null) {
-				crit.add(Restrictions.eq("event", eventType));
-			}
-			if (pid != null) {
-				crit.add(Restrictions.eq("permanentId", pid));
-			}
+			Criteria crit = accessLogBaseQuery(start, end, eventType, pid);
 			crit.setFirstResult(offset);
 			crit.setMaxResults(limit);
 			results = crit.list();
@@ -139,13 +141,9 @@ public class AccessLogDAOImpl implements AccessLogDAO {
 
 		int result = 0;
 		try {
-			CriteriaBuilder builder = sessionFactory.getCriteriaBuilder();
-			CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
-			criteria.select(builder.count(criteria.from(AccessLog.class)));
-			Root<AccessLog> root = criteria.from(AccessLog.class);
-			if (start != null) {
-				criteria.where()
-			}
+			Criteria crit = accessLogBaseQuery(start, end, eventType, pid);
+			crit.setProjection(Projections.rowCount());
+			result = ((Long) crit.uniqueResult()).intValue();
 		} catch (Exception e) {
 			log.error("error in count(start, end, eventType, pid", e);
 			throw new EventLoggingException("failed count(start, end, eventType, pid)", e);

@@ -70,8 +70,10 @@ public class DefaultEventServiceAOImpl extends AbstractDataOneEventServiceAO {
 		Log logResult = new Log();
 		LogEntry logEntry;
 		List<AccessLog> queryResult;
+		int total;
 		try {
 			queryResult = accessLogDAO.find(start, end, event, pid, offset, limit);
+			total = accessLogDAO.count(start, end, event, pid);
 		} catch (EventLoggingException e) {
 			log.error("error querying logs", e);
 			throw new JargonRuntimeException(e.getMessage());
@@ -113,7 +115,9 @@ public class DefaultEventServiceAOImpl extends AbstractDataOneEventServiceAO {
 
 			logEntry.setUserAgent(resultEntry.getUserAgent());
 			logResult.addLogEntry(logEntry);
-
+			logResult.setCount(queryResult.size());
+			logResult.setStart(offset);
+			logResult.setTotal(total);
 		}
 
 		return logResult;

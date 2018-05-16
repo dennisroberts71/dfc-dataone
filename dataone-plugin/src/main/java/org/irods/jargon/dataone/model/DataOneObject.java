@@ -19,7 +19,7 @@ import java.util.Date;
  * Represents a DataOne object that is stored in iRODS. The initial implementation will be for data objects, but
  * implementations for other iRODS entities such as collections may be added in the future.
  *
- * @author Dennis Roberts - CyVerse
+ * @author Sarah Roberts - CyVerse
  */
 public interface DataOneObject {
 

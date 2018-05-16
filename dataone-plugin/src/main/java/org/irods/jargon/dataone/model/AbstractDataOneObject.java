@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @author Dennis Roberts - CyVerse
+ * @author Sarah Roberts - CyVerse
  */
 public abstract class AbstractDataOneObject implements DataOneObject {
 

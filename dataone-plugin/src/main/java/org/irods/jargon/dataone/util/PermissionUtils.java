@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Dennis Roberts - CyVerse
+ * @author Sarah Roberts - CyVerse
  */
 public class PermissionUtils {
 

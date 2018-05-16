@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * A DataOne object that is stored as a {@link DataObject} in iRODS.
  *
- * @author Dennis Roberts - CyVerse
+ * @author Sarah Roberts - CyVerse
  */
 public class FileDataOneObject extends AbstractDataOneObject {
 

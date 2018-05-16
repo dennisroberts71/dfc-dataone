@@ -5,7 +5,7 @@ import org.irods.jargon.dataone.plugin.ConfigConstants;
 import org.irods.jargon.dataone.plugin.PublicationContext;
 
 /**
- * @author Dennis Roberts - CyVerse
+ * @author Sarah Roberts - CyVerse
  */
 public class CommonConfig {
 	// Prevent instantiation.

@@ -12,7 +12,7 @@ import java.util.List;
  * Represents a list of DataOne objects that is being returned from an object search. The list may be a partial
  * list if there are more matching objects than the requested object count.
  *
- * @author Dennis Roberts - CyVerse
+ * @author Sarah Roberts - CyVerse
  */
 public class DataOneObjectListResponse {
 

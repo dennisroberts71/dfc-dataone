@@ -6,6 +6,6 @@
  * thereof. In cases where the default DataOneObject implementations aren't sufficient, a specific plugin implementation
  * may create a new implementation of this interface to suit its needs.
  *
- * @author Dennis Roberts - CyVerse
+ * @author Sarah Roberts - CyVerse
  */
 package org.irods.jargon.dataone.model;

@@ -72,7 +72,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- <dependency> <groupId>org.irods.jargon</groupId> <artifactId>data-profile</artifactId> 
+		<!-- <dependency> <groupId>org.irods.jargon</groupId> <artifactId>data-profile</artifactId>
 			</dependency> -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -134,9 +134,9 @@
 			<artifactId>dataone-plugin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-		<!-- <dependency> <groupId>org.irods.jargon.springboot</groupId> <artifactId>resteasy-spring-boot-starter</artifactId> 
-			<exclusions> <exclusion> <groupId>ch.qos.logback</groupId> <artifactId>logback-classic</artifactId> 
+
+		<!-- <dependency> <groupId>org.irods.jargon.springboot</groupId> <artifactId>resteasy-spring-boot-starter</artifactId>
+			<exclusions> <exclusion> <groupId>ch.qos.logback</groupId> <artifactId>logback-classic</artifactId>
 			</exclusion> </exclusions> </dependency> -->
 		<dependency>
 			<groupId>org.xeustechnologies</groupId>
@@ -225,8 +225,8 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin><!-- <plugin> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-maven-plugin</artifactId> 
-				<version>1.5.1.RELEASE</version> <executions> <execution> <goals> <goal>repackage</goal> 
+			</plugin><!-- <plugin> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-maven-plugin</artifactId>
+				<version>1.5.1.RELEASE</version> <executions> <execution> <goals> <goal>repackage</goal>
 				</goals> </execution> </executions> </plugin> -->
 		</plugins>
 		<pluginManagement>

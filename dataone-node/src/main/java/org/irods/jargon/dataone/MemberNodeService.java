@@ -1,34 +1,5 @@
 package org.irods.jargon.dataone;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
-import javax.inject.Named;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.JAXB;
-
 import org.dataone.service.exceptions.InsufficientResources;
 import org.dataone.service.exceptions.InvalidRequest;
 import org.dataone.service.exceptions.InvalidToken;
@@ -49,6 +20,7 @@ import org.dataone.service.types.v1.SystemMetadata;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.dataone.auth.RestAuthUtils;
+import org.irods.jargon.dataone.auth.endpoint.AuthChecker;
 import org.irods.jargon.dataone.domain.MNChecksum;
 import org.irods.jargon.dataone.domain.MNError;
 import org.irods.jargon.dataone.domain.MNLog;
@@ -74,6 +46,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.xml.bind.JAXB;
+
 /**
  * User: Lisa Stillwell - RENCI, UNC @ Chapel Hill Date: 10/4/13 Time: 2:22 PM
  */
@@ -88,6 +89,15 @@ public class /**/MemberNodeService {
 	private PublicationContext publicationContext;
 	@Autowired
 	private PluginDiscoveryService pluginDiscoveryService;
+
+	private AuthChecker authChecker;
+
+	private AuthChecker getAuthChecker() {
+		if (authChecker == null) {
+			authChecker = publicationContext.getRestConfiguration().getAuthChecker();
+		}
+		return authChecker;
+	}
 
 	@GET
 	@Path("/monitor/ping")
@@ -150,12 +160,14 @@ public class /**/MemberNodeService {
 	public MNLog handleGetLogRecords(@QueryParam("fromDate") final String fromDateStr,
 			@QueryParam("toDate") final String toDateStr, @QueryParam("event") final String event,
 			@QueryParam("pidFilter") final String pidFilter, @DefaultValue("0") @QueryParam("start") final int start,
-			@DefaultValue("500") @QueryParam("count") final int count)
+			@DefaultValue("500") @QueryParam("count") final int count, @Context final HttpServletRequest request)
 			throws NotImplemented, ServiceFailure, NotAuthorized, InvalidRequest, InvalidToken {
 
 		logger.info("/log request: fromData={} toDate={}", fromDateStr, toDateStr);
 		logger.info("/log request: event={} pidFilter={}", event, pidFilter);
 		logger.info("/log request: start={} count={}", start, count);
+
+		getAuthChecker().checkAuthorization(request);
 
 		MNCoreImpl mnCoreImpl = new MNCoreImpl(publicationContext, pluginDiscoveryService);
 
@@ -251,8 +263,11 @@ public class /**/MemberNodeService {
 	@GET
 	@Path("/replica/{id}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public void handleReplica(@PathParam("id") final String pid, @Context final HttpServletResponse response)
+	public void handleReplica(@PathParam("id") final String pid, @Context final HttpServletRequest request,
+							  @Context final HttpServletResponse response)
 			throws InvalidToken, ServiceFailure, NotAuthorized, NotFound, NotImplemented, InsufficientResources {
+
+		getAuthChecker().checkAuthorization(request);
 
 		MNReadImpl mnReadImpl = new MNReadImpl(publicationContext, pluginDiscoveryService);
 

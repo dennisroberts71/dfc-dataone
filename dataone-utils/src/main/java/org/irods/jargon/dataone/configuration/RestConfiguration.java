@@ -1,5 +1,9 @@
 package org.irods.jargon.dataone.configuration;
 
+import org.irods.jargon.dataone.auth.endpoint.AlwaysAllowAuthChecker;
+import org.irods.jargon.dataone.auth.endpoint.AuthChecker;
+import org.irods.jargon.dataone.auth.endpoint.HttpHeaderAuthChecker;
+
 /**
  * Pojo containing configuration information
  *
@@ -20,6 +24,7 @@ public class RestConfiguration {
 	private String irodsUserPswd;
 	private String pluginJarLocation;
 	private String authType = "";
+	private String memberNodeAuthType = "";
 
 	/**
 	 * Optional URL for a web interface to access grid data (typically an
@@ -188,7 +193,7 @@ public class RestConfiguration {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -246,4 +251,42 @@ public class RestConfiguration {
 		this.authType = authType;
 	}
 
+	/**
+	 * Gets the authorization type used by the member node service, which determines how the member
+	 * node service checks for authorization in endpoints that require it. The currently available
+	 * types are {@code http-header} and {@code always-allow}.
+	 *
+	 * @return the authorization type.
+	 */
+	public String getMemberNodeAuthType() {
+		return memberNodeAuthType;
+	}
+
+	/**
+	 * Sets the authorization type used by the member node service, which determines how the member
+	 * node service check for authorization in endpoints that require it. The currently available
+	 * types are {@code http-header} and {@code always-allow}.
+	 *
+	 * @param memberNodeAuthType the authorization type.
+	 */
+	public void setMemberNodeAuthType(String memberNodeAuthType) {
+		this.memberNodeAuthType = memberNodeAuthType;
+	}
+
+	/**
+	 * Obtains an authorization checker to use for the member node service based on the value of the
+	 * value of {@code memberNodeAuthType}. If the value is equal to "http-header" (case insensitive),
+	 * then an instance of {@link HttpHeaderAuthChecker} is returned. Otherwise, and instance of
+	 * {@link AlwaysAllowAuthChecker} is returned.
+	 *
+	 * @return an instance of {@link AuthChecker}.
+	 */
+	public AuthChecker getAuthChecker() {
+		String authType = getMemberNodeAuthType();
+		if ("http-header".equalsIgnoreCase(authType)) {
+			return new HttpHeaderAuthChecker();
+		} else {
+			return new AlwaysAllowAuthChecker();
+		}
+	}
 }

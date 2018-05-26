@@ -35,7 +35,7 @@
 		<beans:property name="irodsUserName" value="${irods.username}" />
 		<beans:property name="irodsUserPswd" value="${irods.password}" />
 		<beans:property name="pluginJarLocation" value="${plugin.jar.location}" />
-		<beans:property name="memberNodeAuthType" value="${member-node.auth-type" />
+		<beans:property name="memberNodeAuthType" value="${member-node.auth-type}" />
 	</beans:bean>
 
 	<beans:bean id="springFilter"

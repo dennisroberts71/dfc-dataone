@@ -1,6 +1,8 @@
 package org.irods.jargon.dataone.auth.endpoint;
 
 import org.dataone.service.exceptions.NotAuthorized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,7 +15,11 @@ import javax.servlet.http.HttpServletRequest;
  * @author Sarah Roberts - CyVerse
  */
 public class AlwaysAllowAuthChecker implements AuthChecker {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Override
     public void checkAuthorization(HttpServletRequest request) throws NotAuthorized {
+        logger.error("ignoring authentication information in request");
     }
 }

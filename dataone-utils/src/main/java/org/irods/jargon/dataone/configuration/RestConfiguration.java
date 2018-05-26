@@ -3,6 +3,8 @@ package org.irods.jargon.dataone.configuration;
 import org.irods.jargon.dataone.auth.endpoint.AlwaysAllowAuthChecker;
 import org.irods.jargon.dataone.auth.endpoint.AuthChecker;
 import org.irods.jargon.dataone.auth.endpoint.HttpHeaderAuthChecker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Pojo containing configuration information
@@ -25,6 +27,8 @@ public class RestConfiguration {
 	private String pluginJarLocation;
 	private String authType = "";
 	private String memberNodeAuthType = "";
+
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * Optional URL for a web interface to access grid data (typically an
@@ -283,6 +287,7 @@ public class RestConfiguration {
 	 */
 	public AuthChecker getAuthChecker() {
 		String authType = getMemberNodeAuthType();
+		logger.error("getting the auth checker for auth type: {}", authType);
 		if ("http-header".equalsIgnoreCase(authType)) {
 			return new HttpHeaderAuthChecker();
 		} else {

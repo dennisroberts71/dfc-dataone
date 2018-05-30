@@ -23,7 +23,7 @@ public class HttpHeaderAuthChecker implements AuthChecker {
     @Override
     public void checkAuthorization(HttpServletRequest request) throws NotAuthorized {
         String value = request.getHeader(HEADER_NAME);
-        logger.error("checking authentication in request. {}: {}", HEADER_NAME, value);
+        logger.debug("checking authentication in request. {}: {}", HEADER_NAME, value);
         if (value == null || !value.equalsIgnoreCase(AUTHORIZED_VALUE)) {
             throw new NotAuthorized("100001.001", "not authorized");
         }

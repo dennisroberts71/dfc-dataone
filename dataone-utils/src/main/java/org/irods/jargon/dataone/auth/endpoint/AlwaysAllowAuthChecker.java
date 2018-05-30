@@ -20,6 +20,6 @@ public class AlwaysAllowAuthChecker implements AuthChecker {
 
     @Override
     public void checkAuthorization(HttpServletRequest request) throws NotAuthorized {
-        logger.error("ignoring authentication information in request");
+        logger.debug("ignoring authentication information in request");
     }
 }

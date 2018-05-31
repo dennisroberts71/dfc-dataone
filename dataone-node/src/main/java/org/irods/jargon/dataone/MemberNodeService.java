@@ -326,7 +326,8 @@ public class /**/MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
 	public Response handleDescribe(@PathParam("id") final String pid)
-			// @Context final HttpServletResponse response)
+			//
+		// final HttpServletResponse response)
 			throws NotAuthorized, NotImplemented, ServiceFailure, NotFound, InvalidToken {
 
 		Identifier id = new Identifier();
@@ -379,8 +380,11 @@ public class /**/MemberNodeService {
 	@Produces(MediaType.TEXT_XML)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Mapped(namespaceMap = { @XmlNsMap(namespace = "http://irods.org/dfc-dataone", jsonName = "dfc-dataone") })
-	public Response handleSynchronizationFailed(final MultipartFormDataInput input)
+	public Response handleSynchronizationFailed(
+			final MultipartFormDataInput input, @Context final HttpServletRequest request)
 			throws NotAuthorized, NotImplemented, ServiceFailure, InvalidToken {
+
+		getAuthChecker().checkAuthorization(request);
 
 		Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
 		List<InputPart> inputParts = uploadForm.get("message");
